@@ -1,6 +1,13 @@
 import 'dart:typed_data';
 
+import 'package:get/instance_manager.dart';
+import 'package:ldte_stei_itb/core/controller.dart';
+import 'package:ldte_stei_itb/core/service.dart';
 import 'package:pdf/widgets.dart' as pw;
+
+final auth = AuthService();
+
+final NC = Get.put(HomePageController());
 
 final fakultas = [
   "Fakultas Ilmu dan Teknologi Kebumian (FITB)", 
@@ -19,19 +26,16 @@ final fakultas = [
 
 final items = ['custom', 'Oscilloscope', 'Multimeter', 'Signal Generator'];
 
-pw.TextStyle defaultTextStyle(ByteData ttf, ByteData ttfBold, ByteData ttfItalic, {double? fontSize}) {
-  final calibri = pw.Font.ttf(ttf);
-  final calibriBold = pw.Font.ttf(ttfBold);
-  final calibriItalic = pw.Font.ttf(ttfItalic);
+pw.TextStyle textStyle({double? fontSize, double? lineSpacing}) {
   return pw.TextStyle(
-    font: calibri,
-    fontNormal: calibri,
-    fontBold: calibriBold,
-    fontItalic: calibriItalic,
     fontWeight: pw.FontWeight.normal,
     fontSize: fontSize ?? 12,
-    lineSpacing: 5
+    lineSpacing: lineSpacing ?? 5
   );
 }
 
-final regexp = RegExp(r'\((.*?)\)'); 
+final regexp = RegExp(r'\((.*?)\)');
+
+DateTime get now => DateTime.now();
+DateTime get today => DateTime.parse(now.toString().substring(0, 10));
+DateTime get todayEnd => today.add(Duration(days: 1)).subtract(Duration(seconds: 1));

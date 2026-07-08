@@ -1,6 +1,9 @@
 import 'package:auto_hide_keyboard/auto_hide_keyboard.dart';
+import 'package:dropdown_flutter/custom_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ldte_stei_itb/core/service.dart';
+import 'package:ldte_stei_itb/misc/function.dart';
 
 class Assets {
   static const String logo = 'assets/logo.png';
@@ -131,7 +134,9 @@ class AutoHideTextField extends StatelessWidget {
     this.inputFormatters,
     this.canError = true,
     this.onChanged,
-    this.enabled = true
+    this.onSubmitted,
+    this.enabled = true,
+    this.autofillHints = const <String>[],
   });
 
   final String? labelText;
@@ -146,6 +151,8 @@ class AutoHideTextField extends StatelessWidget {
   final bool canError;
   final bool enabled;
   final Function(String)? onChanged;
+  final void Function(String)? onSubmitted;
+  final Iterable<String>? autofillHints;
 
   @override
   Widget build(BuildContext context) {
@@ -177,9 +184,103 @@ class AutoHideTextField extends StatelessWidget {
             keyboardType: keyboardType,
             onChanged: onChanged,
             obscureText: obscureText ?? false,
+            onSubmitted: onSubmitted,
+            autofillHints: autofillHints,
           ),
         ],
       ),
+    );
+  }
+}
+
+
+class FilterRow extends StatelessWidget {
+  const FilterRow({
+    super.key,
+    required this.controller,
+    required this.filterKey,
+  });
+
+  final QFSPController controller;
+  final String filterKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final map = controller.getFilterEnrty(filterKey).value;
+    return Row(
+      spacing: 6,
+        children: [
+          TextButton(
+            onPressed: () => controller.onChanged('all', filterKey),
+            child: Text('all'),
+            style: TextButton.styleFrom(
+              minimumSize: Size(56, 32),
+              backgroundColor: map['all']!
+                ? appTheme.colorScheme.primary : null,
+              foregroundColor: map['all']!
+                ? Colors.white : null,
+            ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                spacing: 6,
+                children: [
+                  for (var item in map.entries) ...[
+                    if (item.key != 'all') TextButton(
+                      onPressed: () => controller.onChanged(item.key, filterKey),
+                      child: Text(item.key),
+                      style: TextButton.styleFrom(
+                        minimumSize: Size(56, 32),
+                        backgroundColor: item.value
+                          ? getColorFromSubmissionStatus(item.key) 
+                            ?? appTheme.colorScheme.primary
+                          : null,
+                        foregroundColor: item.value
+                          ? Colors.white 
+                          : getColorFromSubmissionStatus(item.key)
+                      ),
+                    ),
+                  ]
+                ],
+              ),
+            ),
+          )
+        ]
+      );
+  }
+}
+
+class SortRow extends StatelessWidget {
+  const SortRow({
+    super.key,
+    required this.controller,
+  });
+
+  final QFSPController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text('Sort by :  '),
+        Expanded(
+          child: DropdownFlutter(
+            closedHeaderPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            listItemBuilder: (context, item, isSelected, onItemSelect) => Text('${item}', style: TextStyle(color: isSelected ? Colors.black : null),),
+            decoration: CustomDropdownDecoration(
+              expandedFillColor: appTheme.inputDecorationTheme.fillColor,
+              closedFillColor: appTheme.inputDecorationTheme.fillColor,
+              listItemStyle: TextStyle(color: ThemeData.dark().primaryColor),
+            ),
+            excludeSelected: false,
+            items: ['Latest', 'Oldest', 'Name (A-Z)', 'Name (Z-A)'],
+            controller: controller.sortController,
+            onChanged: (value) => controller.onChanged(),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1,4 +1,6 @@
 
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ldte_stei_itb/misc/extension.dart';
@@ -173,4 +175,16 @@ List<String> getAvailableProdi(String? fakultas) {
       ];
     default: return [];
   }
+}
+
+Color? getColorFromSubmissionStatus(String? status) {
+  return status == 'exported'
+    ? Colors.green
+    : status == 'pending'
+      ? Colors.orange
+      : status == 'unchecked'
+        ? Colors.blue
+        : status == 'spam'
+          ? Colors.red
+          : null;
 }

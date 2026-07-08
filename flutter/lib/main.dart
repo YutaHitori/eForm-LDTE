@@ -1,16 +1,27 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:ldte_stei_itb/admin.dart';
 import 'package:ldte_stei_itb/core/custom-widget.dart';
-import 'package:ldte_stei_itb/form/pinjam.dart';
+import 'package:ldte_stei_itb/core/middleware.dart';
+import 'package:ldte_stei_itb/form/surat_keterangan_praktikum/admin.dart';
+import 'package:ldte_stei_itb/form/surat_keterangan_praktikum/form.dart';
+import 'package:ldte_stei_itb/form/peminjaman_peralatan/form.dart';
 import 'package:ldte_stei_itb/homepage.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:ldte_stei_itb/login.dart';
 import 'package:url_strategy/url_strategy.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-void main() {
+void main() async {
   if (kIsWeb) setPathUrlStrategy();
   WidgetsFlutterBinding.ensureInitialized();
   initializeDateFormatting('id_ID');
+
+  await Supabase.initialize(
+    url: "https://xulfjcgekimkkijjswqm.supabase.co",
+    publishableKey: "sb_publishable_2FRbSQMkCHktF4c8jKqEuA_eDMrZZkp",
+  );
 
   runApp(
     GetMaterialApp(
@@ -20,6 +31,10 @@ void main() {
       getPages: [
         GetPage(name: '/', page: () => Homepage()),
         GetPage(name: '/form/pinjam', page: () => Pinjam()),
+        GetPage(name: '/form/keterangan', page: () => SuratKeteranganPraktikum()),
+        GetPage(name: '/login', page: () => Login(), middlewares: [ AuthMiddleware(reqLogin: false) ]),
+        GetPage(name: '/admin', page: () => Admin(), middlewares: [ AuthMiddleware() ]),
+        GetPage(name: '/admin/keterangan', page: () => AdminSuratKeteranganPraktikum(), middlewares: [ AuthMiddleware() ]),
       ],
     ),
   );
