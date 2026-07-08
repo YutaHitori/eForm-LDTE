@@ -60,7 +60,6 @@ class HomePageController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    auth.listenAuthChange();
   }
 }
 
@@ -381,6 +380,7 @@ class AdminController extends GetxController {
   
   void signOut() async {
     isLoading.value = true;
+    Get.back();
     await auth.supabase.auth.signOut();
     isLoading.value = false;
   }

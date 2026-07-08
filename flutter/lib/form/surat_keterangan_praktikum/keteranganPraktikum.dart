@@ -38,7 +38,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                   controller: c.namaC.value[i],
                   labelText: 'Nama ${c.namaC.value.length == 1 ? '' : i+1}',
                   errorText: c.namaE.value[i],
-                  decoration: InputDecoration(hintText: 'e.g. Safaraz Akma Fadhil'),
+                  decoration: InputDecoration(hintText: 'Nama'),
                 ),
                 Row(
                   spacing: 12,
@@ -50,7 +50,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                         errorText: c.nimE.value[i],
                         keyboardType: TextInputType.number,
                         inputFormatters: [ FilteringTextInputFormatter.digitsOnly ],
-                        decoration: InputDecoration(hintText: 'e.g. 12345678'),
+                        decoration: InputDecoration(hintText: 'Nim'),
                       ),
                     ),
                     GestureDetector(
@@ -310,7 +310,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                   ),
                 ],
               ),
-              ElevatedButton(onPressed: c.isLoading.value ? null : c.submit, child: Text(c.message.value ?? 'Submit')),
+              ElevatedButton(onPressed: c.isLoading.value ? null : c.submit, child: Text(c.isLoading.value ? 'Generating...' : 'Submit')),
             ],
           )),
         ),

@@ -1,15 +1,16 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ldte_stei_itb/admin.dart';
+import 'package:ldte_stei_itb/homepage/admin.dart';
 import 'package:ldte_stei_itb/core/custom-widget.dart';
 import 'package:ldte_stei_itb/core/middleware.dart';
 import 'package:ldte_stei_itb/form/surat_keterangan_praktikum/admin.dart';
 import 'package:ldte_stei_itb/form/surat_keterangan_praktikum/form.dart';
 import 'package:ldte_stei_itb/form/peminjaman_peralatan/form.dart';
-import 'package:ldte_stei_itb/homepage.dart';
+import 'package:ldte_stei_itb/homepage/homepage.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:ldte_stei_itb/login.dart';
+import 'package:ldte_stei_itb/homepage/login.dart';
+import 'package:ldte_stei_itb/misc/global.dart';
 import 'package:url_strategy/url_strategy.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -22,6 +23,8 @@ void main() async {
     url: "https://xulfjcgekimkkijjswqm.supabase.co",
     publishableKey: "sb_publishable_2FRbSQMkCHktF4c8jKqEuA_eDMrZZkp",
   );
+
+  auth.listenAuthChange();
 
   runApp(
     GetMaterialApp(

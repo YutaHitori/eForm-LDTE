@@ -2,8 +2,12 @@ import 'package:auto_hide_keyboard/auto_hide_keyboard.dart';
 import 'package:dropdown_flutter/custom_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_side_menu/flutter_side_menu.dart';
+import 'package:get/route_manager.dart';
+import 'package:ldte_stei_itb/core/controller.dart';
 import 'package:ldte_stei_itb/core/service.dart';
 import 'package:ldte_stei_itb/misc/function.dart';
+import 'package:ldte_stei_itb/misc/global.dart';
 
 class Assets {
   static const String logo = 'assets/logo.png';
@@ -284,3 +288,47 @@ class SortRow extends StatelessWidget {
     );
   }
 }
+
+  SideMenu SideMenuNavigation(BuildContext context, String active, [bool isDesktop = false]) {
+    return SideMenu(
+      hasResizerToggle: isDesktop,
+      mode: isDesktop ? SideMenuMode.auto : SideMenuMode.open,
+      builder: (data) => SideMenuData(
+        header: Container(
+          padding: EdgeInsets.only(top: 48),
+          height: 200,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('LDTE STEI ITB', textScaleFactor: 1.4,),
+              SizedBox(height: 12),
+              Text('Welcome!', textScaleFactor: 1.2,),
+              Text(auth.isLoggedIn ? 'Logged in as ${auth.user?.email}' : 'User is not logged in')
+            ],
+          ),
+        ),
+        items: [
+          SideMenuItemDataTitle(title: 'Navigation'),
+          SideMenuItemDataTile(
+            borderRadius: BorderRadius.circular(12),
+            isSelected: active == 'homepage',
+            onTap: active == 'homepage' ? () {} : () {
+              canPop ? Navigator.pop(context) : null;
+              Future.delayed(Duration(milliseconds: 200), () => Get.offAllNamed('/'));
+            },
+            title: 'Homepage',
+            icon: const Icon(Icons.home_rounded),
+          ),
+          SideMenuItemDataTile(
+            isSelected: active == 'admin' || active == 'login',
+            onTap: active == 'admin' || active == 'login' ? () {} : () {
+              canPop ? Navigator.pop(context) : null;
+              Future.delayed(Duration(milliseconds: 200), () => auth.isLoggedIn ? Get.offNamed('/admin') : Get.offNamed('/login'));
+            },
+            title: auth.isLoggedIn ? 'Admin Panel' : 'Login',
+            icon: Icon(auth.isLoggedIn ? Icons.person_rounded : Icons.login_rounded),
+          ),
+        ],
+      ),
+    );
+  }
