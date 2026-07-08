@@ -291,11 +291,12 @@ class ImagePickerService {
   }
 
   Future<XFile> setPrefix(XFile file, String prefix) async {
-    File ioFile = File(file.path);
-    String directoryPath = dirname(ioFile.path);
-    String newPath = join(directoryPath, "${prefix == 'default' ? '': '$prefix-'}${file.name.substring(7)}");
-    File renamedIoFile = await ioFile.rename(newPath);
-    return XFile(renamedIoFile.path);
+  final bytes = await file.readAsBytes();
+  return XFile.fromData(
+    bytes,
+    name: "${prefix == 'default' ? '': '$prefix-'}${file.name.substring(7)}",
+    mimeType: file.mimeType,
+  );
   } 
 
   Future<XFile?> selectImageFrom(ImageSource s, {String key = 'default'}) async {
