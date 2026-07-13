@@ -289,7 +289,7 @@ class SortRow extends StatelessWidget {
   }
 }
 
-  SideMenu SideMenuNavigation(BuildContext context, String active, [bool isDesktop = false]) {
+  Widget SideMenuNavigation(BuildContext context, String active, [bool isDesktop = false]) {
     return SideMenu(
       hasResizerToggle: isDesktop,
       mode: isDesktop ? SideMenuMode.auto : SideMenuMode.open,
@@ -304,6 +304,17 @@ class SortRow extends StatelessWidget {
               SizedBox(height: 12),
               Text('Welcome!', textScaleFactor: 1.2,),
               Text(auth.isLoggedIn ? 'Logged in as ${auth.user?.email}' : 'User is not logged in')
+            ],
+          ),
+        ),
+        footer: Container(
+          padding: EdgeInsets.only(top: 48),
+          height: 200,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Last Sync', textScaleFactor: 1.1,),
+              Text('${storage.cached?.lastSync}', textScaleFactor: 0.9,),
             ],
           ),
         ),

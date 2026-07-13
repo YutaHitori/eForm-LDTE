@@ -92,7 +92,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                   closedBorder: c.matkulE.value != null ? Border.all(color: appTheme.colorScheme.error) : null
                 ),
                 excludeSelected: false,
-                items: ['Lainnya...'] + matkul,
+                items: ['Lainnya...'] + c.matkulList,
                 hintText: 'select',
                 onChanged: (v) => c.isMatkulLainnya.value = v == 'Lainnya...',
               ),
@@ -148,7 +148,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                             closedBorder: c.praktikumE.value != null ? Border.all(color: appTheme.colorScheme.error) : null
                           ),
                           excludeSelected: false,
-                          items: ['Lainnya...'] + matkul,
+                          items: ['Lainnya...'] + c.praktikumList,
                           hintText: 'select',
                           onChanged: (v) => c.isPraktikumLainnya.value = v == 'Lainnya...',
                         ),

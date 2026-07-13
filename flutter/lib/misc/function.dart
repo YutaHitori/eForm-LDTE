@@ -1,6 +1,4 @@
 
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ldte_stei_itb/misc/extension.dart';

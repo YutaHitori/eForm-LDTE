@@ -35,12 +35,12 @@ class Pinjam extends StatelessWidget {
 - Form yang telah diisi dapat di download dan di print untuk di tandatangani, kemudian diserahkan pada saat menerima barang.
               ''',),
               AutoHideTextField(
-                labelText: 'Nama',
+                labelText: 'Nama Peminjam',
                 decoration: InputDecoration(hintText: '-'),
                 controller: c.namaC,
               ),
               AutoHideTextField(
-                labelText: 'NIM',
+                labelText: 'NIM Peminjam',
                 decoration: InputDecoration(hintText: '-'),
                 controller: c.nimC,
                 keyboardType: TextInputType.number,
@@ -241,7 +241,7 @@ class Pinjam extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Foto/Scan KTM peminjam', textScaleFactor: 1.02,),
+                  Text('Foto/Scan KTM Peminjam', textScaleFactor: 1.02,),
                   Row(
                     spacing: 8,
                     children: [
@@ -274,7 +274,7 @@ class Pinjam extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Foto/Scan KTP peminjam', textScaleFactor: 1.02,),
+                  Text('Foto/Scan KTP Peminjam', textScaleFactor: 1.02,),
                   Row(
                     spacing: 8,
                     children: [

@@ -15,7 +15,7 @@ class AdminSuratKeteranganPraktikum extends StatelessWidget {
     final c = Get.put(AdminSuratKeteranganPraktikumController());
     return Scaffold(
       appBar: AppBar(
-        title: Text('Admin'),
+        title: Text('Submissions - Surat Keterangan Praktikum'),
         leading: canPop
           ? null : IconButton(
             icon: Icon(Icons.arrow_back_ios),

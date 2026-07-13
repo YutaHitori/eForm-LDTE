@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'package:ldte_stei_itb/hive/hive_registrar.g.dart';
 import 'package:ldte_stei_itb/homepage/admin.dart';
 import 'package:ldte_stei_itb/core/custom-widget.dart';
 import 'package:ldte_stei_itb/core/middleware.dart';
@@ -17,14 +19,19 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 void main() async {
   if (kIsWeb) setPathUrlStrategy();
   WidgetsFlutterBinding.ensureInitialized();
+
   initializeDateFormatting('id_ID');
+
+  await Hive.initFlutter();
+  Hive.registerAdapters(); 
 
   await Supabase.initialize(
     url: "https://xulfjcgekimkkijjswqm.supabase.co",
     publishableKey: "sb_publishable_2FRbSQMkCHktF4c8jKqEuA_eDMrZZkp",
   );
-
   auth.listenAuthChange();
+
+  storage.initialize();
 
   runApp(
     GetMaterialApp(

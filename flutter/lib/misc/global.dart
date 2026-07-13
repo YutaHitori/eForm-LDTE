@@ -1,11 +1,10 @@
-import 'dart:typed_data';
-
 import 'package:get/instance_manager.dart';
 import 'package:ldte_stei_itb/core/controller.dart';
 import 'package:ldte_stei_itb/core/service.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 final auth = AuthService();
+final storage = StorageService();
 
 final NC = Get.put(HomePageController());
 

@@ -11,6 +11,7 @@ import 'package:ldte_stei_itb/misc/global.dart';
 import 'package:intl/intl.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 bool get canPop => Get.key.currentState?.canPop() ?? false;
 
@@ -207,6 +208,14 @@ class SuratKeteranganPraktikumController extends GetxController {
   var message = RxnString(null);
 
   final service = SuratKeteranganPraktikumService();
+  List<String> matkulList = storage.cached!.formatedMataKuliah();
+  List<String> praktikumList = storage.cached!.formatedPraktikum();
+
+  @override
+  void onInit() async {
+    super.onInit();
+    await service.imagePicker.retrieveLostData(bukti);
+  }
 
   Future<void> selectDate(BuildContext context) async {
     final picked = await DateTimePickerService().selectDate(context, initial: dateC.text.toDateTime(), helpText: "Tanggal Praktikum");
@@ -285,12 +294,6 @@ class SuratKeteranganPraktikumController extends GetxController {
     service.imagePicker.resetImage(bukti);
   }
 
-  @override
-  void onInit() async {
-    super.onInit();
-    await service.imagePicker.retrieveLostData(bukti);
-  }
-
   void reset(TextEditingController date) {
     date.text = '';
     Get.back(closeOverlays: true);
@@ -332,18 +335,37 @@ class SuratKeteranganPraktikumController extends GetxController {
   }
 
   void submit() async {
-    if (!checkEmptyFields()) return;
+    //if (!checkEmptyFields()) return;
     isLoading.value = true;
     message.value = 'Uploading Image...';
-    final url = await service.uploadImage(bukti.value!);
+    final url = true; //await service.uploadImage(bukti.value!);
     if (url != null) {
       message.value = 'Inserting Data...';
-      final isSuccess = await service.submitForm({ 'bukti': url, ...await form }); 
+      final isSuccess = true; //await service.submitForm({ 'bukti': url, ...await form }); 
       if (isSuccess) {
         message.value = 'Success!';
         alertDialog(
-          'Form Submited!', "Data telah berhasil direkam.",
-          dismissible: false,
+          'Form Submited!', null,
+          message: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(text: 'Data telah berhasil direkam. Silahkan melapor ke admin melalui link berikut: '),
+                  WidgetSpan(
+                    child: GestureDetector(onTap: () async {
+                      final Uri uri = Uri.parse('https://line.me/R/oaMessage/%40kiy3574q/?hello%20world%21');
+                      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                        snackbar('Error!', 'Could not launch $uri');
+                      }
+                    }, child: Text('OA Line LDTE', style: TextStyle(color: Colors.blue),)),
+                  ),
+                  TextSpan(text: '.'),
+                ],
+              ),
+            ),
+          ),
+          dismissible: true || false,
           cancelAction: () {
             Get.back();
             Get.offAllNamed('/');
@@ -365,8 +387,6 @@ class SuratKeteranganPraktikumController extends GetxController {
 } 
 
 class AdminController extends GetxController {
-  final service = AdminService();
-
   var isLoading = false.obs;
 
   void SignOutDialog() {
@@ -383,6 +403,12 @@ class AdminController extends GetxController {
     Get.back();
     await auth.supabase.auth.signOut();
     isLoading.value = false;
+  }
+}
+
+class GlobalSettingController extends GetxController {
+  Future<void> syncMatkul() async {
+    
   }
 }
 

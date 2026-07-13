@@ -1,7 +1,7 @@
 name: ldte_stei_itb
 description: "Website pembuatan berbagai formulir Lab Dasar Sekolah Teknik Elektro dan Informatika Institut Teknologi Bandung"
 publish_to: 'none'
-version: 0.2.2+14
+version: 0.3.0+15
 
 environment:
   sdk: ^3.10.7
@@ -25,11 +25,16 @@ dependencies:
   supabase_flutter: ^2.15.4
   number_paginator: ^1.1.2
   flutter_side_menu: ^0.5.41
+  url_launcher: ^6.3.2
+  hive_ce: ^2.19.3
+  hive_ce_flutter: ^2.3.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  hive_ce_generator: ^1.11.1
+  build_runner: ^2.15.1
 
 flutter:
   uses-material-design: true

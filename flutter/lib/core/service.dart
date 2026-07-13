@@ -1,10 +1,10 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dropdown_flutter/custom_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:ldte_stei_itb/core/controller.dart';
@@ -18,7 +18,6 @@ import 'package:number_paginator/number_paginator.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:path/path.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PDFService {
@@ -106,6 +105,132 @@ class DateTimePickerService {
     );
 
     return picked;
+  }
+}
+
+class StorageService {
+  Box<StorageCacheModel>? box;
+  StorageCacheModel? cached;
+
+  Future<void> initialize() async {
+    if (box == null) {
+      box = await Hive.openBox<StorageCacheModel>('local');
+      await assignStorage();
+      await sync();
+    }
+    print(cached?.lastSync);
+  }
+
+  Future<void> dispose() async {
+    box?.close();
+    box = null;
+    cached = null;
+  }
+
+  Future<void> save() async {
+    box!.put('cached_storage', cached!);
+  }
+
+  Future<void> sync() async {
+    final outdated = cached!.lastSync == null ? null : await getOutdatedField(cached!.lastSync!);
+    print('(sync) $outdated');
+    if (outdated?.isEmpty == true) return; 
+    
+    final latest = await getLatestFieldData(outdated);
+    print('(sync) $latest');
+
+    if (latest != null) {
+      updateOutdatedField(latest);
+      cached!.lastSync = DateTime.now();
+      await save();
+    }
+  }
+
+  Future<void> assignStorage() async {
+    cached ??= box!.get('cached_storage') ?? StorageCacheModel(
+        globalConfig: GlobalConfigModel(),
+        mataKuliahPraktikum: [],
+        lastSync: null
+      );
+  }
+
+  Future<List<LastUpdatedModel>> getOutdatedField(DateTime lastSync) async {
+      List<LastUpdatedModel> list = [];
+    try {
+      final data = await auth.supabase
+        .from('last_updated')
+        .select();
+
+      data.forEach((v) {
+        final temp = LastUpdatedModel.fromJson(v);
+        final isOutdated = temp.timestamp!.isAfter(lastSync);
+        if (isOutdated) list.add(temp);
+      });
+
+    } on PostgrestException catch (error) {
+      alertDialog('PostgrestException', '(getOutdatedField) PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
+    } catch (error) {
+      alertDialog('Unexpected error', '(getOutdatedField) $error');
+    }
+    return list;
+  }
+
+  Future<void> getGlobalConfig() async {
+    try {
+      final global = await auth.supabase
+       .from('global')
+       .select();
+       
+    } on PostgrestException catch (error) {
+      alertDialog('PostgrestException', '(getGlobalConfig) PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
+    } catch (error) {
+      alertDialog('Unexpected error', '(getGlobalConfig) $error');
+    }
+  }
+
+  Future<List<MataKuliahPraktikumModel>?> getLatestFieldData([List<LastUpdatedModel>? outdated]) async {
+    try {
+      var query = auth.supabase
+        .from('mata_kuliah')
+        .select();
+
+      if(outdated != null) {
+        String filter = '';
+        outdated.forEach((v) {
+          filter = '$filter,and(fakultas.eq.${v.fakultas!},is_praktikum.eq.${v.isPraktikum!})';
+        });
+        filter = filter.substring(1);
+        query = query.or(filter);
+        print('(getLatestFieldData) $filter');
+      }
+
+      final data = await query;
+      print('(getLatestFieldData) $data');
+
+      List<MataKuliahPraktikumModel> list = [];
+      data.forEach((v) {
+        final temp = MataKuliahPraktikumModel.fromJson(v);
+        list.add(temp);
+      });
+      
+      return list;
+    } on PostgrestException catch (error) {
+      alertDialog('PostgrestException', '(getLatestFieldData) PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
+    } catch (error) {
+      alertDialog('Unexpected error', '(getLatestFieldData) $error');
+    }
+    return null;
+  }
+
+  Future<void> updateOutdatedField(List<MataKuliahPraktikumModel> latest) async {
+    final Set<Map<String, bool>> set = latest.map((v) => {v.fakultas: v.isPraktikum}).toSet();
+    print('(updateOutdatedField) $set');
+    for (final Map<String, bool> v in set) {
+      cached!.mataKuliahPraktikum.removeWhere(
+        (v1) => v1.fakultas == v.keys.first && v1.isPraktikum == v.values.first,
+      );
+    }
+    cached!.mataKuliahPraktikum.addAll(latest);
   }
 }
 
@@ -725,11 +850,25 @@ class SuratKeteranganPraktikumService {
   }
 }
 
-class AdminService extends PDFService {
-
+class GlobalSettingService {
+   Future<List<MataKuliahPraktikumModel>?> getAllMatkul() async {
+    try {
+      final data = await auth.supabase
+        .from('mata_kuliah')
+        .select();
+      var res = <MataKuliahPraktikumModel>[];
+      data.forEach((item) => res.add(MataKuliahPraktikumModel.fromJson(item)));
+      return res;
+    } on PostgrestException catch (error) {
+      alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
+    } catch (error) {
+      alertDialog('Unexpected error', '$error');
+    }
+    return null;
+  }
 }
 
-class AdminSuratKeteranganPraktikumService extends AdminService {
+class AdminSuratKeteranganPraktikumService extends PDFService {
   Future<List<SuratKeteranganPraktikumModel>?> getAllSubmissions() async {
     try {
       final data = await auth.supabase
