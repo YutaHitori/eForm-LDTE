@@ -132,15 +132,30 @@ class StorageService {
   }
 
   Future<void> sync() async {
-    final outdated = cached!.lastSync == null ? null : await getOutdatedField(cached!.lastSync!);
-    print('(sync) $outdated');
-    if (outdated?.isEmpty == true) return; 
-    
-    final latest = await getLatestFieldData(outdated);
-    print('(sync) $latest');
+    final lastSync = cached!.lastSync;
+    List<MataKuliahPraktikumModel>? latest;
+    GlobalConfigModel? global;
 
-    if (latest != null) {
-      updateOutdatedField(latest);
+    if (lastSync == null) {
+      latest = await getLatestFieldData();
+      global = await getLatestGlobalConfig();
+    } else {
+      final outdated = await getOutdatedField(lastSync);
+      print('(sync) $outdated');
+
+      if (outdated.any((v) => v.type == 'global')) {
+        outdated.removeWhere((v) => v.type == 'global');
+        global = await getLatestGlobalConfig();
+      }
+
+      if (outdated.isNotEmpty) latest = await getLatestFieldData(outdated);
+    }
+
+    print('(sync) $latest');
+    print('(sync) $global');
+    if (latest != null) updateOutdatedField(latest);
+    if (global != null) updateGlobalConfig(global);
+    if (latest != null || global != null) {
       cached!.lastSync = DateTime.now();
       await save();
     }
@@ -158,7 +173,7 @@ class StorageService {
       List<LastUpdatedModel> list = [];
     try {
       final data = await auth.supabase
-        .from('last_updated')
+        .from('last_updated') 
         .select();
 
       data.forEach((v) {
@@ -197,7 +212,7 @@ class StorageService {
       if(outdated != null) {
         String filter = '';
         outdated.forEach((v) {
-          filter = '$filter,and(fakultas.eq.${v.fakultas!},is_praktikum.eq.${v.isPraktikum!})';
+          filter = '$filter,and(fakultas.eq.${v.fakultas!},is_praktikum.eq.${v.type == 'praktikum'})';
         });
         filter = filter.substring(1);
         query = query.or(filter);
@@ -231,6 +246,29 @@ class StorageService {
       );
     }
     cached!.mataKuliahPraktikum.addAll(latest);
+  }
+
+  Future<void> updateGlobalConfig(GlobalConfigModel global) async {
+    cached!.globalConfig = global;
+  }
+
+  Future<GlobalConfigModel?> getLatestGlobalConfig() async {
+    try {
+      var data = await auth.supabase
+        .from('global')
+        .select()
+        .limit(1)
+        .single();
+
+      print('(getLatestGlobalConfig) $data');
+
+      return GlobalConfigModel.fromJson(data);
+    } on PostgrestException catch (error) {
+      alertDialog('PostgrestException', '(getLatestGlobalConfig) PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
+    } catch (error) {
+      alertDialog('Unexpected error', '(getLatestGlobalConfig) $error');
+    }
+    return null;
   }
 }
 

@@ -41,13 +41,12 @@ class SuratKeteranganPraktikumModel {
 } 
 
 class LastUpdatedModel {
-  String? fakultas;
-  bool? isPraktikum;
+  String? fakultas, type;
   DateTime? timestamp;
-
+  
   LastUpdatedModel.fromJson(Map<String, dynamic> json) {
     fakultas = json['fakultas'];
-    isPraktikum = json['type'] == 'praktikum';
+    type = json['type'];
     timestamp = DateTime.parse(json['updated_at']);
   }
 }

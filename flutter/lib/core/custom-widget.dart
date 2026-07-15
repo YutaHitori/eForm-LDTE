@@ -315,6 +315,8 @@ class SortRow extends StatelessWidget {
             children: [
               Text('Last Sync', textScaleFactor: 1.1,),
               Text('${storage.cached?.lastSync}', textScaleFactor: 0.9,),
+              Text('\n'),
+              Text('App version 0.3.1 build 16'),
             ],
           ),
         ),
