@@ -1,7 +1,7 @@
 name: ldte_stei_itb
 description: "Website pembuatan berbagai formulir Lab Dasar Sekolah Teknik Elektro dan Informatika Institut Teknologi Bandung"
 publish_to: 'none'
-version: 0.3.1+16
+version: 0.3.1+17
 
 environment:
   sdk: ^3.10.7

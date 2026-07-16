@@ -335,13 +335,13 @@ class SuratKeteranganPraktikumController extends GetxController {
   }
 
   void submit() async {
-    //if (!checkEmptyFields()) return;
+    if (!checkEmptyFields()) return;
     isLoading.value = true;
     message.value = 'Uploading Image...';
-    final url = true; //await service.uploadImage(bukti.value!);
+    final url = await service.uploadImage(bukti.value!);
     if (url != null) {
       message.value = 'Inserting Data...';
-      final isSuccess = true; //await service.submitForm({ 'bukti': url, ...await form }); 
+      final isSuccess = await service.submitForm({ 'bukti': url, ...await form }); 
       if (isSuccess) {
         message.value = 'Success!';
         alertDialog(
@@ -365,7 +365,7 @@ class SuratKeteranganPraktikumController extends GetxController {
               ),
             ),
           ),
-          dismissible: true || false,
+          dismissible: false,
           cancelAction: () {
             Get.back();
             Get.offAllNamed('/');
@@ -382,7 +382,7 @@ class SuratKeteranganPraktikumController extends GetxController {
       } else message.value = 'Failed (Retry)';
     } else message.value = 'Failed (Retry)';
     isLoading.value = false;
-    Future.delayed(Duration(seconds: 3), () => message.value = null);
+    Future.delayed(Duration(seconds: 3), message.value = null);
   }
 } 
 
