@@ -1,23 +1,20 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:ldte_stei_itb/hive/hive_registrar.g.dart';
-import 'package:ldte_stei_itb/homepage/admin.dart';
-import 'package:ldte_stei_itb/core/custom-widget.dart';
-import 'package:ldte_stei_itb/core/middleware.dart';
-import 'package:ldte_stei_itb/form/surat_keterangan_praktikum/admin.dart';
-import 'package:ldte_stei_itb/form/surat_keterangan_praktikum/form.dart';
-import 'package:ldte_stei_itb/form/peminjaman_peralatan/form.dart';
-import 'package:ldte_stei_itb/homepage/homepage.dart';
+import 'package:ldte_stei_itb/misc/widget.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:ldte_stei_itb/homepage/login.dart';
 import 'package:ldte_stei_itb/misc/global.dart';
-import 'package:url_strategy/url_strategy.dart';
+import 'package:ldte_stei_itb/misc/router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 
 void main() async {
-  if (kIsWeb) setPathUrlStrategy();
+  if (kIsWeb) usePathUrlStrategy();
+
+  GoRouter.optionURLReflectsImperativeAPIs = true;
+
   WidgetsFlutterBinding.ensureInitialized();
 
   initializeDateFormatting('id_ID');
@@ -31,21 +28,25 @@ void main() async {
   );
   auth.listenAuthChange();
 
-  storage.initialize();
+  await storage.initialize();
 
   runApp(
-    GetMaterialApp(
-      theme: appTheme,
+    MaterialApp.router(
+      routerConfig: router,
+      // builder: (context, child) => LayoutBuilder(
+      //   builder:(context, constraints) {
+      //     debounceCallback(() {
+      //       Future(() { 
+      //         final double uiScale = Get.isRegistered<SettingsController>() ? Get.find<SettingsController>().uiScale.value : preference.uiScale;
+      //         ScaledWidgetsFlutterBinding.instance.scaleFactor = 
+      //           (size) => (size.width /  (Get.width > (432) ? Get.width : 432)) * uiScale;
+      //       });
+      //     });
+      //     return child!;
+      //   }
+      // ), 
       title: 'LDTE STEI ITB',
-      initialRoute: '/',
-      getPages: [
-        GetPage(name: '/', page: () => Homepage()),
-        GetPage(name: '/form/pinjam', page: () => Pinjam()),
-        GetPage(name: '/form/keterangan', page: () => SuratKeteranganPraktikum()),
-        GetPage(name: '/login', page: () => Login(), middlewares: [ AuthMiddleware(reqLogin: false) ]),
-        GetPage(name: '/admin', page: () => Admin(), middlewares: [ AuthMiddleware() ]),
-        GetPage(name: '/admin/keterangan', page: () => AdminSuratKeteranganPraktikum(), middlewares: [ AuthMiddleware() ]),
-      ],
+      theme: appTheme,
     ),
   );
 }

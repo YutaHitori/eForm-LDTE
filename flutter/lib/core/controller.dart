@@ -5,6 +5,9 @@ import 'package:dropdown_flutter/custom_dropdown.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ldte_stei_itb/core/model.dart';
 import 'package:ldte_stei_itb/core/service.dart';
+import 'package:ldte_stei_itb/homepage/admin.dart';
+import 'package:ldte_stei_itb/homepage/homepage.dart';
+import 'package:ldte_stei_itb/homepage/login.dart';
 import 'package:ldte_stei_itb/misc/extension.dart';
 import 'package:ldte_stei_itb/misc/function.dart';
 import 'package:ldte_stei_itb/misc/global.dart';
@@ -12,6 +15,8 @@ import 'package:intl/intl.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:go_router/go_router.dart';
+import "package:universal_html/universal_html.dart" as html;
 
 bool get canPop => Get.key.currentState?.canPop() ?? false;
 
@@ -32,7 +37,7 @@ class PermissionController {
       alertDialog(
         'Permission Request', 'Allow our app to Open Camera',
         cancelAction: () {
-          Get.back();
+          currentContext?.pop();
         },
         confirmAction: () async {
           if(await openAppSettings()) {
@@ -40,7 +45,7 @@ class PermissionController {
             listen = AppLifecycleListener(onResume: () async {
               listen.dispose();
               if (await Permission.camera.isGranted) {
-                Get.back();
+                currentContext?.pop();
                 onPermanentlyDeniedGranted();
               }
             });
@@ -55,13 +60,38 @@ class PermissionController {
   }
 }
 
-class HomePageController extends GetxController {
+class NavigationController extends GetxController {
+  var isSyncing = false.obs;
+  var lastSync = Rxn<DateTime>(null);
   var isLoggedIn = auth.isLoggedIn.obs;
+
+  final Map<String, String> title = {
+    '/': 'Homepage',
+    '/login': 'Login',
+    '/admin': 'Admin',
+  };
+
+  final Map<String, Widget> pages = {
+    '/': Homepage(),
+    '/login': Login(),
+    '/admin': Admin(),
+  };
 
   @override
   void onInit() {
     super.onInit();
   }
+
+  void navigateToPage(String route, [BuildContext? context]) {
+    if (route == NamedRoute.login) {
+      if (Get.isRegistered<LoginController>()) Get.find<LoginController>().resetValue();
+    }
+    if (canPop && context != null) Navigator.pop(context);
+    if (kIsWeb) html.window.history.pushState(null, '', route);
+    currentPage.value = route;
+  }
+  
+  var currentPage = RxnString(null);
 }
 
 class LoginController extends GetxController {
@@ -118,13 +148,13 @@ class PinjamController extends GetxController {
   final startDateC = TextEditingController();
   final endDateC = TextEditingController();
 
-  Future<void> selectDateStart(BuildContext context) async {
-    final picked = await DateTimePickerService().selectDate(context, initial: startDateC.text.toDateTime(), helpText: "Tanggal Peminjaman");
+  Future<void> selectDateStart() async {
+    final picked = await DateTimePickerService().selectDate(initial: startDateC.text.toDateTime(), helpText: "Tanggal Peminjaman");
     if (picked != null) startDateC.text = picked.toDateString();
   }
 
-  Future<void> selectDateEnd(BuildContext context) async {
-    final picked = await DateTimePickerService().selectDate(context, initial: endDateC.text.toDateTime(), helpText: "Tanggal Pengembalian");
+  Future<void> selectDateEnd() async {
+    final picked = await DateTimePickerService().selectDate(initial: endDateC.text.toDateTime(), helpText: "Tanggal Pengembalian");
     if (picked != null) endDateC.text = picked.toDateString();
   }
 
@@ -158,7 +188,7 @@ class PinjamController extends GetxController {
   }
 
   void previewKtp() {
-    service.imagePicker.previewImage(ktp);
+    service.imagePicker.previewImage(ktp.value!);
   }
 
   void resetKtp() {
@@ -170,7 +200,7 @@ class PinjamController extends GetxController {
   }
 
   void previewKtm() {
-    service.imagePicker.previewImage(ktm);
+    service.imagePicker.previewImage(ktm.value!);
   }
 
   void resetKtm() {
@@ -180,18 +210,20 @@ class PinjamController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
+    service.initWorker();
     await service.imagePicker.retrieveLostData(ktm, key: 'ktm');
     await service.imagePicker.retrieveLostData(ktp, key: 'ktp');
+  }
+
+  @override
+  void onClose() {
+    service.closeWorker();
+    super.onClose();
   }
   
   void setProdi() {
     prodiC.value = null;
     prodiList.value = getAvailableProdi(fakultasC.value);
-  }
-
-  void reset(TextEditingController date) {
-    date.text = '';
-    Get.back(closeOverlays: true);
   }
 
   void pinjam() async {
@@ -208,8 +240,8 @@ class SuratKeteranganPraktikumController extends GetxController {
   var message = RxnString(null);
 
   final service = SuratKeteranganPraktikumService();
-  List<String> matkulList = storage.cached!.formatedMataKuliah();
-  List<String> praktikumList = storage.cached!.formatedPraktikum();
+  List<String> get matkulList => storage.cached.formatedMataKuliah();
+  List<String> get praktikumList => storage.cached.formatedPraktikum();
 
   @override
   void onInit() async {
@@ -217,21 +249,21 @@ class SuratKeteranganPraktikumController extends GetxController {
     await service.imagePicker.retrieveLostData(bukti);
   }
 
-  Future<void> selectDate(BuildContext context) async {
-    final picked = await DateTimePickerService().selectDate(context, initial: dateC.text.toDateTime(), helpText: "Tanggal Praktikum");
+  Future<void> selectDate() async {
+    final picked = await DateTimePickerService().selectDate(initial: dateC.text.toDateTime(), helpText: "Tanggal Praktikum");
     if (picked != null) dateC.text = picked.toDateString();
   }
 
-  Future<void> selectTimeStart(BuildContext context) async {
-    final picked = await DateTimePickerService().selectTime(context, initial: timeStartC.value, helpText: "Waktu Mulai Praktikum");
+  Future<void> selectTimeStart() async {
+    final picked = await DateTimePickerService().selectTime(initial: timeStartC.value, helpText: "Waktu Mulai Praktikum");
     if (picked != null) {
       if (timeEndC.value != null && picked.isAfter(timeEndC.value!)) return snackbar('Error', 'Waktu Mulai Tidak Bisa Lebih Dari Waktu Selesai');
       timeStartC.value = picked;
     }
   }
 
-  Future<void> selectTimeEnd(BuildContext context) async {
-    final picked = await DateTimePickerService().selectTime(context, initial: timeEndC.value, helpText: "Waktu Selesai Praktikum");
+  Future<void> selectTimeEnd() async {
+    final picked = await DateTimePickerService().selectTime(initial: timeEndC.value, helpText: "Waktu Selesai Praktikum");
     if (picked != null) {
       if (timeStartC.value != null && picked.isBefore(timeStartC.value!)) return snackbar('Error', 'Waktu Selesai Tidak Bisa Kurang Dari Waktu Mulai');
       timeEndC.value = picked;
@@ -287,16 +319,11 @@ class SuratKeteranganPraktikumController extends GetxController {
   }
 
   void previewImage() {
-    service.imagePicker.previewImage(bukti);
+    service.imagePicker.previewImage(bukti.value!);
   }
 
   void resetImage() {
     service.imagePicker.resetImage(bukti);
-  }
-
-  void reset(TextEditingController date) {
-    date.text = '';
-    Get.back(closeOverlays: true);
   }
 
    bool checkEmptyFields() {
@@ -346,35 +373,46 @@ class SuratKeteranganPraktikumController extends GetxController {
         message.value = 'Success!';
         alertDialog(
           'Form Submited!', null,
+          width: 360,
           message: Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: RichText(
               text: TextSpan(
                 children: [
-                  TextSpan(text: 'Data telah berhasil direkam. Silahkan melapor ke admin melalui link berikut: '),
-                  WidgetSpan(
-                    child: GestureDetector(onTap: () async {
-                      final Uri uri = Uri.parse('https://line.me/R/oaMessage/%40kiy3574q/?hello%20world%21');
-                      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-                        snackbar('Error!', 'Could not launch $uri');
-                      }
-                    }, child: Text('OA Line LDTE', style: TextStyle(color: Colors.blue),)),
+                  TextSpan(
+                    text: 'Data telah berhasil direkam. Silahkan melapor ke admin melalui link berikut: ',
+                    style: TextStyle(color: Colors.white)
                   ),
-                  TextSpan(text: '.'),
+                  WidgetSpan(
+                    child: Transform.translate(
+                      offset: Offset(0, 2),
+                      child: InkWell(
+                        onTap: () async {
+                          final Uri uri = Uri.parse('https://line.me/R/oaMessage/%40kiy3574q/?hello%20world%21');
+                          if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                            snackbar('Error!', 'Could not launch $uri');
+                          }
+                        }, 
+                        child: Text('OA Line LDTE', style: TextStyle(color: Colors.blue))
+                      ),
+                    ),
+                  ),
+                  TextSpan(
+                    text: '.',
+                    style: TextStyle(color: Colors.white)
+                  ),
                 ],
               ),
             ),
           ),
           dismissible: false,
           cancelAction: () {
-            Get.back();
-            Get.offAllNamed('/');
-            Get.toNamed('/form/keterangan');
+            currentContext?.go('/');
+            currentContext?.push('/surat-keterangan');
           },
           cancelText: 'Submit another form',
           confirmAction: () {
-            Get.back();
-            Get.offAllNamed('/');
+            currentContext?.go('/');
           },
           confirmText: 'Close'
         );
@@ -400,7 +438,7 @@ class AdminController extends GetxController {
   
   void signOut() async {
     isLoading.value = true;
-    Get.back();
+    currentContext?.pop();
     await auth.supabase.auth.signOut();
     isLoading.value = false;
   }
@@ -415,24 +453,34 @@ class GlobalSettingController extends GetxController {
 class AdminSuratKeteranganPraktikumController extends SuratKeteranganPraktikumController {
   final admin = AdminSuratKeteranganPraktikumService();
 
+  var isExporting = false.obs;
   var submissions = <SuratKeteranganPraktikumModel>[];
+  var loadingIndicator = <int, bool>{};
+  var isSelected = <int, bool>{};
   var QFSPedSubmissions = RxList<SuratKeteranganPraktikumModel>([]);
 
   @override
   void onInit() {
     super.onInit();
+    admin.initWorker();
     getAllSubmissions();
+  }
+
+  @override
+  void onClose() {
+    admin.closeWorker();
+    super.onClose();
   }
 
   var pageNum = 1.obs;
   var pageC = NumberPaginatorController();
 
-  final startDateC = TextEditingController(text: today.subtract(Duration(days: 7)).toDateString());
+  final startDateC = TextEditingController(text: today.subtract(Duration(days: 30)).toDateString());
   final endDateC = TextEditingController(text: todayEnd.toDateString());
   List<DateTime> get dateTimeList => [startDateC.text.toDateTime() ?? today, endDateC.text.toDateTime()?.add(Duration(days: 1)).subtract(Duration(seconds: 1)) ?? today];
 
   Future<void> selectDateStart(BuildContext context) async {
-    final picked = await DateTimePickerService().selectDate(context, initial: startDateC.text.toDateTime(), helpText: "Tanggal Peminjaman");
+    final picked = await DateTimePickerService().selectDate(initial: startDateC.text.toDateTime(), helpText: "Tanggal Peminjaman");
     if (picked != null) {
       startDateC.text = picked.toDateString();
       qfsp.onChanged();
@@ -440,7 +488,7 @@ class AdminSuratKeteranganPraktikumController extends SuratKeteranganPraktikumCo
   }
 
   Future<void> selectDateEnd(BuildContext context) async {
-    final picked = await DateTimePickerService().selectDate(context, initial: endDateC.text.toDateTime(), helpText: "Tanggal Pengembalian");
+    final picked = await DateTimePickerService().selectDate(initial: endDateC.text.toDateTime(), helpText: "Tanggal Pengembalian");
     if (picked != null) {
       endDateC.text = picked.toDateString();
       qfsp.onChanged();
@@ -456,19 +504,21 @@ class AdminSuratKeteranganPraktikumController extends SuratKeteranganPraktikumCo
       ),
     ],
     onChanged: ([String? itemKey, String? filterKey]) {
-      var queried = service.QFSP.query(submissions, qfsp);
-      var filtered = service.QFSP.filter(queried, itemKey, filterKey, dateTimeList, qfsp);
+      var queried = service.QFSP.query(submissions, qfsp, (v) => [v.nama.toFormatedString(), v.nim.toFormatedString()]);
+      var filtered = service.QFSP.filter(queried, qfsp, itemKey, filterKey, dateTimeList, (v) => v.createdAt);
       var sorted = service.QFSP.sort(filtered, qfsp);
       var paged = service.QFSP.page(sorted, qfsp, pageNum);
       QFSPedSubmissions.value = paged.cast<SuratKeteranganPraktikumModel>();
     },
-    pageC: pageC
+    pageC: pageC,
   );
 
   Future<void> getAllSubmissions() async {
     isLoading.value = true;
     final res = await admin.getAllSubmissions();
     if (res != null) {
+      loadingIndicator = Map<int, bool>.fromEntries(res.map((v) => MapEntry(v.id, false)));
+      isSelected = Map<int, bool>.fromEntries(res.map((v) => MapEntry(v.id, false)));
       submissions = res;
       qfsp.onChanged();
     }
@@ -476,10 +526,60 @@ class AdminSuratKeteranganPraktikumController extends SuratKeteranganPraktikumCo
   }
 
   void preview(SuratKeteranganPraktikumModel data) async {
-    isLoading.value = true;
+    isExporting.value = true;
+    QFSPedSubmissions.refresh();
     final savedFile = await admin.compilePDF(data);
-    final fileName = "Surat_Keterangan_praktikum-${DateTime.now().millisecondsSinceEpoch}.pdf";
-    admin.preview(savedFile, fileName);
-    isLoading.value = false;
+    if (savedFile != null) {
+      final fileName = "Surat_Keterangan_praktikum-${DateTime.now().millisecondsSinceEpoch}.pdf";
+      admin.preview(savedFile, fileName);
+    }
+    isExporting.value = false;
+    QFSPedSubmissions.refresh();
+  }
+
+  void selectItem(int id, bool state) {
+    isSelected[id] = state;
+    QFSPedSubmissions.refresh();
+  }
+
+  void selectPageItem(bool? state) {
+    QFSPedSubmissions.value.forEach((v) => isSelected[v.id] = state ?? false);
+    Future(() => QFSPedSubmissions.refresh());
+  }
+
+  void setStatus(int id, String status) async {
+    loadingIndicator[id] = true;
+    QFSPedSubmissions.refresh();
+    final res = await admin.updateStatus([id], status);
+    loadingIndicator[id] = false;
+    if (res != null) updateSubmission(res);
+  }
+
+  void setSelectedStatus(String status) {
+    final ids = isSelected.entries.where((e) => e.value).map((e) => e.key).toList();
+    alertDialog(
+      'Confirmation', 
+      'You are going to update ${ids.length} row of status data to $status.\n'
+      'Are you completely sure? this action cannot be undone.',
+      confirmAction: () async {
+        ids.forEach((v) => loadingIndicator[v] = true);
+        QFSPedSubmissions.refresh();
+        await Future.delayed(Duration(seconds: 2));
+        final res = await admin.updateStatus(ids, status);
+        ids.forEach((v) {
+          loadingIndicator[v] = false;
+          isSelected[v] = false;
+        });
+        if (res != null) updateSubmission(res);
+      },
+    );
+  }
+
+  void updateSubmission(List<SuratKeteranganPraktikumModel> newData) {
+    for (final item in newData) {
+      final index = submissions.indexWhere((v) => v.id == item.id);
+      if (index != -1) submissions[index] = item;
+    }
+    qfsp.onChanged();
   }
 }

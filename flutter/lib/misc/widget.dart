@@ -1,10 +1,10 @@
-import 'package:auto_hide_keyboard/auto_hide_keyboard.dart';
 import 'package:dropdown_flutter/custom_dropdown.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_side_menu/flutter_side_menu.dart';
+import 'package:get/get.dart';
 import 'package:get/route_manager.dart';
-import 'package:ldte_stei_itb/core/controller.dart';
 import 'package:ldte_stei_itb/core/service.dart';
 import 'package:ldte_stei_itb/misc/function.dart';
 import 'package:ldte_stei_itb/misc/global.dart';
@@ -14,6 +14,8 @@ class Assets {
 }
 
 ThemeData appTheme = ThemeData(
+  visualDensity: VisualDensity.standard,
+
   useMaterial3: true,
   brightness: Brightness.dark,
   scaffoldBackgroundColor: const Color(0xFF121212),
@@ -124,8 +126,8 @@ ThemeData appTheme = ThemeData(
   dividerColor: const Color(0xFF2C2C2C),
 );
 
-class AutoHideTextField extends StatelessWidget {
-  const AutoHideTextField({
+class CustomTextField extends StatelessWidget {
+  const CustomTextField({
     super.key,
     this.labelText,
     this.errorText,
@@ -135,12 +137,12 @@ class AutoHideTextField extends StatelessWidget {
     this.decoration = const InputDecoration(),
     this.keyboardType,
     this.obscureText,
-    this.inputFormatters,
     this.canError = true,
     this.onChanged,
-    this.onSubmitted,
     this.enabled = true,
+    this.onSubmitted,
     this.autofillHints = const <String>[],
+    this.inputFormatters,
   });
 
   final String? labelText;
@@ -151,52 +153,50 @@ class AutoHideTextField extends StatelessWidget {
   final InputDecoration decoration;
   final TextInputType? keyboardType;
   final bool? obscureText;
-  final List<TextInputFormatter>? inputFormatters;
   final bool canError;
   final bool enabled;
-  final Function(String)? onChanged;
+  final void Function(String)? onChanged;
   final void Function(String)? onSubmitted;
   final Iterable<String>? autofillHints;
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   Widget build(BuildContext context) {
-    return AutoHideKeyboard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 4,
-        children: [
-          if (labelText != null) Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(labelText!, textScaleFactor: 1.02),
-              if (errorText != null) Text(
-                errorText!,
-                style: TextStyle(color: ColorScheme.dark().error)
-              ),
-            ]
-          ),
-          TextField(
-            controller: controller,
-            focusNode: focusNode,
-            maxLines: maxLines,
-            decoration: decoration.copyWith(
-              filled: true,
-              helperText: canError ? '': null,
-              errorText: errorText == null ? null : ''
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 4,
+      children: [
+        if (labelText != null) Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(labelText!, textScaleFactor: 1.02),
+            if (errorText != null) Text(
+              errorText!,
+              style: TextStyle(color: ColorScheme.dark().error)
             ),
-            inputFormatters: inputFormatters,
-            keyboardType: keyboardType,
-            onChanged: onChanged,
-            obscureText: obscureText ?? false,
-            onSubmitted: onSubmitted,
-            autofillHints: autofillHints,
+          ]
+        ),
+        TextField(
+          onTapOutside: (_) => FocusScope.of(context).unfocus(),
+          inputFormatters: inputFormatters,
+          controller: controller,
+          focusNode: focusNode,
+          maxLines: maxLines,
+          decoration: decoration.copyWith(
+            filled: true,
+            helperText: canError ? '' : null,
+            errorText: errorText == null ? null : ''
           ),
-        ],
-      ),
+          keyboardType: keyboardType,
+          onChanged: onChanged,
+          obscureText: obscureText ?? false,
+          onSubmitted: onSubmitted,
+          autofillHints: autofillHints,
+        ),
+      ],
     );
   }
 }
-
 
 class FilterRow extends StatelessWidget {
   const FilterRow({
@@ -289,59 +289,57 @@ class SortRow extends StatelessWidget {
   }
 }
 
-  Widget SideMenuNavigation(BuildContext context, String active, [bool isDesktop = false]) {
-    return SideMenu(
-      hasResizerToggle: isDesktop,
-      mode: isDesktop ? SideMenuMode.auto : SideMenuMode.open,
-      builder: (data) => SideMenuData(
-        header: Container(
-          padding: EdgeInsets.only(top: 48),
-          height: 200,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('LDTE STEI ITB', textScaleFactor: 1.4,),
-              SizedBox(height: 12),
-              Text('Welcome!', textScaleFactor: 1.2,),
-              Text(auth.isLoggedIn ? 'Logged in as ${auth.user?.email}' : 'User is not logged in')
-            ],
+  Widget SideMenuNavigation(BuildContext context, String active) {
+    return Container(
+      color: appTheme.canvasColor,
+      padding: EdgeInsets.symmetric(vertical: 32, horizontal: 8),
+      width: Get.width * 0.3,
+      constraints: BoxConstraints(maxWidth: 300, minWidth: 250),
+      child: SideMenu(
+        hasResizer: false,
+        hasResizerToggle: false,
+        mode: SideMenuMode.open,
+        builder: (data) => SideMenuData(
+          header: Padding(
+            padding: EdgeInsets.only(top: 52, bottom: 42),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('eForm LabDasar', textScaleFactor: 1.36,),
+                Text(auth.isLoggedIn ? 'Logged in as ${auth.user?.email}' : 'User not logged in', textScaleFactor: 0.92)
+              ],
+            ),
           ),
+          footer: Container(
+            padding: EdgeInsets.only(top: 12),
+            child: Obx(() => Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Last Sync'),
+                Text('${NC.lastSync.value}', textScaleFactor: 0.72,),
+                SizedBox(height: 8),
+                Text('App version 0.4.0 build 19', textScaleFactor: 0.92),
+              ],
+            ),
+          )),
+          items: [
+            SideMenuItemDataTitle(title: 'Page Navigation'),
+            SideMenuItemDataTile(
+              borderRadius: BorderRadius.circular(12),
+              isSelected: active == '/',
+              onTap: active == '/' ? () {} : () => NC.navigateToPage('/', context),
+              title: 'Homepage',
+              icon: const Icon(Icons.home_rounded),
+            ),
+            SideMenuItemDataTile(
+              borderRadius: BorderRadius.circular(12),
+              isSelected: active == '/admin' || active == '/login',
+              onTap: active == '/admin' || active == '/login' ? () {} : () => NC.navigateToPage(auth.isLoggedIn ? '/admin' : '/login', context),
+              title: auth.isLoggedIn ? 'Admin Panel' : 'Login',
+              icon: Icon(auth.isLoggedIn ? Icons.person_rounded : Icons.login_rounded),
+            ),
+          ],
         ),
-        footer: Container(
-          padding: EdgeInsets.only(top: 48),
-          height: 200,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('Last Sync', textScaleFactor: 1.1,),
-              Text('${storage.cached?.lastSync}', textScaleFactor: 0.9,),
-              Text('\n'),
-              Text('App version 0.3.1 build 16'),
-            ],
-          ),
-        ),
-        items: [
-          SideMenuItemDataTitle(title: 'Navigation'),
-          SideMenuItemDataTile(
-            borderRadius: BorderRadius.circular(12),
-            isSelected: active == 'homepage',
-            onTap: active == 'homepage' ? () {} : () {
-              canPop ? Navigator.pop(context) : null;
-              Future.delayed(Duration(milliseconds: 200), () => Get.offAllNamed('/'));
-            },
-            title: 'Homepage',
-            icon: const Icon(Icons.home_rounded),
-          ),
-          SideMenuItemDataTile(
-            isSelected: active == 'admin' || active == 'login',
-            onTap: active == 'admin' || active == 'login' ? () {} : () {
-              canPop ? Navigator.pop(context) : null;
-              Future.delayed(Duration(milliseconds: 200), () => auth.isLoggedIn ? Get.offNamed('/admin') : Get.offNamed('/login'));
-            },
-            title: auth.isLoggedIn ? 'Admin Panel' : 'Login',
-            icon: Icon(auth.isLoggedIn ? Icons.person_rounded : Icons.login_rounded),
-          ),
-        ],
       ),
     );
   }

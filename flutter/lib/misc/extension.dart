@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 
 extension StringExtensions on String? {
@@ -29,9 +30,14 @@ extension DateTimeExtension on DateTime {
   }
   
   String toDateString() {
-    return this.toString().substring(0,10).replaceAll('-', '/');
+    return toString().substring(0,10).replaceAll('-', '/');
+  }
+
+  String toDateTimeFormatedString() {
+    return DateFormat('EEEE, dd/MM/yyyy - HH:mm', 'id_ID').format(this);
   }
 }
+
 
 extension DoubleExtension on double {
   double get cm => this * PdfPageFormat.cm;
@@ -48,5 +54,11 @@ extension IntExtension on int {
 extension TimeOfDayExtension on TimeOfDay {
   String toFormatedString() {
     return '${hour < 10 ? '0$hour' : hour}:${minute < 10 ? '0$minute' : minute}';
+  }
+}
+
+extension ListExtension on List {
+  String toFormatedString() {
+    return '$this'.substring(1, '$this'.length - 1);
   }
 }

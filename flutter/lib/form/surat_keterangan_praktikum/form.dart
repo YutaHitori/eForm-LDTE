@@ -1,12 +1,11 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:dropdown_flutter/custom_dropdown.dart';
 import 'package:get/get.dart';
 import 'package:ldte_stei_itb/misc/extension.dart';
 import 'package:ldte_stei_itb/core/controller.dart';
-import 'package:ldte_stei_itb/core/custom-widget.dart';
-import 'package:ldte_stei_itb/misc/matkul.dart';
+import 'package:ldte_stei_itb/misc/global.dart';
+import 'package:ldte_stei_itb/misc/widget.dart';
 
 class SuratKeteranganPraktikum extends StatelessWidget {
   const SuratKeteranganPraktikum({super.key});
@@ -34,7 +33,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
 - 
               ''',),
               for (var i = 0; i < c.namaC.value.length; i++) ...[
-                AutoHideTextField(
+                CustomTextField(
                   controller: c.namaC.value[i],
                   labelText: 'Nama ${c.namaC.value.length == 1 ? '' : i+1}',
                   errorText: c.namaE.value[i],
@@ -44,7 +43,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                   spacing: 12,
                   children: [
                     Expanded(
-                      child: AutoHideTextField(
+                      child: CustomTextField(
                         controller: c.nimC.value[i],
                         labelText: 'Nim ${c.namaC.value.length == 1 ? '' : i+1}',
                         errorText: c.nimE.value[i],
@@ -66,15 +65,12 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                 ),
                 if (i + 1 < c.namaC.value.length) Divider()
               ],
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: kIsWeb ? 8 : 0),
-                child: ElevatedButton.icon(onPressed: c.namaC.length >= 4 ? null : () {
-                  c.namaC.add(TextEditingController());
-                  c.nimC.add(TextEditingController());
-                  c.namaE.add(null);
-                  c.nimE.add(null);
-                }, icon: Icon(Icons.add), label: Text('Add'), style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.secondary)),
-              ),
+              ElevatedButton.icon(onPressed: c.namaC.length >= 4 ? null : () {
+                c.namaC.add(TextEditingController());
+                c.nimC.add(TextEditingController());
+                c.namaE.add(null);
+                c.nimE.add(null);
+              }, icon: Icon(Icons.add), label: Text('Add'), style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.secondary)),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -83,6 +79,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                 ],
               ),
               DropdownFlutter<String>.search(
+                noResultFoundText: "Mata kuliah tidak ditemukan, silahkan pilih opsi 'Lainnya...'",
                 controller: c.matkul,
                 listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
                 decoration: CustomDropdownDecoration(
@@ -92,15 +89,15 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                   closedBorder: c.matkulE.value != null ? Border.all(color: appTheme.colorScheme.error) : null
                 ),
                 excludeSelected: false,
-                items: ['Lainnya...'] + c.matkulList,
-                hintText: 'select',
+                items: ['Lainnya...'] + (NC.isSyncing.value ? [] : c.matkulList),
+                hintText: NC.isSyncing.value ? 'Syncing in progress, please wait...' : 'select',
                 onChanged: (v) => c.isMatkulLainnya.value = v == 'Lainnya...',
               ),
               if (c.isMatkulLainnya.value) Row(
                 spacing: 12,
                 children: [
                   Expanded(
-                    child: AutoHideTextField(
+                    child: CustomTextField(
                       controller: c.kodeMatkul,
                       labelText: 'Kode MatKul',
                       errorText: c.kodeMatkulE.value,
@@ -111,7 +108,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                   ),
                   Expanded(
                     flex: 2,
-                    child: AutoHideTextField(
+                    child: CustomTextField(
                       labelText: 'Nama MatKul',
                       controller: c.namaMatkul,
                       errorText: c.namaMatkulE.value,
@@ -140,6 +137,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                         ),
                         DropdownFlutter<String>.search(
                           controller: c.praktikum,
+                          noResultFoundText: "Praktikum tidak ditemukan, silahkan pilih opsi 'Lainnya...'",
                           listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
                           decoration: CustomDropdownDecoration(
                             searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.inputDecorationTheme.fillColor),
@@ -148,41 +146,44 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                             closedBorder: c.praktikumE.value != null ? Border.all(color: appTheme.colorScheme.error) : null
                           ),
                           excludeSelected: false,
-                          items: ['Lainnya...'] + c.praktikumList,
-                          hintText: 'select',
+                          items: ['Lainnya...'] + (NC.isSyncing.value ? [] : c.praktikumList),
+                          hintText: NC.isSyncing.value ? 'Syncing in progress, please wait...' : 'select',
                           onChanged: (v) => c.isPraktikumLainnya.value = v == 'Lainnya...',
                         ),
                       ],
                     ),
                   ),
-                  Expanded(
-                    child: Column(
-                      spacing: 4,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('Modul', textScaleFactor: 1.02,),
-                            if (c.modulE.value != null) Text('*required', style: TextStyle(color: ColorScheme.dark().error)),
-                          ],
-                        ),
-                        DropdownFlutter<int>(
-                          controller: c.modul,
-                          listItemBuilder: (context, item, isSelected, onItemSelect) => Text('$item', style: TextStyle(color: isSelected ? Colors.black : null),),
-                          decoration: CustomDropdownDecoration(
-                            closedFillColor: appTheme.inputDecorationTheme.fillColor,
-                            expandedFillColor: appTheme.inputDecorationTheme.fillColor,
-                            closedSuffixIcon: SizedBox(),
-                            expandedSuffixIcon: SizedBox(),
-                            closedBorder: c.modulE.value != null ? Border.all(color: appTheme.colorScheme.error) : null
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: 120.0),
+                    child: Expanded(
+                      child: Column(
+                        spacing: 4,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Modul', textScaleFactor: 1.02,),
+                              if (c.modulE.value != null) Text('*required', style: TextStyle(color: ColorScheme.dark().error)),
+                            ],
                           ),
-                          excludeSelected: false,
-                          items: List.generate(20, (i) => i + 1),
-                          hintText: 'X',
-                          onChanged: (v) {},
-                        ),
-                      ],
+                          DropdownFlutter<int>(
+                            controller: c.modul,
+                            listItemBuilder: (context, item, isSelected, onItemSelect) => Text('$item', style: TextStyle(color: isSelected ? Colors.black : null),),
+                            decoration: CustomDropdownDecoration(
+                              closedFillColor: appTheme.inputDecorationTheme.fillColor,
+                              expandedFillColor: appTheme.inputDecorationTheme.fillColor,
+                              closedSuffixIcon: SizedBox(),
+                              expandedSuffixIcon: SizedBox(),
+                              closedBorder: c.modulE.value != null ? Border.all(color: appTheme.colorScheme.error) : null
+                            ),
+                            excludeSelected: false,
+                            items: List.generate(20, (i) => i + 1),
+                            hintText: 'X',
+                            onChanged: (v) {},
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -191,7 +192,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                 spacing: 12,
                 children: [
                   Expanded(
-                    child: AutoHideTextField(
+                    child: CustomTextField(
                       controller: c.kodePraktikum,
                       labelText: 'Kode Praktikum',
                       errorText: c.kodePraktikumE.value,
@@ -202,7 +203,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                   ),
                   Expanded(
                     flex: 2,
-                    child: AutoHideTextField(
+                    child: CustomTextField(
                       controller: c.namaPraktikum,
                       labelText: 'Nama Praktikum',
                       errorText: c.namaPraktikumE.value,
@@ -213,14 +214,14 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                   ),
                 ],
               ),
-              AutoHideTextField(
+              CustomTextField(
                 controller: c.dateC,
                 labelText: 'Tanggal Praktikum',
                 errorText: c.dateE.value,
                 keyboardType: TextInputType.datetime,
                 decoration: InputDecoration(
                   hintText: 'yyyy/mm/dd',
-                  suffixIcon: IconButton(onPressed: () => c.selectDate(context), icon: Icon(Icons.date_range))
+                  suffixIcon: IconButton(onPressed: c.selectDate, icon: Icon(Icons.date_range))
                 ),
                 onChanged: (v) {
                   if (v.length > 10) c.dateC.text = v.substring(0, 10);
@@ -242,7 +243,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                       child: Card(
                         color: c.timeStartE.value != null ? ColorScheme.dark().error : null,
                         child: InkWell(
-                          onTap: () => c.selectTimeStart(context),
+                          onTap: c.selectTimeStart,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -257,7 +258,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                       child: Card(
                         color: c.timeEndE.value != null ? ColorScheme.dark().error : null,
                         child: InkWell(
-                          onTap: () => c.selectTimeEnd(context),
+                          onTap: c.selectTimeEnd,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [

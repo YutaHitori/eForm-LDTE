@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ldte_stei_itb/core/controller.dart';
-import 'package:ldte_stei_itb/core/custom-widget.dart';
+import 'package:ldte_stei_itb/misc/widget.dart';
 
 class Login extends StatelessWidget {
   const Login({super.key});
@@ -9,17 +9,10 @@ class Login extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final LoginController c = Get.put(LoginController());
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Login')
-      ),
-      drawer: Get.width.isGreaterThan(800) ? null : SideMenuNavigation(context, 'login'),
-      body: LayoutBuilder(
-        builder: (context, constraints) => Row(
+    return Row(
           children: [
-            if (Get.width.isGreaterThan(800)) SideMenuNavigation(context, 'login'),
-            Expanded(
-              child: Obx(() => c.isLoading.value
+            Obx(() => Expanded(
+              child: c.isLoading.value
                 ? Center(child: CircularProgressIndicator()) 
                 : Column(
                   spacing: 24,
@@ -31,14 +24,14 @@ class Login extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            AutoHideTextField(
+                            CustomTextField(
                               labelText: 'Email',
                               errorText: c.emailE.value,
                               controller: c.email,
                               keyboardType: TextInputType.emailAddress,
                               autofillHints: const [AutofillHints.email],
                             ),
-                            AutoHideTextField(
+                            CustomTextField(
                               labelText: 'Password',
                               errorText: c.passwordE.value,
                               controller: c.password,
@@ -67,11 +60,8 @@ class Login extends StatelessWidget {
                     ),
                   ],
                 ),
-              ),
-            ),
+              )),
           ],
-        ),
-      ),
     );
   }
 }

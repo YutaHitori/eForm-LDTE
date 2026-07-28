@@ -1,7 +1,18 @@
 
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ldte_stei_itb/misc/extension.dart';
+import 'package:ldte_stei_itb/misc/global.dart';
+import "package:universal_html/universal_html.dart" as html;
+
+BuildContext? get currentContext => Get.key.currentContext;
+
+Future<void> hardRefresh() async {
+  if (kIsWeb) html.window.location.reload();
+}
 
 void phoneValidateFormatFocus(TextEditingController phone, FocusNode phoneFN, Rxn<String> phoneE) {
   String result = phone.text.trim();
@@ -33,7 +44,7 @@ void alertDialog(String title, String? subtitle, {double? height, double? width,
             children: [
               if (image != null) Image.asset(image, scale: 5, alignment: AlignmentGeometry.center,),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                padding: EdgeInsets.symmetric(vertical: 8.0),
                 child: subtitle != null ? Text(subtitle) : message,
               ),
             ],
@@ -186,3 +197,34 @@ Color? getColorFromSubmissionStatus(String? status) {
           ? Colors.red
           : null;
 }
+
+Future<bool> hasInternet([bool throwException = true]) async {
+    final isConnected = await connection.hasInternetAccess;
+    if (isConnected) return true;
+    for (int i = 0; i < 4; i++) {
+      await Future.delayed(Duration(milliseconds: 500));
+      final temp = await connection.hasInternetAccess;
+      if (temp) return true;
+    }
+    if (throwException) throw Exception('You are offline, Please check your internet connection and try again.');
+    return false;
+  }
+
+  T getFindPut<T>(T controller) {
+    return Get.isRegistered<T>() ? Get.find<T>() : Get.put(controller);
+  }
+
+  void closeAllDialog() {
+    if (currentContext != null) {
+      Navigator.of(currentContext!).popUntil((route) => route.settings.name != null || route.isFirst);
+    }
+  }
+
+  void debounceCallback(VoidCallback callback, [Timer? debounce, Duration duration = const Duration(milliseconds: 500)]) {
+   
+    if (debounce?.isActive ?? false) debounce?.cancel();
+    
+    debounce = Timer(duration, () {
+      callback();
+    });
+  }
