@@ -1,26 +1,35 @@
 import 'package:flutter/material.dart';
 
+class PeminjamanPeralatanModel {
+  late int id;
+  late String nama, nim, status;
+  late List<String> barang;
+  late List<int> banyak;
+  late DateTime mulai, akhir, createdAt;
+
+  PeminjamanPeralatanModel.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    nama = json['nama'];
+    nim = json['nim'];
+    mulai = DateTime.parse(json['mulai']);
+    akhir = DateTime.parse(json['akhir']);
+    barang = List<String>.from(json['barang']);
+    banyak = List<int>.from(json['banyak']);
+    createdAt = DateTime.parse(json['created_at']);
+    status = json['status'];
+  }
+
+  List<String> banyakBarang() {
+    return List.generate(barang.length, (i) => '${barang[i]} x${banyak[i]}');
+  }
+} 
+
 class SuratKeteranganPraktikumModel {
   late int id, modul;
   late String matkul, praktikum, bukti, status;
   late List<String> nama, nim;
   late DateTime date, createdAt;
   late TimeOfDay timeStart, timeEnd;
-
-  SuratKeteranganPraktikumModel({
-    required this.id,
-    required this.nama,
-    required this.nim,
-    required this.matkul,
-    required this.praktikum,
-    required this.modul,
-    required this.bukti,
-    required this.date,
-    required this.createdAt,
-    required this.timeStart,
-    required this.timeEnd,
-    required this.status
-  });
 
   SuratKeteranganPraktikumModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -53,13 +62,16 @@ class LastUpdatedModel {
 
 class GlobalConfigModel {
   String? nomorSurat;
+  String? lineOALDTE;
 
   GlobalConfigModel({
-    this.nomorSurat
+    this.nomorSurat,
+    this.lineOALDTE,
   });
 
   GlobalConfigModel.fromJson(Map<String, dynamic> json) {
     nomorSurat = json['nomor_surat'];
+    lineOALDTE = json['lineoa_ldte'];
   }
 }
 

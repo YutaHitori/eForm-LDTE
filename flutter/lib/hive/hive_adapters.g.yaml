@@ -29,7 +29,9 @@ types:
         index: 7
   GlobalConfigModel:
     typeId: 2
-    nextIndex: 1
+    nextIndex: 2
     fields:
       nomorSurat:
         index: 0
+      lineOALDTE:
+        index: 1

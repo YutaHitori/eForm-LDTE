@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:dropdown_flutter/custom_dropdown.dart';
@@ -23,8 +24,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:http/http.dart' as http;
-
+ 
 class PDFService {
   Future<pw.MemoryImage> pdfImage(String route) async {
     final ByteData bytes = await rootBundle.load(route);
@@ -37,9 +37,28 @@ class PDFService {
     return bytes.buffer.asUint8List();
   }
   
-  void preview(Uint8List savedFile, String fileName) async {
+  static void f(VoidCallback f) => f();
+  
+
+  void preview(Uint8List savedFile, String fileName, [Function(VoidCallback) customCallback = f, RxBool? isLoading]) async {
+    final action = Row(
+      spacing: 8,
+      children: [
+        Expanded(child: ElevatedButton.icon(
+          onPressed: isLoading?.value == true ? null : () => customCallback(() => printPdf(savedFile, fileName)), 
+          style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF8B2E3C)),
+          label: Text(isLoading?.value == true ? 'Loading' : 'Print'),
+          icon: isLoading?.value == true ? null : Icon(Icons.print_rounded),
+        )),
+        Expanded(child: ElevatedButton.icon(
+          onPressed: isLoading?.value == true ? null : () => customCallback(() => downloadPdf(savedFile, fileName)),
+          style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.tertiary),
+          label: Text(isLoading?.value == true ? 'Please wait' : 'Download'), 
+          icon: isLoading?.value == true ? null : Icon(Icons.download_rounded),
+        )),
+      ],
+    );
     Get.bottomSheet(
-      enableDrag: false,
       isScrollControlled: true,
       Container(
         decoration: BoxDecoration(
@@ -49,7 +68,12 @@ class PDFService {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Padding(padding: EdgeInsets.all(8), child: Text(fileName)),
+            Padding(padding: EdgeInsets.all(8), child: Column(
+              children: [
+                Text(fileName),
+                Text('Mohon periksa kesesuaian data yang telah diisi.'),
+              ],
+            )),
             Container(
               width: Get.width,
               constraints: BoxConstraints(
@@ -69,13 +93,8 @@ class PDFService {
             ),
             Padding(
               padding: const EdgeInsets.all(12.0),
-              child: Row(
-                spacing: 8,
-                children: [
-                  Expanded(child: ElevatedButton(onPressed: () => print(savedFile, fileName), child: Text('Print'), style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF8B2E3C)))),
-                  Expanded(child: ElevatedButton(onPressed: () => download(savedFile, fileName), child: Text('Download'), style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.tertiary))),
-                ],
-              ),
+              child: isLoading == null
+                ? action : Obx(() => action),
             ),
           ],
         ),
@@ -83,11 +102,11 @@ class PDFService {
     );
   }
 
-  void download(Uint8List savedFile, String fileName) async {
+  void downloadPdf(Uint8List savedFile, String fileName) async {
     await savePdf(savedFile, fileName);
   }
 
-  void print(Uint8List savedFile, String fileName) async {
+  void printPdf(Uint8List savedFile, String fileName) async {
     await Printing.layoutPdf(
       name: fileName,
       onLayout: (format) => savedFile,
@@ -142,7 +161,6 @@ class StorageService {
       NC.lastSync.value = cached.lastSync;
       sync();
     }
-    print(cached.lastSync);
   }
 
   Future<void> dispose() async {
@@ -165,7 +183,7 @@ class StorageService {
       global = await getLatestGlobalConfig();
     } else {
       final outdated = await getOutdatedField(lastSync);
-      print('(sync) $outdated');
+      print('outdated field : $outdated');
 
       if (outdated.any((v) => v.type == 'global')) {
         outdated.removeWhere((v) => v.type == 'global');
@@ -179,15 +197,15 @@ class StorageService {
       }
     }
 
-    print('(sync) $latest');
-    print('(sync) $global');
+    print('synced matkul data : $latest');
+    print('synced global settings : $global');
     if (latest != null) updateOutdatedField(latest);
     if (global != null) updateGlobalConfig(global);
     if (latest != null || global != null) {
       cached.lastSync = now;
       NC.lastSync.value = now;
       await save();
-      print(cached.lastSync);
+      print('device synced at : ${cached.lastSync}');
     }
 
     NC.isSyncing.value = false;
@@ -227,6 +245,21 @@ class StorageService {
     }
   }
 
+  Future<Uri?> getLineOALDTEUrl([String? message]) async {
+    var lineID = storage.cached.globalConfig.lineOALDTE;
+    if (lineID == null) {
+      await storage.sync();
+      lineID = storage.cached.globalConfig.lineOALDTE;
+      if (lineID == null) return null;
+    }
+    return Uri(
+      scheme: 'https',
+      host: 'line.me',
+      path: 'R/oaMessage/$lineID',
+      query: message == null ? null :Uri.encodeComponent(message)
+    );
+  }
+
   Future<List<MataKuliahPraktikumModel>?> getLatestFieldData([List<LastUpdatedModel>? outdated]) async {
     try {
       var query = auth.supabase
@@ -240,11 +273,11 @@ class StorageService {
         });
         filter = filter.substring(1);
         query = query.or(filter);
-        print('(getLatestFieldData) $filter');
+        print('uutdated query filter : $filter');
       }
 
       final data = await query;
-      print('(getLatestFieldData) $data');
+      print('outdated field : $data');
 
       List<MataKuliahPraktikumModel> list = [];
       data.forEach((v) {
@@ -263,7 +296,7 @@ class StorageService {
 
   Future<void> updateOutdatedField(List<MataKuliahPraktikumModel> latest) async {
     final Set<Map<String, bool>> set = latest.map((v) => {v.fakultas: v.isPraktikum}).toSet();
-    print('(updateOutdatedField) $set');
+    print('fetched matkul set : $set');
     for (final Map<String, bool> v in set) {
       cached.mataKuliahPraktikum.removeWhere(
         (v1) => v1.fakultas == v.keys.first && v1.isPraktikum == v.values.first,
@@ -284,7 +317,7 @@ class StorageService {
         .limit(1)
         .single();
 
-      print('(getLatestGlobalConfig) $data');
+      print('fetched global settings : $data');
 
       return GlobalConfigModel.fromJson(data);
     } on PostgrestException catch (error) {
@@ -390,8 +423,8 @@ class QFSPService {
     switch (c.sortController.value) {
       case 'Latest': temp.sort((a, b) => b.id.compareTo(a.id)); break;
       case 'Oldest': temp.sort((a, b) => a.id.compareTo(b.id)); break;
-      case 'Name (A-Z)': temp.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase())); break;
-      case 'Name (Z-A)': temp.sort((a, b) => b.name.toLowerCase().compareTo(a.name.toLowerCase())); break;
+      case 'Name (A-Z)': temp.sort((a, b) => a.nama.toLowerCase().compareTo(b.nama.toLowerCase())); break;
+      case 'Name (Z-A)': temp.sort((a, b) => b.nama.toLowerCase().compareTo(a.nama.toLowerCase())); break;
     }
     return temp.cast<T>();
   }
@@ -480,9 +513,9 @@ class ImagePickerService {
   Future<XFile?> selectImageFrom(ImageSource s, {String key = 'default'}) async {
     XFile? pickedFile = await _picker.pickImage(
       source: s,
-      imageQuality: 50,
-      maxWidth: 1920,    
-      maxHeight: 1920, 
+      imageQuality: 65,
+      maxWidth: 1280,    
+      maxHeight: 1280, 
     );
     if (pickedFile != null) return setPrefix(pickedFile, key);
     return lastImages[key];
@@ -500,7 +533,7 @@ class ImagePickerService {
               imageFile.value = pickedFile;
               if (memory != null) memory.value = await pickedFile!.readAsBytes();
               else lastImages[key] = pickedFile;
-              currentContext?.pop();
+              closeAllDialog();
             }, child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -514,7 +547,7 @@ class ImagePickerService {
                 imageFile.value = pickedFile!;
                 if (memory != null) memory.value = await pickedFile.readAsBytes();
                 else lastImages[key] = pickedFile;
-                currentContext?.pop();
+                closeAllDialog();
               }); 
             }, child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -554,39 +587,73 @@ class ImagePickerService {
   }
 }
 
-class PinjamService extends PDFService {
+class PeminjamanPeralatanService extends PDFService {
   final IsolateManager<Uint8List, dynamic> _pdfWorker = IsolateManager.create(
     peminjamanPeralatanCompilePdfWorker,
     workerName: 'peminjamanPeralatanCompilePdfWorker',
     concurrent: 1,
   );
 
-  void initWorker() => _pdfWorker.start();
-  void closeWorker() => _pdfWorker.stop();
+  void initWorker() async {
+    if (!_pdfWorker.isStarted) {
+      await _pdfWorker.start();
+      print('worker started');
+    } else print('worker already started');
+  }
+  void closeWorker() async {
+    if (_pdfWorker.isStarted) {
+      await _pdfWorker.stop();
+      print('worker stoped');
+    } else print('worker already stoped');
+  }
 
   final imagePicker = ImagePickerService();
 
-  Future<Uint8List> compilePDF(Map<String, dynamic> form) async {
-    final ttf = await rootBundle.load("fonts/calibri.ttf");
-    final ttfBold = await rootBundle.load("fonts/calibri-bold.ttf");
-    final ttfItalic = await rootBundle.load("fonts/calibri-italic.ttf");
+  Future<Uint8List?> compilePDF(Map<String, dynamic> form, [Uint8List? idCard]) async {
+    try {
+      final ttf = await rootBundle.load("fonts/calibri.ttf");
+      final ttfBold = await rootBundle.load("fonts/calibri-bold.ttf");
+      final ttfItalic = await rootBundle.load("fonts/calibri-italic.ttf");
 
-    final params = {
-      'ttf': ttf,
-      'ttfBold': ttfBold,
-      'ttfItalic': ttfItalic,
-      ...form
-    };
+      form['mulai'] = '${form['mulai']}'.toDateTime() == null ? null : DateFormat('d MMMM yyyy', 'id_ID').format('${form['mulai']}'.toDateTime()!);
+      form['akhir'] = '${form['akhir']}'.toDateTime() == null ? null : DateFormat('d MMMM yyyy', 'id_ID').format('${form['akhir']}'.toDateTime()!);
 
-    final compiled = await _pdfWorker.compute(params);
+      final params = {
+        'ttf': ttf,
+        'ttfBold': ttfBold,
+        'ttfItalic': ttfItalic,
+        'idCard' : idCard,
+        ...form
+      };
 
-    return compiled;
+      final compiled = await _pdfWorker.compute(params);
+
+      return compiled;
+      }
+    catch (e) {
+      alertDialog('Errr', '$e');
+      print('(PeminjamanPeralatanService.compilePDF) $e');
+    }
+    return null;
+  }
+
+  Future<bool> submitForm(Map<String, dynamic> form) async {
+    try {
+      await auth.supabase
+        .from('peminjaman_peralatan')
+        .insert(form);
+      return true;
+    } on PostgrestException catch (error) {
+      alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
+    } catch (error) {
+      alertDialog('Unexpected error', '$error');
+    }
+    return false;
   }
 }
 
 class SuratKeteranganPraktikumService {
   final imagePicker = ImagePickerService();
-  final QFSP = QFSPService();
 
   Future<String?> uploadImage(XFile bukti) async {
     try {
@@ -618,15 +685,33 @@ class SuratKeteranganPraktikumService {
   }
 }
 
-class GlobalSettingService {
-   Future<List<MataKuliahPraktikumModel>?> getAllMatkul() async {
+class AdminPeminjamanPeralatanService {
+  final QFSP = QFSPService();
+
+  Future<List<PeminjamanPeralatanModel>?> getAllSubmissions() async {
     try {
       final data = await auth.supabase
-        .from('mata_kuliah')
+        .from('peminjaman_peralatan')
         .select();
-      var res = <MataKuliahPraktikumModel>[];
-      data.forEach((item) => res.add(MataKuliahPraktikumModel.fromJson(item)));
+      var res = <PeminjamanPeralatanModel>[];
+      data.forEach((item) => res.add(PeminjamanPeralatanModel.fromJson(item)));
       return res;
+    } on PostgrestException catch (error) {
+      alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
+    } catch (error) {
+      alertDialog('Unexpected error', '$error');
+    }
+    return null;
+  }
+
+  Future<List<PeminjamanPeralatanModel>?> updateStatus(List<int> ids, String status) async {
+    try {
+      final res = await auth.supabase
+        .from('peminjaman_peralatan')
+        .update({'status' : status})
+        .inFilter('id', ids)
+        .select();
+      return res.map((e) => PeminjamanPeralatanModel.fromJson(e)).toList();
     } on PostgrestException catch (error) {
       alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
     } catch (error) {
@@ -637,6 +722,8 @@ class GlobalSettingService {
 }
 
 class AdminSuratKeteranganPraktikumService extends PDFService {
+  final QFSP = QFSPService();
+
   Future<List<SuratKeteranganPraktikumModel>?> getAllSubmissions() async {
     try {
       final data = await auth.supabase
@@ -658,8 +745,34 @@ class AdminSuratKeteranganPraktikumService extends PDFService {
     workerName: 'suratKeteranganPraktikumCompilePdfWorker',
   );
 
-  void initWorker() => _pdfWorker.start();
-  void closeWorker() => _pdfWorker.stop();
+  void initWorker() async {
+    if (!_pdfWorker.isStarted) {
+      print('worker started');
+      await _pdfWorker.start();
+    } else print('worker already started');
+  }
+  void closeWorker() async {
+    if (_pdfWorker.isStarted) {
+      print('worker stoped');
+      await _pdfWorker.stop();
+    } else print('worker already stoped');
+  }
+
+  Future<List<SuratKeteranganPraktikumModel>?> updateStatus(List<int> ids, String status) async {
+    try {
+      final res = await auth.supabase
+        .from('surat_keterangan_praktikum')
+        .update({'status' : status})
+        .inFilter('id', ids)
+        .select();
+      return res.map((e) => SuratKeteranganPraktikumModel.fromJson(e)).toList();
+    } on PostgrestException catch (error) {
+      alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
+    } catch (error) {
+      alertDialog('Unexpected error', '$error');
+    }
+    return null;
+  }
 
   Future<Uint8List?> compilePDF(SuratKeteranganPraktikumModel data) async {
     try {
@@ -706,22 +819,6 @@ class AdminSuratKeteranganPraktikumService extends PDFService {
     catch (e) {
       alertDialog('Errr', '$e');
       print('(SuratKeteranganPraktikum.compilePDF) $e');
-    }
-    return null;
-  }
-
-  Future<List<SuratKeteranganPraktikumModel>?> updateStatus(List<int> ids, String status) async {
-    try {
-      final res = await auth.supabase
-        .from('surat_keterangan_praktikum')
-        .update({'status' : status})
-        .inFilter('id', ids)
-        .select();
-      return res.map((e) => SuratKeteranganPraktikumModel.fromJson(e)).toList();
-    } on PostgrestException catch (error) {
-      alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
-    } catch (error) {
-      alertDialog('Unexpected error', '$error');
     }
     return null;
   }

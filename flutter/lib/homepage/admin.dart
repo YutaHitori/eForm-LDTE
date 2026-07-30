@@ -25,6 +25,7 @@ class Admin extends StatelessWidget {
                         spacing: 8,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          ElevatedButton(onPressed: () => currentContext?.push('/admin/peminjaman-peralatan'), child: Text('Peminjaman Peralatan')),
                           ElevatedButton(onPressed: () => currentContext?.push('/admin/surat-keterangan'), child: Text('Surat Keterangan Praktikum')),
                           ElevatedButton(onPressed: c.SignOutDialog, child: Text('Logout')),
                         ],

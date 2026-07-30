@@ -9,18 +9,30 @@ Future<Uint8List> peminjamanPeralatanCompilePdfWorker(dynamic form) async {
   final ttf = form['ttf'];
   final ttfBold = form['ttfBold'];
   final ttfItalic = form['ttfItalic'];
-  final nama = form['nama'];
-  final nim = form['nim'];
-  final fakultas = form['fakultas'];
-  final prodi = form['prodi'];
-  final dosen = form['dosen'];
-  final nipDosen = form['nipDosen'];
-  final ketua = form['ketua'];
-  final nipKetua = form['nipKetua'];
-  final mulai = form['mulai'];
-  final akhir = form['akhir'];
-  final barang = form['barang'];
-  final banyak = form['banyak'];
+  
+  final String? nama = form['nama'];
+  final String? nim = form['nim'];
+  final String fakultas = form['fakultas'] ?? "__________";
+  final String prodi = form['prodi'] ?? "__________";
+  final String? dosen = form['dosen'];
+  final String? nipDosen = form['nipDosen'];
+  final String ketua = form['ketua'] ?? "";
+  final String nipKetua = form['nipKetua'] ?? "";
+
+  final mulai = form['mulai'] ?? "_______________________";
+  final akhir = form['akhir'] ?? "_____________________";
+
+  final List<String> barang = form['barang'].map((e) {
+    return e == null || e.trim().isEmpty
+      ? "_____________________________________________________________________" 
+      : e.trim();
+  }).toList();
+  final List<String> banyak = form['banyak'].map(
+    (e) => e == null ? "" : 'x$e'
+  ).toList();
+
+  final Uint8List? idCard = form['idCard'] is Uint8List ? form ['idCard'] : null;
+
   final pdf = pw.Document();
   pdf.addPage(pw.MultiPage(
     pageFormat: PdfPageFormat.letter,
@@ -75,7 +87,7 @@ Future<Uint8List> peminjamanPeralatanCompilePdfWorker(dynamic form) async {
           pw.SizedBox(height: 22),
           pw.Text("Nama/NIM : ${nama ?? "______________________________"} / ${nim ?? "_________________"}"),
           pw.SizedBox(height: 22),
-          pw.Text("adalah mahasiswa program studi ${prodi ?? "__________"} ${fakultas ?? "__________"} ITB, dengan pembimbing:"),
+          pw.Text("adalah mahasiswa program studi $prodi $fakultas ITB, dengan pembimbing:"),
           pw.SizedBox(height: 22),
           pw.Text("Dosen Pembimbing: ${dosen ?? "______________________________"}"),
           pw.SizedBox(height: 22),
@@ -88,20 +100,20 @@ Future<Uint8List> peminjamanPeralatanCompilePdfWorker(dynamic form) async {
                 1: const pw.FlexColumnWidth(),
               },
               children: [
-                for (int i = 0; i < barang.length; i++) ...[
+                for (int i = 0; i < barang.length || i < banyak.length; i++) ...[
                   pw.TableRow(children: [pw.SizedBox(height: 5)]),
                   pw.TableRow(children: [
                     pw.Text('${i + 1}.'),
-                    pw.Text('${barang[i]}${banyak[i]}'),
+                    pw.Text('${barang.elementAtOrNull(i) ?? '_____________________________________________________________________'} ${banyak.elementAtOrNull(i) ?? 'x'}'),
                   ]),
                 ]
               ],
             )
           ),
           pw.SizedBox(height: 22),
-          pw.Text("Peminjaman saya lakukan mulai tanggal ${mulai ?? "_______________________"}"),
+          pw.Text("Peminjaman saya lakukan mulai tanggal $mulai"),
           pw.SizedBox(height: 5),
-          pw.Text("dan akan dikembalikan tanggal ${akhir ?? "_____________________"}"),
+          pw.Text("dan akan dikembalikan tanggal $akhir"),
           pw.SizedBox(height: 22),
           pw.Text("Saya berjanji untuk bertanggung jawab sepenuhnya terhadap barang yang saya pinjam dengan:"),
           pw.SizedBox(height: 22),
@@ -127,7 +139,7 @@ Future<Uint8List> peminjamanPeralatanCompilePdfWorker(dynamic form) async {
           ),
           pw.SizedBox(height: 22),
           pw.Center(
-            child: pw.Text("Bandung, ${mulai ?? "_____________________"}"),
+            child: pw.Text("Bandung, ______________________"),
           ),
           pw.SizedBox(height: 5),
           pw.Padding(
@@ -165,16 +177,16 @@ Future<Uint8List> peminjamanPeralatanCompilePdfWorker(dynamic form) async {
               children: [
                 pw.Text("Mengetahui,"),
                 pw.SizedBox(height: 5),
-                pw.Text("Ketua Prodi ${prodi ?? "__________"}"),  
+                pw.Text("Ketua Prodi $prodi"),  
                 pw.SizedBox(height: 40,),
                 pw.Container(
                   constraints: pw.BoxConstraints(minWidth: 160),
                   child: pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
-                      pw.Text("Nama: ${ketua ?? ""}"),
+                      pw.Text("Nama: $ketua"),
                       pw.SizedBox(height: 5),
-                      pw.Text('NIP: ${nipKetua ?? ''}'),
+                      pw.Text('NIP: $nipKetua')
                     ]
                   ),
                 )
@@ -289,26 +301,17 @@ Future<Uint8List> peminjamanPeralatanCompilePdfWorker(dynamic form) async {
               pw.SizedBox(height: 36),
               pw.Text("Lamipran", style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
               pw.Text('\n'),
-              pw.Text('Foto / Scan KTM :'),
-              if (form['ktm'] is Uint8List) ...[
+              pw.Text('Foto / Scan Kartu Identitas :'),
+              if (idCard != null) ...[
                 pw.Container(
                   constraints: pw.BoxConstraints(
-                    maxHeight: 10.wcm,
-                    maxWidth: 10.wcm,
+                    maxHeight: 15.wcm,
+                    maxWidth: 15.wcm,
                   ),
-                  child: pw.Image(pw.MemoryImage(form['ktm'])),
+                  child: pw.Image(pw.MemoryImage(idCard)),
                 ),
                 pw.Text('\n'),
               ]
-              else pw.SizedBox(height: 10.wcm),
-              pw.Text('Foto / Scan KTP :'),
-              if (form['ktp'] is Uint8List) pw.Container(
-                constraints: pw.BoxConstraints(
-                  maxHeight: 10.wcm,
-                  maxWidth: 10.wcm,
-                ),
-                child: pw.Image(pw.MemoryImage(form['ktp'])),
-              ),
             ]
           ),
         ]

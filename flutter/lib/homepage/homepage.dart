@@ -20,7 +20,8 @@ class Homepage extends StatelessWidget {
                       child: Center(child: Text('eFormulir LDTE STEI ITB', textScaleFactor: 1.8,)),
                     ),
                     ElevatedButton(onPressed: () => currentContext?.push('/peminjaman-peralatan'), child: Text('Pinjam Peralatan')),
-                    ElevatedButton(onPressed: () => currentContext?.push('/surat-keterangan'), child: Text('Keterangan praktikum'))
+                    ElevatedButton(onPressed: () => currentContext?.push('/surat-keterangan'), child: Text('Keterangan Praktikum')),
+                    ElevatedButton(onPressed: () => currentContext?.push('/pertukaran-jadwal'), child: Text('Pertukaran Jadwal Praktikum')),
                   ],
                 ),
               ),

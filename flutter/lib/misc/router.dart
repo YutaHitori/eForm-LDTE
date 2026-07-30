@@ -1,12 +1,14 @@
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ldte_stei_itb/core/controller.dart';
+import 'package:ldte_stei_itb/form/peminjaman_peralatan/admin.dart';
 import 'package:ldte_stei_itb/form/peminjaman_peralatan/form.dart';
 import 'package:ldte_stei_itb/form/surat_keterangan_praktikum/admin.dart';
 import 'package:ldte_stei_itb/form/surat_keterangan_praktikum/form.dart';
 import 'package:ldte_stei_itb/homepage/layout.dart';
 import 'package:ldte_stei_itb/misc/function.dart';
 import 'package:ldte_stei_itb/misc/global.dart';
+import 'package:ldte_stei_itb/pertukaran_jadwal_praktikum/form.dart';
 
 final GoRouter router = GoRouter(
   navigatorKey: Get.key,
@@ -23,12 +25,17 @@ final GoRouter router = GoRouter(
           GoRoute(
             path: 'peminjaman-peralatan',
             builder: (context, state) => Pinjam(),
-            onExit: (context, state) => onExit<PinjamController>(),
+            onExit: (context, state) => onExit<PeminjamanPeralatanController>(),
           ),
           GoRoute(
             path: 'surat-keterangan',
             builder: (context, state) => const SuratKeteranganPraktikum(),
             onExit: (context, state) => onExit<SuratKeteranganPraktikumController>()
+          ),
+          GoRoute(
+            path: 'pertukaran-jadwal',
+            builder: (context, state) => const PertukaranJadwalPraktikum(),
+            onExit: (context, state) => onExit<PertukaranJadwalPraktikumController>()
           ),
           // GoRoute(
           //   path: 'settings',
@@ -62,13 +69,21 @@ final GoRouter router = GoRouter(
         onExit: (context, state) => onExit<AdminController>(),
         routes: [
           GoRoute(
-        path: 'surat-keterangan',
-        redirect: (context, state) {
-          return redirect(state.matchedLocation);
-        },
-        builder: (context, state) => const AdminSuratKeteranganPraktikum(),
-        onExit: (context, state) => onExit<AdminSuratKeteranganPraktikumController>(),
-      ),
+            path: 'peminjaman-peralatan',
+            redirect: (context, state) {
+              return redirect(state.matchedLocation);
+            },
+            builder: (context, state) => const AdminPeminjamanPeralatan(),
+            onExit: (context, state) => onExit<AdminPeminjamanPeralatanController>(),
+          ),
+          GoRoute(
+            path: 'surat-keterangan',
+            redirect: (context, state) {
+              return redirect(state.matchedLocation);
+            },
+            builder: (context, state) => const AdminSuratKeteranganPraktikum(),
+            onExit: (context, state) => onExit<AdminSuratKeteranganPraktikumController>(),
+          ),
         ]
       ),
     ]

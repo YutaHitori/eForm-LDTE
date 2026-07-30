@@ -14,7 +14,7 @@ extension StringExtensions on String? {
   }
 
   DateTime? toDateTime() {
-    return DateTime.tryParse((this ?? '').replaceAll('/', '-'));
+    return DateTime.tryParse((this?.trim() ?? '').replaceAll('/', '-'));
   }
 }
 
@@ -34,7 +34,11 @@ extension DateTimeExtension on DateTime {
   }
 
   String toDateTimeFormatedString() {
-    return DateFormat('EEEE, dd/MM/yyyy - HH:mm', 'id_ID').format(this);
+    return DateFormat('dd/MM/yyyy HH:mm:ss', 'id_ID').format(this);
+  }
+
+  String toDateFormatString() {
+    return DateFormat('EEEE / dd MMMM yyyy', 'id_ID').format(this);
   }
 }
 
@@ -61,4 +65,19 @@ extension ListExtension on List {
   String toFormatedString() {
     return '$this'.substring(1, '$this'.length - 1);
   }
+}
+
+extension UriExtension on Uri {
+  Map<String, Object?> get queryParametersAllFormated => 
+    queryParametersAll.map(
+      (key, value) => 
+        MapEntry(
+          key, 
+          value.isEmpty 
+            ? null 
+            : value.length == 1 
+              ? value.first 
+              : value
+        )
+    ); 
 }

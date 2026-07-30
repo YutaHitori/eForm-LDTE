@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:dropdown_flutter/custom_dropdown.dart';
 import 'package:image_picker/image_picker.dart';
@@ -11,7 +12,6 @@ import 'package:ldte_stei_itb/homepage/login.dart';
 import 'package:ldte_stei_itb/misc/extension.dart';
 import 'package:ldte_stei_itb/misc/function.dart';
 import 'package:ldte_stei_itb/misc/global.dart';
-import 'package:intl/intl.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -127,12 +127,11 @@ class LoginController extends GetxController {
   }
 }
 
-class PinjamController extends GetxController {
-  final service = PinjamService();
+class PeminjamanPeralatanController extends GetxController {
+  final service = PeminjamanPeralatanService();
   var isLoading = false.obs;
 
-  Rxn<XFile> ktp = Rxn<XFile>(ImagePickerService.lastImages['ktp']); 
-  Rxn<XFile> ktm = Rxn<XFile>(ImagePickerService.lastImages['ktm']); 
+  Rxn<XFile> idCard = Rxn<XFile>(ImagePickerService.lastImages['default']); 
 
   final namaC = TextEditingController();
   final nimC = TextEditingController();
@@ -144,75 +143,58 @@ class PinjamController extends GetxController {
   final nipKetuaC = TextEditingController();
   final barangC = <TextEditingController>[TextEditingController()].obs;
   final barangDC = <SingleSelectController<String>>[SingleSelectController<String>('custom')].obs;
-  final banyakC = <TextEditingController>[TextEditingController(text: '1')].obs;
-  final startDateC = TextEditingController();
-  final endDateC = TextEditingController();
+  final banyakC = <SingleSelectController<int>>[SingleSelectController<int>(null)].obs;
+  final mulaiC = TextEditingController();
+  final akhirC = TextEditingController();
 
   Future<void> selectDateStart() async {
-    final picked = await DateTimePickerService().selectDate(initial: startDateC.text.toDateTime(), helpText: "Tanggal Peminjaman");
-    if (picked != null) startDateC.text = picked.toDateString();
+    final picked = await DateTimePickerService().selectDate(initial: mulaiC.text.toDateTime(), helpText: "Tanggal Peminjaman");
+    if (picked != null) mulaiC.text = picked.toDateString();
   }
 
   Future<void> selectDateEnd() async {
-    final picked = await DateTimePickerService().selectDate(initial: endDateC.text.toDateTime(), helpText: "Tanggal Pengembalian");
-    if (picked != null) endDateC.text = picked.toDateString();
+    final picked = await DateTimePickerService().selectDate(initial: akhirC.text.toDateTime(), helpText: "Tanggal Pengembalian");
+    if (picked != null) akhirC.text = picked.toDateString();
   }
 
   var prodiList = <String>[].obs;
 
-  Future<Map<String, dynamic>> get form async => {
-    'nama' : namaC.text.isBlank() ? null : namaC.text.trim(),
-    'nim' : nimC.text.isBlank() ? null : nimC.text.trim(),
-    'fakultas' : regexp.firstMatch(fakultasC.value ?? '')?.group(1),
-    'prodi' : prodiC.value?.replaceAll(RegExp(r'\((.*?)\)'), '').trim(),
-    'dosen' : dosenC.text.isBlank() ? null : dosenC.text.trim(),
-    'nipDosen' : nipDosenC.text.isBlank() ? null : nipDosenC.text.trim(),
-    'ketua' : ketuaC.text.isBlank() ? null : ketuaC.text.trim(),
-    'nipKetua' : nipKetuaC.text.isBlank() ? null : nipKetuaC.text.trim(),
-    'mulai' : startDateC.text.isBlank() ? null : DateFormat('d MMMM yyyy', 'id_ID').format(startDateC.text.toDateTime()!),
-    'akhir' : endDateC.text.isBlank() ? null : DateFormat('d MMMM yyyy', 'id_ID').format(endDateC.text.toDateTime()!),
-    'barang' : barangC.value.map(
-      (e) {
-        var contain = items.where((v) => v.toLowerCase() == e.text.toLowerCase());
-        return e.text.isBlank() 
-          ? "_____________________________________________________________________" 
-          : contain.isEmpty ? e.text.trim() : contain.first;
-      }).toList(),
-    'banyak' : banyakC.value.map((e) => e.text.isBlank() ? "" : ' x' + e.text.trim()).toList(),
-    'ktm' :  await ktm.value?.readAsBytes(),
-    'ktp' :  await ktp.value?.readAsBytes(),
+  Map<String, dynamic> get dbform => {
+    if (!namaC.text.isBlank()) 'nama' : namaC.text.trim(),
+    if (!nimC.text.isBlank()) 'nim' : nimC.text.trim(),
+    if (mulaiC.text.toDateTime() != null) 'mulai' : mulaiC.text.trim(),
+    if (akhirC.text.toDateTime() != null) 'akhir' : akhirC.text.trim(),
+    'barang' : barangC.value.map((e) => e.text.trim()).toList(),
+    'banyak' : banyakC.value.map((e) => e.value).toList(),
   };
 
-  void selectKtp() async {
-    service.imagePicker.selectImage(ktp, key: 'ktp');
+  Map<String, dynamic> get form => {
+    ...dbform,
+    if (fakultasC.hasValue) 'fakultas' : regexp.firstMatch(fakultasC.value ?? '')?.group(1),
+    if (prodiC.hasValue) 'prodi' : prodiC.value?.replaceAll(RegExp(r'\((.*?)\)'), '').trim(),
+    if (!dosenC.text.isBlank()) 'dosen' : dosenC.text.trim(),
+    if (!nipDosenC.text.isBlank()) 'nipDosen' : nipDosenC.text.trim(),
+    if (!ketuaC.text.isBlank()) 'ketua' : ketuaC.text.trim(),
+    if (!nipKetuaC.text.isBlank()) 'nipKetua' : nipKetuaC.text.trim(),
+  };
+
+  void selectImage() async {
+    service.imagePicker.selectImage(idCard);
   }
 
-  void previewKtp() {
-    service.imagePicker.previewImage(ktp.value!);
+  void previewImage() {
+    service.imagePicker.previewImage(idCard.value!);
   }
 
-  void resetKtp() {
-    service.imagePicker.resetImage(ktp, key: 'ktp');
-  }
-
-  void selectKtm() async {
-    service.imagePicker.selectImage(ktm, key: 'ktm');
-  }
-
-  void previewKtm() {
-    service.imagePicker.previewImage(ktm.value!);
-  }
-
-  void resetKtm() {
-    service.imagePicker.resetImage(ktm, key: 'ktm');
+  void resetImage() {
+    service.imagePicker.resetImage(idCard);
   }
 
   @override
   void onInit() async {
     super.onInit();
     service.initWorker();
-    await service.imagePicker.retrieveLostData(ktm, key: 'ktm');
-    await service.imagePicker.retrieveLostData(ktp, key: 'ktp');
+    await service.imagePicker.retrieveLostData(idCard);
   }
 
   @override
@@ -226,11 +208,52 @@ class PinjamController extends GetxController {
     prodiList.value = getAvailableProdi(fakultasC.value);
   }
 
+  var namaE = Rxn<String>(null); 
+  var nimE = Rxn<String>(null); 
+  var mulaiE = Rxn<String>(null); 
+  var akhirE = Rxn<String>(null); 
+  var barangE = RxList<String?>([null]); 
+  var banyakE = RxList<String?>([null]); 
+  var idCardE = Rxn<String>(null); 
+
+  bool checkEmptyFields() {
+    if (
+      barangC.any((e) => e.text.isBlank()) || 
+      banyakC.any((e) => !e.hasValue) || 
+      namaC.text.isBlank() ||
+      nimC.text.isBlank() ||
+      mulaiC.text.isBlank() ||
+      akhirC.text.isBlank()||
+      idCard.value == null
+    ) {
+      barangE.value = barangC.map((e) => e.text.isBlank() ? '*required' : null).toList();
+      banyakE.value = banyakC.map((e) => !e.hasValue ? '*required' : null).toList();
+      namaE.value = namaC.text.isBlank () ? '*required' : null;
+      nimE.value = nimC.text.isBlank () ? '*required' : null;
+      mulaiE.value = mulaiC.text.isBlank() ? '*required' : mulaiC.text.toDateTime() == null ? '*invalid' : null;
+      akhirE.value = akhirC.text.isBlank() ? '*required' : akhirC.text.toDateTime() == null ? '*invalid' : null;
+      idCardE.value = idCard.value == null ? '*required' : null;
+      return false;
+    }
+    barangE.value.fillRange(0, barangE.value.length, null);
+    banyakE.value.fillRange(0, banyakE.value.length, null);
+    namaE.value = nimE.value = mulaiE.value = akhirE.value = idCardE.value = null;
+    return true;
+  }
+
   void pinjam() async {
+  if (!checkEmptyFields()) return;
     isLoading.value = true;
-    final savedFile = await service.compilePDF(await form);
-    final fileName = "Form_Peminjaman-${DateTime.now().millisecondsSinceEpoch}.pdf";
-    service.preview(savedFile, fileName);
+    final savedFile = await service.compilePDF(form, await idCard.value?.readAsBytes());
+    if (savedFile != null) {
+      final fileName = "Form_Peminjaman-${DateTime.now().millisecondsSinceEpoch}.pdf";
+      service.preview(savedFile, fileName, (f) async {
+        isLoading.value = true;
+        final isSuccess = await service.submitForm(dbform);
+        if (isSuccess) f();
+        isLoading.value = false;
+      }, isLoading);
+    }
     isLoading.value = false;
   }
 } 
@@ -303,7 +326,7 @@ class SuratKeteranganPraktikumController extends GetxController {
 
   Rxn<XFile> bukti = Rxn<XFile>(ImagePickerService.lastImages['default']); 
 
-  Future<Map<String, dynamic>> get form async => {
+  Map<String, dynamic> get form => {
     'nama' : namaC.value.map((e) => e.text.trim()).toList(),
     'nim' : nimC.value.map((e) => e.text.trim()).toList(),
     'matkul' : matkul.value == 'Lainnya...' ? '${kodeMatkul.text.trim()} ${namaMatkul.text.trim()}' : matkul.value,
@@ -363,64 +386,244 @@ class SuratKeteranganPraktikumController extends GetxController {
 
   void submit() async {
     if (!checkEmptyFields()) return;
-    isLoading.value = true;
-    message.value = 'Uploading Image...';
-    final url = await service.uploadImage(bukti.value!);
-    if (url != null) {
-      message.value = 'Inserting Data...';
-      final isSuccess = await service.submitForm({ 'bukti': url, ...await form }); 
-      if (isSuccess) {
-        message.value = 'Success!';
-        alertDialog(
-          'Form Submited!', null,
-          width: 360,
-          message: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: RichText(
-              text: TextSpan(
-                children: [
-                  TextSpan(
-                    text: 'Data telah berhasil direkam. Silahkan melapor ke admin melalui link berikut: ',
-                    style: TextStyle(color: Colors.white)
-                  ),
-                  WidgetSpan(
-                    child: Transform.translate(
-                      offset: Offset(0, 2),
-                      child: InkWell(
-                        onTap: () async {
-                          final Uri uri = Uri.parse('https://line.me/R/oaMessage/%40kiy3574q/?hello%20world%21');
-                          if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-                            snackbar('Error!', 'Could not launch $uri');
-                          }
-                        }, 
-                        child: Text('OA Line LDTE', style: TextStyle(color: Colors.blue))
+    final uriMessage = "Saya telah mengirimkan formulir surat keterangan praktikum atas nama ${(form['nama'] as List<String>).toFormatedString()}: https://ldte-stei-itb.vercel.app/admin/surat-keterangan";
+    print(uriMessage);
+    final uri = await storage.getLineOALDTEUrl(uriMessage);
+    print(uri);
+    if (uri != null) {
+      isLoading.value = true;
+      message.value = 'Uploading Image...';
+      final url = await service.uploadImage(bukti.value!);
+      if (url != null) {
+        message.value = 'Inserting Data...';
+        final isSuccess = await service.submitForm({ 'bukti': url, ...form }); 
+        if (isSuccess) {
+          Clipboard.setData(ClipboardData(text: uriMessage));
+          Get.showSnackbar(GetSnackBar(message: 'Message copied to clipboard!', duration: Duration(seconds: 2)));
+          message.value = 'Success!';
+          alertDialog(
+            'Form Submited!', null,
+            width: 360,
+            message: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: 'Data telah berhasil direkam. Silahkan melapor ke admin melalui link berikut: ',
+                      style: TextStyle(color: Colors.white)
+                    ),
+                    WidgetSpan(
+                      child: Transform.translate(
+                        offset: Offset(0, 2),
+                        child: InkWell(
+                          onTap: () async {
+                            if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                              alertDialog('Error!', 'Link tidak dapat dibuka, silahkan kirim pesan yang telah tersalin ke Line OA LDTE secara manual.');
+                              Clipboard.setData(ClipboardData(text: uriMessage));
+                            }
+                          }, 
+                          child: Text('OA Line LDTE', style: TextStyle(color: Colors.blue))
+                        ),
                       ),
                     ),
-                  ),
-                  TextSpan(
-                    text: '.',
-                    style: TextStyle(color: Colors.white)
-                  ),
-                ],
+                    TextSpan(
+                      text: '.',
+                      style: TextStyle(color: Colors.white)
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          dismissible: false,
-          cancelAction: () {
-            currentContext?.go('/');
-            currentContext?.push('/surat-keterangan');
-          },
-          cancelText: 'Submit another form',
-          confirmAction: () {
-            currentContext?.go('/');
-          },
-          confirmText: 'Close'
-        );
-        service.imagePicker.resetImage(bukti);
+            dismissible: false,
+            cancelText: 'Submit another form',
+            cancelAction: () {
+              currentContext?.go('/');
+              currentContext?.push('/surat-keterangan');
+            },
+            confirmText: 'Close Page',
+            confirmAction: () {
+              currentContext?.go('/');
+            },
+          );
+          service.imagePicker.resetImage(bukti);
+        } else message.value = 'Failed (Retry)';
       } else message.value = 'Failed (Retry)';
-    } else message.value = 'Failed (Retry)';
+      isLoading.value = false;
+      Future.delayed(Duration(seconds: 3), message.value = null); 
+    } else alertDialog('Error', 'Device is not synced.');
+  }
+} 
+
+class PertukaranJadwalPraktikumController extends GetxController {
+  var isLoading = false.obs;
+
+  final service = SuratKeteranganPraktikumService();
+  List<String> get praktikumList => storage.cached.formatedPraktikum();
+
+  Future<void> selectDate() async {
+    final picked = await DateTimePickerService().selectDate(initial: dateC.text.toDateTime(), helpText: "Jadwal Sebelum Pertukaran");
+    if (picked != null) dateC.text = picked.toDateString();
+  }
+
+  Future<void> selectDateP() async {
+    final picked = await DateTimePickerService().selectDate(initial: datePC.text.toDateTime(), helpText: "Jadwal Pengganti");
+    if (picked != null) datePC.text = picked.toDateString();
+  }
+
+  final namaC = TextEditingController();
+  final nimC = TextEditingController();
+  final praktikum = SingleSelectController<String>(null);
+  var isPraktikumLainnya = false.obs;
+  final kodePraktikum = TextEditingController();
+  final namaPraktikum = TextEditingController();
+  final modul = SingleSelectController<int>(null);
+  final dateC = TextEditingController();
+
+  final namaPC = TextEditingController();
+  final nimPC = TextEditingController();
+  final praktikumP = SingleSelectController<String>(null);
+  var isPraktikumPLainnya = false.obs;
+  final kodePraktikumP = TextEditingController();
+  final namaPraktikumP = TextEditingController();
+  final modulP = SingleSelectController<int>(null);
+  final datePC = TextEditingController();
+
+  var namaE = Rxn<String>(null); 
+  var nimE = Rxn<String>(null); 
+  var praktikumE = Rxn<String>(null); 
+  var namaPraktikumE = Rxn<String>(null); 
+  var kodePraktikumE = Rxn<String>(null); 
+  var modulE = Rxn<String>(null); 
+  var dateE = Rxn<String>(null); 
+
+  var namaPE = Rxn<String>(null); 
+  var nimPE = Rxn<String>(null); 
+  var praktikumPE = Rxn<String>(null); 
+  var namaPraktikumPE = Rxn<String>(null); 
+  var kodePraktikumPE = Rxn<String>(null); 
+  var modulPE = Rxn<String>(null); 
+  var datePE = Rxn<String>(null); 
+
+  var prodiList = <String>[].obs;
+
+  String get message => '''Silahkan chat sesuai template dibawah ini.
+------------------------------------------
+Pertukaran Jadwal Praktikum
+PRAKTIKAN
+Nama : ${namaC.text.trim()}
+NIM : ${nimC.text.trim()}
+
+JADWAL SEBELUM PERTUKARAN
+Praktikum : ${praktikum.value == 'Lainnya...' ? '${kodePraktikum.text.trim()} ${namaPraktikum.text.trim()}' : praktikum.value}
+Modul : ${modul.value}
+Hari/Tanggal : ${dateC.text.toDateTime()?.toDateFormatString()}
+
+MENGGANTIKAN PRAKΤΙΚΑΝ
+Nama: ${namaPC.text.trim()}
+NIM : ${nimPC.text.trim()}
+
+MENGIKUTI PRAKTIKUM
+Praktikum : ${praktikumP.value == 'Lainnya...' ? '${kodePraktikumP.text.trim()} ${namaPraktikumP.text.trim()}' : praktikumP.value}
+Modul : ${modulP.value}
+Hari/Tanggal : ${datePC.text.toDateTime()?.toDateFormatString()}
+------------------------------------------
+Pertukaran diperbolehkan setelah ada chat konfirmasi dari LDTE.''';
+
+   bool checkEmptyFields() {
+    if (
+      namaC.text.isBlank() || 
+      nimC.text.isBlank() || 
+      !praktikum.hasValue || 
+        (praktikum.value == 'Lainnya...' && (namaPraktikum.text.isBlank() || kodePraktikum.text.isBlank())) || 
+      !modul.hasValue || 
+      (dateC.text.isBlank() || dateC.text.toDateTime() == null)
+      ||
+      namaPC.text.isBlank() || 
+      nimPC.text.isBlank() || 
+      !praktikumP.hasValue || 
+        (praktikumP.value == 'Lainnya...' && (namaPraktikumP.text.isBlank() || kodePraktikumP.text.isBlank())) || 
+      !modulP.hasValue || 
+      (datePC.text.isBlank() || datePC.text.toDateTime() == null)
+    ) {
+      namaE.value = namaC.text.isBlank() ? '*required' : null;
+      nimE.value = nimC.text.isBlank() ? '*required' : null;
+      praktikumE.value = !praktikum.hasValue ? '*required' : null;
+      namaPraktikumE.value = praktikum.value == 'Lainnya...' && namaPraktikum.text.isBlank () ? '': null;
+      kodePraktikumE.value = praktikum.value == 'Lainnya...' && kodePraktikum.text.isBlank () ? '': null;
+      modulE.value = !modul.hasValue ? '' : null ;
+      dateE.value = dateC.text.isBlank() ? '*required' : dateC.text.toDateTime() == null ? '*invalid' : null;
+
+      namaPE.value = namaPC.text.isBlank() ? '*required' : null;
+      nimPE.value = nimC.text.isBlank() ? '*required' : null;
+      praktikumPE.value = !praktikumP.hasValue ? '*required' : null;
+      namaPraktikumPE.value = praktikumP.value == 'Lainnya...' && namaPraktikumP.text.isBlank () ? '': null;
+      kodePraktikumPE.value = praktikumP.value == 'Lainnya...' && kodePraktikumP.text.isBlank () ? '': null;
+      modulPE.value = !modulP.hasValue ? '' : null ;
+      datePE.value = datePC.text.isBlank() ? '*required' : datePC.text.toDateTime() == null ? '*invalid' : null;
+      return false;
+    }
+    namaE.value = nimE.value = praktikumE.value = namaPraktikumE.value = kodePraktikumE.value = modulE.value = dateE.value 
+      = namaPE.value = nimPE.value = praktikumPE.value = namaPraktikumPE.value = kodePraktikumPE.value = modulPE.value = datePE.value = null;
+    return true;
+  }
+
+  void submit() async {
+    if (!checkEmptyFields()) return;
+    isLoading.value = true;
+    print(message);
+    final url = await storage.getLineOALDTEUrl(message);
+    print(url);
+    Clipboard.setData(ClipboardData(text: message));
+    Get.showSnackbar(GetSnackBar(message: 'Message copied to clipboard!', duration: Duration(seconds: 2)));
+    if (url != null) {
+      alertDialog(
+        'Form Formated!', null,
+        width: 360,
+        message: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: 'Data telah berhasil diformat dan tersalin ke dalam clipboard. Silahkan kirim pesan yang telah tersalin ke admin melalui link berikut: ',
+                  style: TextStyle(color: Colors.white)
+                ),
+                WidgetSpan(
+                  child: Transform.translate(
+                    offset: Offset(0, 2),
+                    child: InkWell(
+                      onTap: () async {
+                        if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+                          alertDialog('Error!', 'Link tidak dapat dibuka, silahkan kirim pesan yang telah tersalin ke Line OA LDTE secara manual.');
+                          Clipboard.setData(ClipboardData(text: message));
+                        }
+                      }, 
+                      child: Text('OA Line LDTE', style: TextStyle(color: Colors.blue))
+                    ),
+                  ),
+                ),
+                TextSpan(
+                  text: '.',
+                  style: TextStyle(color: Colors.white)
+                ),
+              ],
+            ),
+          ),
+        ),
+        dismissible: false,
+        cancelText: 'Submit another form',
+        cancelAction: () {
+          currentContext?.go('/');
+          currentContext?.push('/pertukaran-jadwal');
+        },
+        confirmText: 'Close Page',
+        confirmAction: () {
+          currentContext?.go('/');
+        },
+      );
+    } else alertDialog('Error', 'Device is not synced.');
     isLoading.value = false;
-    Future.delayed(Duration(seconds: 3), message.value = null);
   }
 } 
 
@@ -444,9 +647,120 @@ class AdminController extends GetxController {
   }
 }
 
-class GlobalSettingController extends GetxController {
-  Future<void> syncMatkul() async {
-    
+class AdminPeminjamanPeralatanController extends GetxController {
+  final admin = AdminPeminjamanPeralatanService();
+
+  var isLoading = false.obs;
+  var submissions = <PeminjamanPeralatanModel>[];
+  var loadingIndicator = <int, bool>{};
+  var isSelected = <int, bool>{};
+  var QFSPedSubmissions = RxList<PeminjamanPeralatanModel>([]);
+
+  @override
+  void onInit() {
+    super.onInit();
+    getAllSubmissions();
+  }
+
+  var pageNum = 1.obs;
+  var pageC = NumberPaginatorController();
+
+  final startDateC = TextEditingController(text: today.subtract(Duration(days: 30)).toDateString());
+  final endDateC = TextEditingController(text: todayEnd.toDateString());
+  List<DateTime> get dateTimeList => [startDateC.text.toDateTime() ?? today, endDateC.text.toDateTime()?.add(Duration(days: 1)).subtract(Duration(seconds: 1)) ?? today];
+
+  Future<void> selectDateFilterStart() async {
+    final picked = await DateTimePickerService().selectDate(initial: startDateC.text.toDateTime(), helpText: "Select start date");
+    if (picked != null) {
+      startDateC.text = picked.toDateString();
+      qfsp.onChanged();
+    }
+  }
+
+  Future<void> selectDateFilterEnd() async {
+    final picked = await DateTimePickerService().selectDate(initial: endDateC.text.toDateTime(), helpText: "Select end date");
+    if (picked != null) {
+      endDateC.text = picked.toDateString();
+      qfsp.onChanged();
+    }
+  }
+
+  late QFSPController qfsp = QFSPController(
+    filter: [
+      FilterController(
+        filterKey: "status",
+        filterList: ['unchecked', 'borrowed', 'returned', 'overdue', 'damaged', 'lost', 'spam'],
+        function: (m) => [(m as PeminjamanPeralatanModel).status]
+      ),
+    ],
+    onChanged: ([String? itemKey, String? filterKey]) {
+      var queried = admin.QFSP.query(submissions, qfsp, (v) => [v.nama, v.nim]);
+      var filtered = admin.QFSP.filter(queried, qfsp, itemKey, filterKey, dateTimeList, (v) => v.createdAt);
+      var sorted = admin.QFSP.sort(filtered, qfsp);
+      var paged = admin.QFSP.page(sorted, qfsp, pageNum);
+      QFSPedSubmissions.value = paged;
+    },
+    pageC: pageC,
+  );
+
+  Future<void> getAllSubmissions() async {
+    isLoading.value = true;
+    final res = await admin.getAllSubmissions();
+    print (res);
+    if (res != null) {
+      loadingIndicator = Map<int, bool>.fromEntries(res.map((v) => MapEntry(v.id, false)));
+      isSelected = Map<int, bool>.fromEntries(res.map((v) => MapEntry(v.id, false)));
+      submissions = res;
+      qfsp.onChanged();
+    }
+    isLoading.value = false;
+  }
+
+  void selectItem(int id, bool state) {
+    isSelected[id] = state;
+    QFSPedSubmissions.refresh();
+  }
+
+  void selectPageItem(bool? state) {
+    QFSPedSubmissions.value.forEach((v) => isSelected[v.id] = state ?? false);
+    Future(() => QFSPedSubmissions.refresh());
+  }
+
+  void setStatus(int id, String status) async {
+    loadingIndicator[id] = true;
+    QFSPedSubmissions.refresh();
+    final res = await admin.updateStatus([id], status);
+    loadingIndicator[id] = false;
+    if (res != null) updateSubmission(res);
+  }
+
+  void setSelectedStatus(String status) {
+    final ids = isSelected.entries.where((e) => e.value).map((e) => e.key).toList();
+    alertDialog(
+      'Confirmation', 
+      'You are going to update ${ids.length} row of status data to $status.\n'
+      'Are you completely sure? this action cannot be undone.',
+      confirmAction: () async {
+        closeAllDialog();
+        ids.forEach((v) => loadingIndicator[v] = true);
+        QFSPedSubmissions.refresh();
+        await Future.delayed(Duration(seconds: 2));
+        final res = await admin.updateStatus(ids, status);
+        ids.forEach((v) {
+          loadingIndicator[v] = false;
+          isSelected[v] = false;
+        });
+        if (res != null) updateSubmission(res);
+      },
+    );
+  }
+
+  void updateSubmission(List<PeminjamanPeralatanModel> newData) {
+    for (final item in newData) {
+      final index = submissions.indexWhere((v) => v.id == item.id);
+      if (index != -1) submissions[index] = item;
+    }
+    qfsp.onChanged();
   }
 }
 
@@ -479,16 +793,16 @@ class AdminSuratKeteranganPraktikumController extends SuratKeteranganPraktikumCo
   final endDateC = TextEditingController(text: todayEnd.toDateString());
   List<DateTime> get dateTimeList => [startDateC.text.toDateTime() ?? today, endDateC.text.toDateTime()?.add(Duration(days: 1)).subtract(Duration(seconds: 1)) ?? today];
 
-  Future<void> selectDateStart(BuildContext context) async {
-    final picked = await DateTimePickerService().selectDate(initial: startDateC.text.toDateTime(), helpText: "Tanggal Peminjaman");
+  Future<void> selectDateFilterStart() async {
+    final picked = await DateTimePickerService().selectDate(initial: startDateC.text.toDateTime(), helpText: "Select start date");
     if (picked != null) {
       startDateC.text = picked.toDateString();
       qfsp.onChanged();
     }
   }
 
-  Future<void> selectDateEnd(BuildContext context) async {
-    final picked = await DateTimePickerService().selectDate(initial: endDateC.text.toDateTime(), helpText: "Tanggal Pengembalian");
+  Future<void> selectDateFilterEnd() async {
+    final picked = await DateTimePickerService().selectDate(initial: endDateC.text.toDateTime(), helpText: "Select end date");
     if (picked != null) {
       endDateC.text = picked.toDateString();
       qfsp.onChanged();
@@ -504,11 +818,11 @@ class AdminSuratKeteranganPraktikumController extends SuratKeteranganPraktikumCo
       ),
     ],
     onChanged: ([String? itemKey, String? filterKey]) {
-      var queried = service.QFSP.query(submissions, qfsp, (v) => [v.nama.toFormatedString(), v.nim.toFormatedString()]);
-      var filtered = service.QFSP.filter(queried, qfsp, itemKey, filterKey, dateTimeList, (v) => v.createdAt);
-      var sorted = service.QFSP.sort(filtered, qfsp);
-      var paged = service.QFSP.page(sorted, qfsp, pageNum);
-      QFSPedSubmissions.value = paged.cast<SuratKeteranganPraktikumModel>();
+      var queried = admin.QFSP.query(submissions, qfsp, (v) => [v.nama.toFormatedString(), v.nim.toFormatedString()]);
+      var filtered = admin.QFSP.filter(queried, qfsp, itemKey, filterKey, dateTimeList, (v) => v.createdAt);
+      var sorted = admin.QFSP.sort(filtered, qfsp);
+      var paged = admin.QFSP.page(sorted, qfsp, pageNum);
+      QFSPedSubmissions.value = paged;
     },
     pageC: pageC,
   );
@@ -562,6 +876,7 @@ class AdminSuratKeteranganPraktikumController extends SuratKeteranganPraktikumCo
       'You are going to update ${ids.length} row of status data to $status.\n'
       'Are you completely sure? this action cannot be undone.',
       confirmAction: () async {
+        closeAllDialog();
         ids.forEach((v) => loadingIndicator[v] = true);
         QFSPedSubmissions.refresh();
         await Future.delayed(Duration(seconds: 2));

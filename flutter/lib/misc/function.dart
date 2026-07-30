@@ -187,15 +187,21 @@ List<String> getAvailableProdi(String? fakultas) {
 }
 
 Color? getColorFromSubmissionStatus(String? status) {
-  return status == 'exported'
+  return status == 'exported' || status == 'returned'
     ? Colors.green
-    : status == 'pending'
-      ? Colors.orange
-      : status == 'unchecked'
-        ? Colors.blue
-        : status == 'spam'
-          ? Colors.red
-          : null;
+    : status == 'borrowed'
+      ? Colors.blue
+      : status == 'pending' || status == 'overdue'
+        ? Colors.orange
+        : status == 'damaged'
+          ? Colors.deepOrange
+          : status == 'lost'
+            ? Colors.purpleAccent
+            : status == 'unchecked'
+              ? Colors.grey
+              : status == 'spam'
+                ? Colors.red
+                : null;
 }
 
 Future<bool> hasInternet([bool throwException = true]) async {

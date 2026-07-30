@@ -143,6 +143,7 @@ class CustomTextField extends StatelessWidget {
     this.onSubmitted,
     this.autofillHints = const <String>[],
     this.inputFormatters,
+    this.labelFlexAxis = Axis.horizontal,
   });
 
   final String? labelText;
@@ -159,6 +160,7 @@ class CustomTextField extends StatelessWidget {
   final void Function(String)? onSubmitted;
   final Iterable<String>? autofillHints;
   final List<TextInputFormatter>? inputFormatters;
+  final Axis labelFlexAxis;
 
   @override
   Widget build(BuildContext context) {
@@ -166,13 +168,15 @@ class CustomTextField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: 4,
       children: [
-        if (labelText != null) Row(
+        if (labelText != null) Flex(
+          direction: labelFlexAxis,
+          crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(labelText!, textScaleFactor: 1.02),
+            Text(labelText!, textScaleFactor: 1.02, overflow: TextOverflow.ellipsis),
             if (errorText != null) Text(
               errorText!,
-              style: TextStyle(color: ColorScheme.dark().error)
+              style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0),
             ),
           ]
         ),
@@ -318,7 +322,7 @@ class SortRow extends StatelessWidget {
                 Text('Last Sync'),
                 Text('${NC.lastSync.value}', textScaleFactor: 0.72,),
                 SizedBox(height: 8),
-                Text('App version 0.4.0 build 19', textScaleFactor: 0.92),
+                Text('App version 0.4.1 build 20', textScaleFactor: 0.92),
               ],
             ),
           )),

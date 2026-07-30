@@ -12,10 +12,10 @@ class Pinjam extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = Get.put(PinjamController());
+    final c = Get.put(PeminjamanPeralatanController());
     return Scaffold(
       appBar: AppBar(
-        title: Text('Form Peminjaman Peralatan')
+        title: Text('Peminjaman Peralatan')
       ),
       body: Obx(() => c.isLoading.value
       ? Center(
@@ -37,20 +37,26 @@ class Pinjam extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               spacing: 8,
               children: [
-                Text('''Cara Pengisisan Formulir Peminjaman Peralatan LDTE STEI ITB :
-      - Isi kolom yang diperlukan secara online.
-      - Kosongkan kolom jika tidak ada, tidak tahu, atau akan diisi setelah formulir di print.
-      - Formulir yang telah diisi dapat di download dan di print untuk di tandatangani, kemudian diserahkan pada saat menerima barang.
-              ''',),
+                Text(
+'''Cara Pengisisan Formulir Peminjaman Peralatan LDTE STEI ITB :
+- Isi kolom yang diperlukan secara online.
+- Beberapa kolom dapat dikosongkan jika tidak ada, tidak tahu, atau akan diisi setelah formulir diprint.
+- 1 formulir dapat digunakan untuk meminjam beberapa barang sekaligus (hingga 4 barang).
+- Setelah mengisi, klik tombol "Pinjam" untuk preview dokumen dan periksa apakah semua data sudah benar.
+- Dokumen kemudian dapat didownload dan diprint untuk ditandatangani, kemudian diserahkan pada saat menerima barang.'''
+                ),
+                Divider(),
                 CustomTextField(
-                  labelText: 'Nama Peminjam',
-                  decoration: InputDecoration(hintText: '-'),
                   controller: c.namaC,
+                  labelText: 'Nama Peminjam',
+                  errorText: c.namaE.value,
+                  decoration: InputDecoration(hintText: '-'),
                 ),
                 CustomTextField(
-                  labelText: 'NIM Peminjam',
-                  decoration: InputDecoration(hintText: '-'),
                   controller: c.nimC,
+                  labelText: 'NIM Peminjam',
+                  errorText: c.nimE.value,
+                  decoration: InputDecoration(hintText: '-'),
                   keyboardType: TextInputType.number,
                   inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'[0-9\-\/\s]')) ],
                 ),
@@ -133,6 +139,7 @@ class Pinjam extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('Barang yang Dipinjam ', textScaleFactor: 1.02),
+                    if (c.barangE.value.any((v) => v != null) || c.banyakE.value.any((v) => v != null)) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
                   ],
                 ),
                 Builder(
@@ -154,6 +161,7 @@ class Pinjam extends StatelessWidget {
                                   searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.inputDecorationTheme.fillColor),
                                   closedFillColor: appTheme.inputDecorationTheme.fillColor,
                                   expandedFillColor: appTheme.inputDecorationTheme.fillColor,
+                                  closedBorder: c.barangE.value[i] != null ? Border.all(color: appTheme.colorScheme.error) : null
                                 ),
                                 headerBuilder: (context, selectedItem, enabled) {
                                   return TextField(
@@ -182,19 +190,36 @@ class Pinjam extends StatelessWidget {
                             ),
                             Text('x'),
                             SizedBox(
-                              width: 48,
-                              child: CustomTextField(
-                                controller: c.banyakC.value[i],
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [ FilteringTextInputFormatter.digitsOnly ],
-                                decoration: InputDecoration(hintText: 'q', contentPadding: EdgeInsets.all(6)),
-                              ),
+                              width: 64,
+                              child: Column(
+                              spacing: 4,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                DropdownFlutter<int>(
+                                  controller: c.banyakC.value[i],
+                                  listItemBuilder: (context, item, isSelected, onItemSelect) => Text('$item', style: TextStyle(color: isSelected ? Colors.black : null),),
+                                  decoration: CustomDropdownDecoration(
+                                    closedFillColor: appTheme.inputDecorationTheme.fillColor,
+                                    expandedFillColor: appTheme.inputDecorationTheme.fillColor,
+                                    closedSuffixIcon: SizedBox(),
+                                    expandedSuffixIcon: SizedBox(),
+                                    closedBorder: c.banyakE.value[i] != null ? Border.all(color: appTheme.colorScheme.error) : null
+                                  ),
+                                  excludeSelected: false,
+                                  items: List.generate(9, (i) => i + 1),
+                                  hintText: 'q',
+                                  onChanged: (v) {},
+                                ),
+                              ],
+                            ),
                             ),
                             GestureDetector(
                               onTap: c.barangDC.length <= 1 ? null :() { 
                                 c.barangDC.value.removeAt(i); c.barangDC.refresh(); 
                                 c.barangC.value.removeAt(i); c.barangC.refresh(); 
                                 c.banyakC.value.removeAt(i); c.banyakC.refresh(); 
+                                c.barangE.value.removeAt(i); c.barangE.refresh(); 
+                                c.banyakE.value.removeAt(i); c.banyakE.refresh(); 
                               },
                               child: Icon(Icons.delete, color: c.barangDC.length <= 1 ? null : Colors.redAccent,)
                             ),
@@ -207,37 +232,43 @@ class Pinjam extends StatelessWidget {
                 ElevatedButton.icon(onPressed: c.barangDC.length >= 4 ? null : () {
                   c.barangDC.add(SingleSelectController<String>('custom'));
                   c.barangC.add(TextEditingController());
-                  c.banyakC.add(TextEditingController(text: '1'));
+                  c.banyakC.add(SingleSelectController<int>(null));
+                  c.barangE.add(null);
+                  c.banyakE.add(null);
                 }, icon: Icon(Icons.add), label: Text('Add item'), style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.secondary)),
                 Row(
                   spacing: 12,
                   children: [
                     Expanded(
                       child: CustomTextField(
+                        controller: c.mulaiC,
                         labelText: 'Tanggal Pinjam',
-                        controller: c.startDateC,
+                        errorText: c.mulaiE.value,
+                        labelFlexAxis: Axis.vertical,
                         keyboardType: TextInputType.datetime,
                         decoration: InputDecoration(
                           hintText: 'yyyy/mm/dd',
                           suffixIcon: IconButton(onPressed: c.selectDateStart, icon: Icon(Icons.date_range))
                         ),
                         onChanged: (v) {
-                          if (v.length > 10) c.startDateC.text = v.substring(0, 10);
+                          if (v.length > 10) c.mulaiC.text = v.substring(0, 10);
                         },
                       ),
                     ),
                     Text('-', textScaleFactor: 1.6),
                     Expanded(
                       child: CustomTextField(
+                        controller: c.akhirC,
                         labelText: 'Tanggal Pengembalian',
-                        controller: c.endDateC,
+                        errorText: c.akhirE.value,
+                        labelFlexAxis: Axis.vertical,
                         keyboardType: TextInputType.datetime,
                         decoration: InputDecoration(
                           hintText: 'yyyy/mm/dd',
                           suffixIcon: IconButton(onPressed: c.selectDateEnd, icon: Icon(Icons.date_range))
                         ),
                         onChanged: (v) {
-                          if (v.length > 10) c.endDateC.text = v.substring(0, 10);
+                          if (v.length > 10) c.akhirC.text = v.substring(0, 10);
                         },
                       ),
                     ),
@@ -246,70 +277,52 @@ class Pinjam extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Foto/Scan KTM Peminjam', textScaleFactor: 1.02,),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Foto/Scan Kartu Identitas Peminjam', textScaleFactor: 1.02,),
+                        if (c.idCardE.value != null) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
+                      ],
+                    ),
                     Row(
                       spacing: 8,
                       children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: c.selectKtm,
-                              label: Text('Choose an image'),
-                              icon: Icon(Icons.image_search_rounded),
-                              style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.secondary),
-                            ),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: c.selectImage,
+                            label: Text('Choose an image'),
+                            icon: Icon(Icons.image_search_rounded),
+                            style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.secondary),
                           ),
-                        ElevatedButton(onPressed: c.ktm.value == null ? null : c.previewKtm, child: Text('Preview'), style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.tertiary)),
+                        ),
+                        ElevatedButton(
+                          onPressed: c.idCard.value == null
+                              ? null : c.previewImage,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: appTheme.colorScheme.tertiary,
+                          ),
+                          child: Text('Preview'),
+                        ),
                       ],  
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Text("Selected: ${c.ktm.value?.name.substring(4) ?? '- none -'}"),
-                        ),
-                        IconButton(
-                          onPressed: c.ktm.value == null ? null : c.resetKtm,
-                          icon: Icon(Icons.delete_rounded, color: c.ktm.value == null ? null : Colors.redAccent),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Foto/Scan KTP Peminjam', textScaleFactor: 1.02,),
-                    Row(
-                      spacing: 8,
-                      children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: c.selectKtp,
-                              label: Text('Choose an image'),
-                              icon: Icon(Icons.image_search_rounded),
-                              style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.secondary),
-                            ),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Text("Selected: ${c.idCard.value?.name ?? '- none -'}"),
                           ),
-                        ElevatedButton(onPressed: c.ktp.value == null ? null : c.previewKtp, child: Text('Preview'), style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.tertiary)),
-                      ],  
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Text("Selected: ${c.ktp.value?.name.substring(4) ?? '- none -'}"),
                         ),
                         IconButton(
-                          onPressed: c.ktp.value == null ? null : c.resetKtp,
-                          icon: Icon(Icons.delete_rounded, color: c.ktp.value == null ? null : Colors.redAccent),
+                          onPressed: c.idCard.value == null ? null : c.resetImage,
+                          icon: Icon(Icons.delete_rounded, color: c.idCard.value == null ? null : Colors.redAccent),
                         ),
                       ],
                     ),
                   ],
                 ),
-                ElevatedButton(onPressed: c.pinjam, child: Text(c.isLoading.value ? 'Generating...' : 'Pinjam')),
+                ElevatedButton(onPressed: c.pinjam, child: Text('Pinjam')),
               ],
             ),
           ),

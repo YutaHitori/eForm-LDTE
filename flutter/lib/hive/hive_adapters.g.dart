@@ -103,15 +103,20 @@ class GlobalConfigModelAdapter extends TypeAdapter<GlobalConfigModel> {
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return GlobalConfigModel(nomorSurat: fields[0] as String?);
+    return GlobalConfigModel(
+      nomorSurat: fields[0] as String?,
+      lineOALDTE: fields[1] as String?,
+    );
   }
 
   @override
   void write(BinaryWriter writer, GlobalConfigModel obj) {
     writer
-      ..writeByte(1)
+      ..writeByte(2)
       ..writeByte(0)
-      ..write(obj.nomorSurat);
+      ..write(obj.nomorSurat)
+      ..writeByte(1)
+      ..write(obj.lineOALDTE);
   }
 
   @override
