@@ -1,3 +1,4 @@
+import 'package:eform_ldte/misc/global.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:eform_ldte/misc/function.dart';
@@ -13,15 +14,19 @@ class Homepage extends StatelessWidget {
             child: SingleChildScrollView(
               child: Center(
                 child: Column(
-                  spacing: 8,
+                  spacing: 12,
                   children: [
-                    SizedBox(
-                      height: 80,
-                      child: Center(child: Text('eFormulir LDTE STEI ITB', textScaleFactor: 1.8,)),
+                    Image.asset('assets/logo.png', width: 182),
+                    Text('eFormulir LDTE STEI ITB', textScaleFactor: 1.8,),
+                    SizedBox(height: 4),
+                    Column(
+                      spacing: 8,
+                      children: [
+                        ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.pinjam), child: Text('Pinjam Peralatan')),
+                        ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.keterangan), child: Text('Keterangan Praktikum')),
+                        ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.pertukaran), child: Text('Pertukaran Jadwal Praktikum')),
+                      ],
                     ),
-                    ElevatedButton(onPressed: () => currentContext?.push('/peminjaman-peralatan'), child: Text('Pinjam Peralatan')),
-                    ElevatedButton(onPressed: () => currentContext?.push('/surat-keterangan'), child: Text('Keterangan Praktikum')),
-                    ElevatedButton(onPressed: () => currentContext?.push('/pertukaran-jadwal'), child: Text('Pertukaran Jadwal Praktikum')),
                   ],
                 ),
               ),

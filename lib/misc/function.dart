@@ -219,6 +219,10 @@ Future<bool> hasInternet([bool throwException = true]) async {
   T getFindPut<T>(T controller) {
     return Get.isRegistered<T>() ? Get.find<T>() : Get.put(controller);
   }
+  
+  T? getFindCall<T>() {
+    return Get.isRegistered<T>() ? Get.find<T>() : null;
+  }
 
   void closeAllDialog() {
     if (currentContext != null) {

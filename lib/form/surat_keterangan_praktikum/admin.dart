@@ -181,7 +181,7 @@ class AdminSuratKeteranganPraktikum extends StatelessWidget {
                                       //     SnackBar(content: Text('Phone number copied to clipboard!')),
                                       //   );
                                       // },
-                                      // onTap: () => c.preview(entry),
+                                      onTap: () => c.detail(entry.id),
                                       leading: Transform.translate(
                                         offset: Offset(8, 0),
                                         child: Row(

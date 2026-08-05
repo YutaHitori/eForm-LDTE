@@ -41,7 +41,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                     minTileHeight: 0,
                     title: Text(
                       "Cara Pengisisan Formulir Surat Keterangan Praktikum:",
-                      style: TextStyle(fontSize: 13.2),
+                      style: TextStyle(fontSize: 14.2),
                     ),
                     expandedAlignment: Alignment.centerLeft,
                     tilePadding: EdgeInsets.zero,
@@ -57,7 +57,6 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                       ),
                     ],
                   ),
-                  Divider(),
                   for (var i = 0; i < c.namaC.value.length; i++) ...[
                     CustomTextField(
                       controller: c.namaC.value[i],

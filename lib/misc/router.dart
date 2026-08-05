@@ -1,3 +1,5 @@
+import 'package:eform_ldte/form/peminjaman_peralatan/detail.dart';
+import 'package:eform_ldte/form/surat_keterangan_praktikum/detail.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:eform_ldte/core/controller.dart';
@@ -75,6 +77,16 @@ final GoRouter router = GoRouter(
             },
             builder: (context, state) => const AdminPeminjamanPeralatan(),
             onExit: (context, state) => onExit<AdminPeminjamanPeralatanController>(),
+            routes: [
+              GoRoute(
+                path: ':id',
+                redirect: (context, state) {
+                  return redirect(state.matchedLocation);
+                },
+                builder: (context, state) => DetailPeminjamanPeralatan(id: int.tryParse(state.pathParameters['id'] ?? '') ?? -1),
+                onExit: (context, state) => onExit<DetailPeminjamanPeralatanController>(),
+              ),
+            ]
           ),
           GoRoute(
             path: 'surat-keterangan',
@@ -83,6 +95,16 @@ final GoRouter router = GoRouter(
             },
             builder: (context, state) => const AdminSuratKeteranganPraktikum(),
             onExit: (context, state) => onExit<AdminSuratKeteranganPraktikumController>(),
+            routes: [
+              GoRoute(
+                path: ':id',
+                redirect: (context, state) {
+                  return redirect(state.matchedLocation);
+                },
+                builder: (context, state) => DetailSuratKeteranganPraktikum(id: int.tryParse(state.pathParameters['id'] ?? '') ?? -1),
+                onExit: (context, state) => onExit<DetailSuratKeteranganPraktikumController>(),
+              ),
+            ]
           ),
         ]
       ),

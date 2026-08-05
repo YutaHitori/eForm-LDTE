@@ -41,7 +41,7 @@ class Pinjam extends StatelessWidget {
                   minTileHeight: 0,
                   title: Text(
                     "Cara Pengisisan Formulir Peminjaman Peralatan:",
-                    style: TextStyle(fontSize: 13.2),
+                    style: TextStyle(fontSize: 14.2),
                   ),
                   tilePadding: EdgeInsets.zero,
                   childrenPadding: EdgeInsets.only(bottom: 8),

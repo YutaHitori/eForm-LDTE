@@ -34,7 +34,7 @@ class PertukaranJadwalPraktikum extends StatelessWidget {
                     minTileHeight: 0,
                     title: Text(
                       "Cara Pengisisan Formulir Pergantian Jadwal Praktikum:",
-                      style: TextStyle(fontSize: 13.2),
+                      style: TextStyle(fontSize: 14.2),
                     ),
                     expandedAlignment: Alignment.centerLeft,
                     tilePadding: EdgeInsets.zero,
@@ -49,7 +49,6 @@ class PertukaranJadwalPraktikum extends StatelessWidget {
                       ),
                     ],
                   ),
-                  Divider(),
                   CustomTextField(
                     controller: c.namaC,
                     labelText: 'Nama Praktikan',

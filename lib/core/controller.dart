@@ -195,7 +195,7 @@ class PeminjamanPeralatanController extends GetxController {
     var remindMe = storage.cached.userPreference.remindPeminjamanPeralatan.obs;
     if (remindMe.value) {
       alertDialog(
-        'Cara Pengisisan Formulir Peminjaman Peralatan :',
+        'Cara Pengisisan Formulir Peminjaman Peralatan:',
         null,
         message: Column(
           children: [
@@ -247,6 +247,10 @@ class PeminjamanPeralatanController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
+    init();
+  }
+
+  void init() async {
     service.initWorker();
     await service.imagePicker.retrieveLostData(idCard);
     showReminderDialog();
@@ -271,7 +275,7 @@ class PeminjamanPeralatanController extends GetxController {
   var banyakE = RxList<String?>([null]); 
   var idCardE = Rxn<String>(null); 
 
-  bool checkEmptyFields() {
+  bool checkEmptyFields([bool reqId = true]) {
     if (
       barangC.any((e) => e.text.isBlank()) || 
       banyakC.any((e) => !e.hasValue) || 
@@ -279,7 +283,7 @@ class PeminjamanPeralatanController extends GetxController {
       nimC.text.isBlank() ||
       mulaiC.text.isBlank() ||
       akhirC.text.isBlank()||
-      idCard.value == null
+      (idCard.value == null && reqId)
     ) {
       barangE.value = barangC.map((e) => e.text.isBlank() ? '*required' : null).toList();
       banyakE.value = banyakC.map((e) => !e.hasValue ? '*required' : null).toList();
@@ -287,7 +291,7 @@ class PeminjamanPeralatanController extends GetxController {
       nimE.value = nimC.text.isBlank () ? '*required' : null;
       mulaiE.value = mulaiC.text.isBlank() ? '*required' : mulaiC.text.toDateTime() == null ? '*invalid' : null;
       akhirE.value = akhirC.text.isBlank() ? '*required' : akhirC.text.toDateTime() == null ? '*invalid' : null;
-      idCardE.value = idCard.value == null ? '*required' : null;
+      if (reqId) idCardE.value = idCard.value == null ? '*required' : null;
       return false;
     }
     barangE.value.fillRange(0, barangE.value.length, null);
@@ -321,11 +325,11 @@ class SuratKeteranganPraktikumController extends GetxController {
   List<String> get matkulList => storage.cached.formatedMataKuliah();
   List<String> get praktikumList => storage.cached.formatedPraktikum();
 
-void showReminderDialog() {
+  void showReminderDialog() {
     var remindMe = storage.cached.userPreference.remindSuratKeteranganPraktikum.obs;
     if (remindMe.value) {
       alertDialog(
-        'Cara Pengisisan Formulir Surat Keterangan Praktikum :',
+        'Cara Pengisisan Formulir Surat Keterangan Praktikum:',
         null,
         message: Column(
           children: [
@@ -377,6 +381,10 @@ void showReminderDialog() {
   @override
   void onInit() async {
     super.onInit();
+    init();
+  }
+
+  void init() async {
     await service.imagePicker.retrieveLostData(bukti);
     showReminderDialog();
   }
@@ -458,7 +466,7 @@ void showReminderDialog() {
     service.imagePicker.resetImage(bukti);
   }
 
-   bool checkEmptyFields() {
+   bool checkEmptyFields([bool reqImage = true]) {
     if (
       namaC.any((e) => e.text.isBlank()) || 
       nimC.any((e) => e.text.isBlank()) || 
@@ -470,7 +478,7 @@ void showReminderDialog() {
       (dateC.text.isBlank() || dateC.text.toDateTime() == null)||
       timeStartC.value == null ||
       timeEndC.value == null ||
-      bukti.value == null
+      (bukti.value == null && reqImage)
     ) {
       namaE.value = namaC.map((e) => e.text.isBlank() ? '*required' : null).toList();
       nimE.value = nimC.map((e) => e.text.isBlank() ? '*required' : null).toList();
@@ -484,7 +492,7 @@ void showReminderDialog() {
       dateE.value = dateC.text.isBlank() ? '*required' : dateC.text.toDateTime() == null ? '*invalid' : null;
       timeStartE.value = timeStartC.value == null ? '*required' : null;
       timeEndE.value = timeEndC.value == null ? '*required' : null;
-      buktiE.value = bukti.value == null ? '*required' : null;
+      if (reqImage) buktiE.value = bukti.value == null ? '*required' : null;
       return false;
     }
     namaE.value.fillRange(0, namaE.value.length, null);
@@ -537,22 +545,16 @@ void showReminderDialog() {
                       ),
                     ),
                     TextSpan(
-                      text: '.',
-                      style: TextStyle(color: Colors.white)
+                      text: '.\n\nNote: Jika link tidak dapat dibuka, silahkan kirim pesan yang telah tersalin ke Line OA LDTE secara manual.',
+                      style: TextStyle(color: Colors.white, fontSize: 12)
                     ),
                   ],
                 ),
               ),
             ),
-            dismissible: false,
-            cancelText: 'Submit another form',
-            cancelAction: () {
-              currentContext?.go('/');
-              currentContext?.push('/surat-keterangan');
-            },
             confirmText: 'Close Page',
             confirmAction: () {
-              currentContext?.go('/');
+              currentContext?.go(NamedRoute.homepage);
             },
           );
           service.imagePicker.resetImage(bukti);
@@ -574,7 +576,7 @@ class PertukaranJadwalPraktikumController extends GetxController {
     var remindMe = storage.cached.userPreference.remindPertukaranJadwal.obs;
     if (remindMe.value) {
       alertDialog(
-        'Cara Pengisisan Formulir Pergantian Jadwal Praktikum: :',
+        'Cara Pengisisan Formulir Pergantian Jadwal Praktikum:',
         null,
         message: Column(
           children: [
@@ -755,22 +757,17 @@ Pertukaran diperbolehkan setelah ada chat konfirmasi dari LDTE.''';
                   ),
                 ),
                 TextSpan(
-                  text: '.',
-                  style: TextStyle(color: Colors.white)
+                  text: '.\n\nNote: Jika link tidak dapat dibuka, silahkan kirim pesan yang telah tersalin ke Line OA LDTE secara manual.',
+                  style: TextStyle(color: Colors.white, fontSize: 12)
                 ),
               ],
             ),
           ),
         ),
         dismissible: false,
-        cancelText: 'Submit another form',
-        cancelAction: () {
-          currentContext?.go('/');
-          currentContext?.push('/pertukaran-jadwal');
-        },
         confirmText: 'Close Page',
         confirmAction: () {
-          currentContext?.go('/');
+          currentContext?.go(NamedRoute.homepage);
         },
       );
     } else alertDialog('Error', 'Device is not synced.');
@@ -864,6 +861,7 @@ class AdminPeminjamanPeralatanController extends GetxController {
       submissions = res;
       qfsp.onChanged();
     }
+    getFindCall<DetailPeminjamanPeralatanController>()?.setInitialValue();
     isLoading.value = false;
   }
 
@@ -913,11 +911,63 @@ class AdminPeminjamanPeralatanController extends GetxController {
     }
     qfsp.onChanged();
   }
+
+  void detail(int id) {
+    currentContext?.push('${NamedRoute.pinjamAdmin}/$id');
+  }
 }
 
-class AdminSuratKeteranganPraktikumController extends SuratKeteranganPraktikumController {
+class DetailPeminjamanPeralatanController extends PeminjamanPeralatanController {
+  final int id;
+  final ac = Get.find<AdminPeminjamanPeralatanController>();
+  DetailPeminjamanPeralatanController(this.id);
+
+  @override 
+  void init() async {
+    if (ac.submissions.isNotEmpty) setInitialValue();
+  }
+
+  @override
+  void onClose() {
+    ac.qfsp.onChanged();
+    super.onClose();
+  }
+
+  void setInitialValue() {
+    final submission = ac.submissions.where((v) => v.id == id).firstOrNull;
+    if (submission == null) return;
+    namaC.text = submission.nama;
+    nimC.text = submission.nim;
+    barangDC.value = List.generate(submission.barang.length, (i) => SingleSelectController<String>('custom'));
+    barangC.value = List.generate(submission.barang.length, (i) => TextEditingController(text: submission.barang[i]));
+    barangE.value = List.generate(submission.barang.length, (i) => null);
+    banyakC.value = List.generate(submission.banyak.length, (i) => SingleSelectController<int>(submission.banyak[i]));
+    banyakE.value = List.generate(submission.banyak.length, (i) => null);
+    mulaiC.text = submission.mulai.toDateString();
+    akhirC.text = submission.akhir.toDateString();
+  }
+
+  void updateForm() async {
+    if (!checkEmptyFields(false)) return;
+    ac.isLoading.value = true;
+    final res = await ac.admin.updateFormData(id, dbform);
+    if (res != null) {
+      final lId = ac.submissions.indexWhere((v) => v.id == id);
+      if (lId == -1) {
+        ac.getAllSubmissions();
+        return;
+      }
+      snackbar('Success!', 'Form data updated Successfuly');
+      ac.submissions[lId] = res;
+    }
+    ac.isLoading.value = false;
+  }
+}
+
+class AdminSuratKeteranganPraktikumController extends GetxController {
   final admin = AdminSuratKeteranganPraktikumService();
 
+  var isLoading = false.obs;
   var isExporting = false.obs;
   var submissions = <SuratKeteranganPraktikumModel>[];
   var loadingIndicator = <int, bool>{};
@@ -987,6 +1037,7 @@ class AdminSuratKeteranganPraktikumController extends SuratKeteranganPraktikumCo
       submissions = res;
       qfsp.onChanged();
     }
+    getFindCall<DetailSuratKeteranganPraktikumController>()?.setInitialValue();
     isLoading.value = false;
   }
 
@@ -1047,5 +1098,71 @@ class AdminSuratKeteranganPraktikumController extends SuratKeteranganPraktikumCo
       if (index != -1) submissions[index] = item;
     }
     qfsp.onChanged();
+  }
+
+  void detail(int id) {
+    currentContext?.push('${NamedRoute.keteranganAdmin}/$id');
+  }
+}
+
+class DetailSuratKeteranganPraktikumController extends SuratKeteranganPraktikumController {
+  final int id;
+  final ac = Get.find<AdminSuratKeteranganPraktikumController>();
+  DetailSuratKeteranganPraktikumController(this.id);
+
+  @override 
+  void init() async {
+    if (ac.submissions.isNotEmpty) setInitialValue();
+  }
+
+  @override
+  void onClose() {
+    ac.qfsp.onChanged();
+    super.onClose();
+  }
+
+  void setInitialValue() {
+    final submission = ac.submissions.where((v) => v.id == id).firstOrNull;
+    if (submission == null) return;
+
+    namaC.value = List.generate(submission.nama.length, (i) => TextEditingController(text: submission.nama[i]));
+    namaE.value = List.generate(submission.nama.length, (i) => null);
+    nimC.value = List.generate(submission.nim.length, (i) => TextEditingController(text: submission.nim[i]));
+    nimE.value = List.generate(submission.nim.length, (i) => null);
+    
+    isMatkulLainnya.value = !matkulList.contains(submission.matkul);
+    matkul.value = isMatkulLainnya.value ? "Lainnya..." : submission.matkul;
+    if (isMatkulLainnya.value) {
+      kodeMatkul.text = submission.matkul.split(' ').first;
+      namaMatkul.text = submission.matkul.substring(kodeMatkul.text.length + 1);
+    }
+
+    isPraktikumLainnya.value = !praktikumList.contains(submission.praktikum);
+    praktikum.value = isPraktikumLainnya.value ?  "Lainnya..." : submission.praktikum;
+    if (isPraktikumLainnya.value) {
+      kodePraktikum.text = submission.praktikum.split(' ').first;
+      namaPraktikum.text = submission.praktikum.substring(kodePraktikum.text.length + 1);
+    }
+
+    modul.value = submission.modul;
+    dateC.text = submission.date.toDateString();
+    timeStartC.value = submission.timeStart;
+    timeEndC.value = submission.timeEnd;
+  }
+
+  void updateForm() async {
+    if (!checkEmptyFields(false)) return;
+    ac.isLoading.value = true;
+    final res = await ac.admin.updateFormData(id, form);
+    if (res != null) {
+      final lId = ac.submissions.indexWhere((v) => v.id == id);
+      if (lId == -1) {
+        ac.getAllSubmissions();
+        return;
+      }
+      snackbar('Success!', 'Form data updated Successfuly');
+      ac.submissions[lId] = res;
+    }
+    ac.isLoading.value = false;
   }
 }

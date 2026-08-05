@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -453,7 +452,7 @@ class QFSPController {
     required this.filter,
     required this.onChanged,
     required this.pageC,
-    this.dataPerPage = 15,
+    this.dataPerPage = 25,
   });
 
   final List<FilterController> filter;
@@ -600,14 +599,12 @@ class PeminjamanPeralatanService extends PDFService {
   void initWorker() async {
     if (!_pdfWorker.isStarted) {
       await _pdfWorker.start();
-      print('worker started');
-    } else print('worker already started');
+    }
   }
   void closeWorker() async {
     if (_pdfWorker.isStarted) {
       await _pdfWorker.stop();
-      print('worker stoped');
-    } else print('worker already stoped');
+    }
   }
 
   final imagePicker = ImagePickerService();
@@ -722,6 +719,23 @@ class AdminPeminjamanPeralatanService {
     }
     return null;
   }
+
+  Future<PeminjamanPeralatanModel?> updateFormData(int id, Map<String, dynamic> form) async {
+    try {
+      final res = await auth.supabase
+        .from('peminjaman_peralatan')
+        .update(form)
+        .eq('id', id)
+        .select()
+        .single();
+      return PeminjamanPeralatanModel.fromJson(res);
+    } on PostgrestException catch (error) {
+      alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
+    } catch (error) {
+      alertDialog('Unexpected error', '$error');
+    }
+    return null;
+  }
 }
 
 class AdminSuratKeteranganPraktikumService extends PDFService {
@@ -822,6 +836,23 @@ class AdminSuratKeteranganPraktikumService extends PDFService {
     catch (e) {
       alertDialog('Errr', '$e');
       print('(SuratKeteranganPraktikum.compilePDF) $e');
+    }
+    return null;
+  }
+
+  Future<SuratKeteranganPraktikumModel?> updateFormData(int id, Map<String, dynamic> form) async {
+    try {
+      final res = await auth.supabase
+        .from('surat_keterangan_praktikum')
+        .update(form)
+        .eq('id', id)
+        .select()
+        .single();
+      return SuratKeteranganPraktikumModel.fromJson(res);
+    } on PostgrestException catch (error) {
+      alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
+    } catch (error) {
+      alertDialog('Unexpected error', '$error');
     }
     return null;
   }

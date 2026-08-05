@@ -305,27 +305,15 @@ class SortRow extends StatelessWidget {
         mode: SideMenuMode.open,
         builder: (data) => SideMenuData(
           header: Padding(
-            padding: EdgeInsets.only(top: 52, bottom: 42),
+            padding: EdgeInsets.symmetric(vertical: 64),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('eForm LabDasar', textScaleFactor: 1.36,),
+                Text('eForm LDTE', textScaleFactor: 1.42,),
                 Text(auth.isLoggedIn ? 'Logged in as ${auth.user?.email}' : 'User not logged in', textScaleFactor: 0.92)
               ],
             ),
           ),
-          footer: Container(
-            padding: EdgeInsets.only(top: 12),
-            child: Obx(() => Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Last Sync'),
-                Text('${NC.lastSync.value}', textScaleFactor: 0.72,),
-                SizedBox(height: 8),
-                Text('App version 0.4.2 build 22', textScaleFactor: 0.92),
-              ],
-            ),
-          )),
           items: [
             SideMenuItemDataTitle(title: 'Page Navigation'),
             SideMenuItemDataTile(
@@ -343,6 +331,18 @@ class SortRow extends StatelessWidget {
               icon: Icon(auth.isLoggedIn ? Icons.person_rounded : Icons.login_rounded),
             ),
           ],
+          footer: Container(
+            padding: EdgeInsets.only(top: 12),
+            child: Obx(() => Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Last Sync'),
+                Text('${NC.lastSync.value}', textScaleFactor: 0.72,),
+                SizedBox(height: 8),
+                Text('App version 0.4.3 build 27', textScaleFactor: 0.92),
+              ],
+            ),
+          )),
         ),
       ),
     );

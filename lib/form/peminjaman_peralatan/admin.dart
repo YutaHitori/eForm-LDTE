@@ -18,7 +18,7 @@ class AdminPeminjamanPeralatan extends StatelessWidget {
       final isMassLoading = !c.QFSPedSubmissions.value.any((v) => c.isSelected[v.id]!) || c.QFSPedSubmissions.value.every((v) => c.loadingIndicator[v.id]!);
       return Scaffold(
         appBar: AppBar(
-          title: Text('Kiriman - Peminjaman Peralatan'),
+          title: Text('Admin - Peminjaman Peralatan'),
           actions: [
             IconButton(onPressed: c.isLoading.value ? null : c.getAllSubmissions, icon: Icon(Icons.refresh_rounded))
           ],
@@ -198,7 +198,7 @@ class AdminPeminjamanPeralatan extends StatelessWidget {
                                       //     SnackBar(content: Text('Phone number copied to clipboard!')),
                                       //   );
                                       // },
-                                      // onTap: () => c.preview(entry),
+                                      onTap: () => c.detail(entry.id),
                                       leading: Transform.translate(
                                         offset: Offset(8, 0),
                                         child: Row(
