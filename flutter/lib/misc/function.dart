@@ -29,13 +29,13 @@ void phoneValidateFormatFocus(TextEditingController phone, FocusNode phoneFN, Rx
   phone.text = result;
 }
 
-void alertDialog(String title, String? subtitle, {double? height, double? width, Color? backgroundColor, String? image, Widget? message, List<Widget>? actions,  VoidCallback? cancelAction, String cancelText = 'Close', VoidCallback? confirmAction, String confirmText = 'Confirm', bool dismissible = true}) {
+void alertDialog(String title, String? subtitle, {double? titleFontSize, double? subtitleFontSize, double? height, double? width, Color? backgroundColor, String? image, Widget? message, List<Widget>? actions,  VoidCallback? cancelAction, String cancelText = 'Close', VoidCallback? confirmAction, String confirmText = 'Confirm', bool dismissible = true}) {
   Future(() => Get.dialog(
     PopScope(
       canPop: dismissible,
       child: AlertDialog(
-        title: Text(title),
-        content: Container(
+        title: Text(title, style: TextStyle(fontSize: titleFontSize)),
+        content: SizedBox(
           height: height,
           width: width ?? 256 + 32,
           child: Column(
@@ -45,7 +45,7 @@ void alertDialog(String title, String? subtitle, {double? height, double? width,
               if (image != null) Image.asset(image, scale: 5, alignment: AlignmentGeometry.center,),
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: subtitle != null ? Text(subtitle) : message,
+                child: subtitle != null ? Text(subtitle, style: TextStyle(fontSize: subtitleFontSize)) : message,
               ),
             ],
           ),

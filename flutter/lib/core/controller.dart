@@ -12,6 +12,7 @@ import 'package:ldte_stei_itb/homepage/login.dart';
 import 'package:ldte_stei_itb/misc/extension.dart';
 import 'package:ldte_stei_itb/misc/function.dart';
 import 'package:ldte_stei_itb/misc/global.dart';
+import 'package:ldte_stei_itb/misc/widget.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -190,11 +191,65 @@ class PeminjamanPeralatanController extends GetxController {
     service.imagePicker.resetImage(idCard);
   }
 
+  void showReminderDialog() {
+    var remindMe = storage.cached.userPreference.remindPeminjamanPeralatan.obs;
+    if (remindMe.value) {
+      alertDialog(
+        'Cara Pengisisan Formulir Peminjaman Peralatan :',
+        null,
+        message: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              margin: EdgeInsets.symmetric(vertical: 8),
+              constraints: BoxConstraints(maxHeight: 152),
+              decoration: BoxDecoration(
+                color: appTheme.colorScheme.background,
+                borderRadius: BorderRadius.circular(8)
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
+              child: Scrollbar(
+                thumbVisibility: true,
+                radius: Radius.circular(4),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4.0),
+                    child: Text(
+'''- Isi kolom yang diperlukan secara online.
+- Beberapa kolom dapat dikosongkan jika tidak ada, tidak tahu, atau akan diisi setelah formulir diprint.
+- 1 formulir dapat digunakan untuk meminjam beberapa barang sekaligus (hingga 4 barang).
+- Setelah mengisi, klik tombol "Pinjam" untuk preview dokumen dan periksa apakah semua data sudah benar.
+- Dokumen kemudian dapat didownload dan diprint untuk ditandatangani, kemudian diserahkan pada saat menerima barang.''',
+                      style: TextStyle(fontSize: 12.8),
+                    ),
+                  )
+                )
+              ),
+            ),
+            Obx(() => Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Remind me again'),
+                Checkbox(value: remindMe.value, onChanged: (v) {
+                  remindMe.value = v!;
+                  storage.cached.userPreference.remindPeminjamanPeralatan = v;
+                  storage.save();
+                })
+              ],
+            )),
+          ],
+        ),
+        titleFontSize: 20,
+      );
+    }
+  }
+
   @override
   void onInit() async {
     super.onInit();
     service.initWorker();
     await service.imagePicker.retrieveLostData(idCard);
+    showReminderDialog();
   }
 
   @override
@@ -266,10 +321,64 @@ class SuratKeteranganPraktikumController extends GetxController {
   List<String> get matkulList => storage.cached.formatedMataKuliah();
   List<String> get praktikumList => storage.cached.formatedPraktikum();
 
+void showReminderDialog() {
+    var remindMe = storage.cached.userPreference.remindSuratKeteranganPraktikum.obs;
+    if (remindMe.value) {
+      alertDialog(
+        'Cara Pengisisan Formulir Surat Keterangan Praktikum :',
+        null,
+        message: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              margin: EdgeInsets.symmetric(vertical: 8),
+              constraints: BoxConstraints(maxHeight: 152),
+              decoration: BoxDecoration(
+                color: appTheme.colorScheme.background,
+                borderRadius: BorderRadius.circular(8)
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
+              child: Scrollbar(
+                thumbVisibility: true,
+                radius: Radius.circular(4),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4.0),
+                    child: Text(
+''''- Isi semua kolom yang ada secara online.
+- 1 formulir dapat digunakan untuk beberapa orang sekaligus (hingga 4 orang).
+- Jika semua kolom telah terisi, klik tombol "Submit".
+- Setelah formulir terkirim, silahkan melapor kepada admin melalui link yang diberikan.
+- Tunggu konfirmasi dan arahan selanjutnya (jika ada) dari admin.''',
+                      style: TextStyle(fontSize: 12.8),
+                    ),
+                  )
+                )
+              ),
+            ),
+            Obx(() => Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Remind me again'),
+                Checkbox(value: remindMe.value, onChanged: (v) {
+                  remindMe.value = v!;
+                  storage.cached.userPreference.remindSuratKeteranganPraktikum = v;
+                  storage.save();
+                })
+              ],
+            )),
+          ],
+        ),
+        titleFontSize: 20,
+      );
+    }
+  }
+
   @override
   void onInit() async {
     super.onInit();
     await service.imagePicker.retrieveLostData(bukti);
+    showReminderDialog();
   }
 
   Future<void> selectDate() async {
@@ -461,6 +570,64 @@ class PertukaranJadwalPraktikumController extends GetxController {
   final service = SuratKeteranganPraktikumService();
   List<String> get praktikumList => storage.cached.formatedPraktikum();
 
+  void showReminderDialog() {
+    var remindMe = storage.cached.userPreference.remindPertukaranJadwal.obs;
+    if (remindMe.value) {
+      alertDialog(
+        'Cara Pengisisan Formulir Pergantian Jadwal Praktikum: :',
+        null,
+        message: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              margin: EdgeInsets.symmetric(vertical: 8),
+              constraints: BoxConstraints(maxHeight: 152),
+              decoration: BoxDecoration(
+                color: appTheme.colorScheme.background,
+                borderRadius: BorderRadius.circular(8)
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
+              child: Scrollbar(
+                thumbVisibility: true,
+                radius: Radius.circular(4),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4.0),
+                    child: Text(
+'''- Isi semua kolom yang ada secara online.
+- Jika semua kolom telah terisi, klik tombol "Format".
+- Setelah formulir diformat, silahkan melapor kepada admin melalui link yang diberikan.
+- Tunggu konfirmasi dan arahan selanjutnya (jika ada) dari admin.''',
+                      style: TextStyle(fontSize: 12.8),
+                    ),
+                  )
+                )
+              ),
+            ),
+            Obx(() => Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Remind me again'),
+                Checkbox(value: remindMe.value, onChanged: (v) {
+                  remindMe.value = v!;
+                  storage.cached.userPreference.remindPertukaranJadwal = v;
+                  storage.save();
+                })
+              ],
+            )),
+          ],
+        ),
+        titleFontSize: 20,
+      );
+    }
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    showReminderDialog();
+  }
+
   Future<void> selectDate() async {
     final picked = await DateTimePickerService().selectDate(initial: dateC.text.toDateTime(), helpText: "Jadwal Sebelum Pertukaran");
     if (picked != null) dateC.text = picked.toDateString();
@@ -482,11 +649,6 @@ class PertukaranJadwalPraktikumController extends GetxController {
 
   final namaPC = TextEditingController();
   final nimPC = TextEditingController();
-  final praktikumP = SingleSelectController<String>(null);
-  var isPraktikumPLainnya = false.obs;
-  final kodePraktikumP = TextEditingController();
-  final namaPraktikumP = TextEditingController();
-  final modulP = SingleSelectController<int>(null);
   final datePC = TextEditingController();
 
   var namaE = Rxn<String>(null); 
@@ -499,10 +661,6 @@ class PertukaranJadwalPraktikumController extends GetxController {
 
   var namaPE = Rxn<String>(null); 
   var nimPE = Rxn<String>(null); 
-  var praktikumPE = Rxn<String>(null); 
-  var namaPraktikumPE = Rxn<String>(null); 
-  var kodePraktikumPE = Rxn<String>(null); 
-  var modulPE = Rxn<String>(null); 
   var datePE = Rxn<String>(null); 
 
   var prodiList = <String>[].obs;
@@ -524,8 +682,8 @@ Nama: ${namaPC.text.trim()}
 NIM : ${nimPC.text.trim()}
 
 MENGIKUTI PRAKTIKUM
-Praktikum : ${praktikumP.value == 'Lainnya...' ? '${kodePraktikumP.text.trim()} ${namaPraktikumP.text.trim()}' : praktikumP.value}
-Modul : ${modulP.value}
+Praktikum : ${praktikum.value == 'Lainnya...' ? '${kodePraktikum.text.trim()} ${namaPraktikum.text.trim()}' : praktikum.value}
+Modul : ${modul.value}
 Hari/Tanggal : ${datePC.text.toDateTime()?.toDateFormatString()}
 ------------------------------------------
 Pertukaran diperbolehkan setelah ada chat konfirmasi dari LDTE.''';
@@ -541,9 +699,6 @@ Pertukaran diperbolehkan setelah ada chat konfirmasi dari LDTE.''';
       ||
       namaPC.text.isBlank() || 
       nimPC.text.isBlank() || 
-      !praktikumP.hasValue || 
-        (praktikumP.value == 'Lainnya...' && (namaPraktikumP.text.isBlank() || kodePraktikumP.text.isBlank())) || 
-      !modulP.hasValue || 
       (datePC.text.isBlank() || datePC.text.toDateTime() == null)
     ) {
       namaE.value = namaC.text.isBlank() ? '*required' : null;
@@ -556,15 +711,11 @@ Pertukaran diperbolehkan setelah ada chat konfirmasi dari LDTE.''';
 
       namaPE.value = namaPC.text.isBlank() ? '*required' : null;
       nimPE.value = nimC.text.isBlank() ? '*required' : null;
-      praktikumPE.value = !praktikumP.hasValue ? '*required' : null;
-      namaPraktikumPE.value = praktikumP.value == 'Lainnya...' && namaPraktikumP.text.isBlank () ? '': null;
-      kodePraktikumPE.value = praktikumP.value == 'Lainnya...' && kodePraktikumP.text.isBlank () ? '': null;
-      modulPE.value = !modulP.hasValue ? '' : null ;
       datePE.value = datePC.text.isBlank() ? '*required' : datePC.text.toDateTime() == null ? '*invalid' : null;
       return false;
     }
     namaE.value = nimE.value = praktikumE.value = namaPraktikumE.value = kodePraktikumE.value = modulE.value = dateE.value 
-      = namaPE.value = nimPE.value = praktikumPE.value = namaPraktikumPE.value = kodePraktikumPE.value = modulPE.value = datePE.value = null;
+      = namaPE.value = nimPE.value = datePE.value = null;
     return true;
   }
 

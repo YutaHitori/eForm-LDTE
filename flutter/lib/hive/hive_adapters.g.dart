@@ -67,19 +67,22 @@ class StorageCacheModelAdapter extends TypeAdapter<StorageCacheModel> {
       globalConfig: fields[6] as GlobalConfigModel,
       mataKuliahPraktikum: (fields[7] as List).cast<MataKuliahPraktikumModel>(),
       lastSync: fields[5] as DateTime?,
+      userPreference: fields[8] as UserPreferenceModel,
     );
   }
 
   @override
   void write(BinaryWriter writer, StorageCacheModel obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(5)
       ..write(obj.lastSync)
       ..writeByte(6)
       ..write(obj.globalConfig)
       ..writeByte(7)
-      ..write(obj.mataKuliahPraktikum);
+      ..write(obj.mataKuliahPraktikum)
+      ..writeByte(8)
+      ..write(obj.userPreference);
   }
 
   @override
@@ -126,6 +129,48 @@ class GlobalConfigModelAdapter extends TypeAdapter<GlobalConfigModel> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is GlobalConfigModelAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class UserPreferenceModelAdapter extends TypeAdapter<UserPreferenceModel> {
+  @override
+  final typeId = 3;
+
+  @override
+  UserPreferenceModel read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return UserPreferenceModel(
+      remindPeminjamanPeralatan: fields[0] == null ? true : fields[0] as bool,
+      remindSuratKeteranganPraktikum: fields[1] == null
+          ? true
+          : fields[1] as bool,
+      remindPertukaranJadwal: fields[2] == null ? true : fields[2] as bool,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, UserPreferenceModel obj) {
+    writer
+      ..writeByte(3)
+      ..writeByte(0)
+      ..write(obj.remindPeminjamanPeralatan)
+      ..writeByte(1)
+      ..write(obj.remindSuratKeteranganPraktikum)
+      ..writeByte(2)
+      ..write(obj.remindPertukaranJadwal);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UserPreferenceModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

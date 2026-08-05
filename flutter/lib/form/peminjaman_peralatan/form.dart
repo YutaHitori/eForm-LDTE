@@ -37,15 +37,26 @@ class Pinjam extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               spacing: 8,
               children: [
-                Text(
-'''Cara Pengisisan Formulir Peminjaman Peralatan LDTE STEI ITB :
-- Isi kolom yang diperlukan secara online.
+                ExpansionTile(
+                  minTileHeight: 0,
+                  title: Text(
+                    "Cara Pengisisan Formulir Peminjaman Peralatan:",
+                    style: TextStyle(fontSize: 13.2),
+                  ),
+                  tilePadding: EdgeInsets.zero,
+                  childrenPadding: EdgeInsets.only(bottom: 8),
+                  expandedAlignment: Alignment.centerLeft,
+                  children: [
+                    Text(
+'''- Isi kolom yang diperlukan secara online.
 - Beberapa kolom dapat dikosongkan jika tidak ada, tidak tahu, atau akan diisi setelah formulir diprint.
 - 1 formulir dapat digunakan untuk meminjam beberapa barang sekaligus (hingga 4 barang).
 - Setelah mengisi, klik tombol "Pinjam" untuk preview dokumen dan periksa apakah semua data sudah benar.
-- Dokumen kemudian dapat didownload dan diprint untuk ditandatangani, kemudian diserahkan pada saat menerima barang.'''
+- Dokumen kemudian dapat didownload dan diprint untuk ditandatangani, kemudian diserahkan pada saat menerima barang.''',
+                      style: TextStyle(fontSize: 12.4),
+                    ),
+                  ],
                 ),
-                Divider(),
                 CustomTextField(
                   controller: c.namaC,
                   labelText: 'Nama Peminjam',

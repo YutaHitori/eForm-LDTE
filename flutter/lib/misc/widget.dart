@@ -322,7 +322,7 @@ class SortRow extends StatelessWidget {
                 Text('Last Sync'),
                 Text('${NC.lastSync.value}', textScaleFactor: 0.72,),
                 SizedBox(height: 8),
-                Text('App version 0.4.1 build 20', textScaleFactor: 0.92),
+                Text('App version 0.4.2 build 22', textScaleFactor: 0.92),
               ],
             ),
           )),

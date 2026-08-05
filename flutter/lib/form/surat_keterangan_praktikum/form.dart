@@ -37,13 +37,25 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 spacing: 8,
                 children: [
-                  Text(
-                    '''Cara Pengisisan Surat Keterangan Praktikum LDTE STEI ITB :
-- Isi semua kolom yang ada secara online.
+                  ExpansionTile(
+                    minTileHeight: 0,
+                    title: Text(
+                      "Cara Pengisisan Formulir Surat Keterangan Praktikum:",
+                      style: TextStyle(fontSize: 13.2),
+                    ),
+                    expandedAlignment: Alignment.centerLeft,
+                    tilePadding: EdgeInsets.zero,
+                    childrenPadding: EdgeInsets.only(bottom: 8),
+                    children: [
+                      Text(
+'''- Isi semua kolom yang ada secara online.
 - 1 formulir dapat digunakan untuk beberapa orang sekaligus (hingga 4 orang).
 - Jika semua kolom telah terisi, klik tombol "Submit".
 - Setelah formulir terkirim, silahkan melapor kepada admin melalui link yang diberikan.
-- Tunggu konfirmasi dan arahan selanjutnya (jika ada) dari admin.'''
+- Tunggu konfirmasi dan arahan selanjutnya (jika ada) dari admin.''',
+                        style: TextStyle(fontSize: 12.4),
+                      ),
+                    ],
                   ),
                   Divider(),
                   for (var i = 0; i < c.namaC.value.length; i++) ...[

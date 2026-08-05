@@ -30,12 +30,24 @@ class PertukaranJadwalPraktikum extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 spacing: 8,
                 children: [
-                  Text(
-          '''Cara Pengisisan Formulir Pergantian Jadwal Praktikum LDTE STEI ITB :
-- Isi semua kolom yang ada secara online.
+                  ExpansionTile(
+                    minTileHeight: 0,
+                    title: Text(
+                      "Cara Pengisisan Formulir Pergantian Jadwal Praktikum:",
+                      style: TextStyle(fontSize: 13.2),
+                    ),
+                    expandedAlignment: Alignment.centerLeft,
+                    tilePadding: EdgeInsets.zero,
+                    childrenPadding: EdgeInsets.only(bottom: 8),
+                    children: [
+                      Text(
+'''- Isi semua kolom yang ada secara online.
 - Jika semua kolom telah terisi, klik tombol "Format".
 - Setelah formulir diformat, silahkan melapor kepada admin melalui link yang diberikan.
-- Tunggu konfirmasi dan arahan selanjutnya (jika ada) dari admin.'''
+- Tunggu konfirmasi dan arahan selanjutnya (jika ada) dari admin.''',
+                        style: TextStyle(fontSize: 12.4),
+                      ),
+                    ],
                   ),
                   Divider(),
                   CustomTextField(
@@ -63,7 +75,7 @@ class PertukaranJadwalPraktikum extends StatelessWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('Praktikum Sebelum Pertukaran', textScaleFactor: 1.02,),
+                                Text('Praktikum', textScaleFactor: 1.02,),
                                 if (c.praktikumE.value != null) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
                               ],
                             ),
@@ -179,104 +191,6 @@ class PertukaranJadwalPraktikum extends StatelessWidget {
                     keyboardType: TextInputType.number,
                     inputFormatters: [ FilteringTextInputFormatter.digitsOnly ],
                     decoration: InputDecoration(hintText: 'e.g. 12345678'),
-                  ),
-                  Row(
-                    spacing: 8,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          spacing: 4,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('Praktikum Pengganti', textScaleFactor: 1.02,),
-                                if (c.praktikumPE.value != null) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
-                              ],
-                            ),
-                            DropdownFlutter<String>.search(
-                              controller: c.praktikumP,
-                              noResultFoundBuilder: (context, text) => Padding(
-                                padding: EdgeInsetsGeometry.all(16),
-                                child: Text(text, textAlign: TextAlign.center,),
-                              ),
-                              noResultFoundText: "Praktikum tidak ditemukan, silahkan hapus kolom pencarian dan pilih opsi 'Lainnya...'",
-                              listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
-                              decoration: CustomDropdownDecoration(
-                                searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.inputDecorationTheme.fillColor),
-                                closedFillColor: appTheme.inputDecorationTheme.fillColor,
-                                expandedFillColor: appTheme.inputDecorationTheme.fillColor,
-                                closedBorder: c.praktikumPE.value != null ? Border.all(color: appTheme.colorScheme.error) : null
-                              ),
-                              excludeSelected: false,
-                              items: ['Lainnya...'] + (NC.isSyncing.value ? [] : c.praktikumList),
-                              hintText: NC.isSyncing.value ? 'Syncing in progress, please wait...' : 'select',
-                              onChanged: (v) => c.isPraktikumPLainnya.value = v == 'Lainnya...',
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        width: constrains.maxWidth * 0.15,
-                        constraints: BoxConstraints(maxWidth: 160),
-                        child: Column(
-                          spacing: 4,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('Modul', textScaleFactor: 1.02, overflow: TextOverflow.ellipsis),
-                                if (c.modulPE.value != null) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
-                              ],
-                            ),
-                            DropdownFlutter<int>(
-                              controller: c.modulP,
-                              listItemBuilder: (context, item, isSelected, onItemSelect) => Text('$item', style: TextStyle(color: isSelected ? Colors.black : null),),
-                              decoration: CustomDropdownDecoration(
-                                closedFillColor: appTheme.inputDecorationTheme.fillColor,
-                                expandedFillColor: appTheme.inputDecorationTheme.fillColor,
-                                closedSuffixIcon: SizedBox(),
-                                expandedSuffixIcon: SizedBox(),
-                                closedBorder: c.modulPE.value != null ? Border.all(color: appTheme.colorScheme.error) : null
-                              ),
-                              excludeSelected: false,
-                              items: List.generate(20, (i) => i + 1),
-                              hintText: 'X',
-                              onChanged: (v) {},
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (c.isPraktikumPLainnya.value) Row(
-                    spacing: 12,
-                    children: [
-                      Expanded(
-                        child: CustomTextField(
-                          controller: c.kodePraktikumP,
-                          labelText: 'Kode Praktikum',
-                          errorText: c.kodePraktikumPE.value,
-                          decoration: InputDecoration(
-                            hintText: 'e.g. EL3017',
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: CustomTextField(
-                          controller: c.namaPraktikumP,
-                          labelText: 'Nama Praktikum',
-                          errorText: c.namaPraktikumPE.value,
-                          decoration: InputDecoration(
-                            hintText: 'e.g. Sistem Tenaga Elektrik',
-                          ),
-                        ),
-                      ),
-                    ],
                   ),
                   CustomTextField(
                     controller: c.datePC,

@@ -40,24 +40,7 @@ class PDFService {
   static void f(VoidCallback f) => f();
   
 
-  void preview(Uint8List savedFile, String fileName, [Function(VoidCallback) customCallback = f, RxBool? isLoading]) async {
-    final action = Row(
-      spacing: 8,
-      children: [
-        Expanded(child: ElevatedButton.icon(
-          onPressed: isLoading?.value == true ? null : () => customCallback(() => printPdf(savedFile, fileName)), 
-          style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF8B2E3C)),
-          label: Text(isLoading?.value == true ? 'Loading' : 'Print'),
-          icon: isLoading?.value == true ? null : Icon(Icons.print_rounded),
-        )),
-        Expanded(child: ElevatedButton.icon(
-          onPressed: isLoading?.value == true ? null : () => customCallback(() => downloadPdf(savedFile, fileName)),
-          style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.tertiary),
-          label: Text(isLoading?.value == true ? 'Please wait' : 'Download'), 
-          icon: isLoading?.value == true ? null : Icon(Icons.download_rounded),
-        )),
-      ],
-    );
+  void preview(Uint8List savedFile, String fileName, [Function(VoidCallback) customCallback = f, RxBool? isLoadingRx]) async {
     Get.bottomSheet(
       isScrollControlled: true,
       Container(
@@ -76,9 +59,7 @@ class PDFService {
             )),
             Container(
               width: Get.width,
-              constraints: BoxConstraints(
-                maxHeight: Get.height / 1.24
-              ),
+              constraints: BoxConstraints(maxHeight: Get.height / 1.24),
               height: Get.width * 1.32,
               child: PdfPreview(
                 enableScrollToPage: true,
@@ -93,8 +74,26 @@ class PDFService {
             ),
             Padding(
               padding: const EdgeInsets.all(12.0),
-              child: isLoading == null
-                ? action : Obx(() => action),
+              child: Obx(() { 
+                final isLoading = isLoadingRx?.value == true || NC.isSyncing.value;
+                return Row(
+                  spacing: 8,
+                  children: [
+                    Expanded(child: ElevatedButton.icon(
+                      onPressed: isLoading ? null : () => customCallback(() => printPdf(savedFile, fileName)), 
+                      style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF8B2E3C)),
+                      label: Text(isLoading ? NC.isSyncing.value ? 'Syncing...' : 'Loading...' : 'Print'),
+                      icon: isLoading ? null : Icon(Icons.print_rounded),
+                    )),
+                    Expanded(child: ElevatedButton.icon(
+                      onPressed: isLoading ? null : () => customCallback(() => downloadPdf(savedFile, fileName)),
+                      style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.tertiary),
+                      label: Text(isLoading ? 'Please wait' : 'Download'), 
+                      icon: isLoading ? null : Icon(Icons.download_rounded),
+                   )),
+                  ],
+                );
+              }),
             ),
           ],
         ),
@@ -151,14 +150,17 @@ class StorageService {
   StorageCacheModel cached = StorageCacheModel(
     globalConfig: GlobalConfigModel(),
     mataKuliahPraktikum: [],
-    lastSync: null
+    lastSync: null,
+    userPreference: UserPreferenceModel()
   );
-
+  
   Future<void> initialize() async {
     if (box == null) {
       box = await Hive.openBox<StorageCacheModel>('local');
-      cached = box?.get('cached_storage') ?? cached;
-      NC.lastSync.value = cached.lastSync;
+      try {
+        cached = box?.get('cached_storage') ?? cached;
+        NC.lastSync.value = cached.lastSync;
+      } catch (e) {}
       sync();
     }
   }
@@ -201,6 +203,7 @@ class StorageService {
     print('synced global settings : $global');
     if (latest != null) updateOutdatedField(latest);
     if (global != null) updateGlobalConfig(global);
+    
     if (latest != null || global != null) {
       cached.lastSync = now;
       NC.lastSync.value = now;

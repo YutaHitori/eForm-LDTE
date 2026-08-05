@@ -96,15 +96,29 @@ class MataKuliahPraktikumModel {
   }
 }
 
+class UserPreferenceModel {
+  bool remindPeminjamanPeralatan;
+  bool remindSuratKeteranganPraktikum;
+  bool remindPertukaranJadwal;
+  
+  UserPreferenceModel({
+    this.remindPeminjamanPeralatan = true,
+    this.remindSuratKeteranganPraktikum = true,
+    this.remindPertukaranJadwal = true,
+  });
+}
+
 class StorageCacheModel {
   GlobalConfigModel globalConfig;
   List<MataKuliahPraktikumModel> mataKuliahPraktikum;
+  UserPreferenceModel userPreference;
   DateTime? lastSync;
   
   StorageCacheModel({
     required this.globalConfig,
     required this.mataKuliahPraktikum,
     required this.lastSync,
+    required this.userPreference
   });
 
   List<MataKuliahPraktikumModel> get mataKuliah => mataKuliahPraktikum.where((v) => !v.isPraktikum).toList();

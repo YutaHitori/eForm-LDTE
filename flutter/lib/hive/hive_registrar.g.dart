@@ -10,6 +10,7 @@ extension HiveRegistrar on HiveInterface {
     registerAdapter(GlobalConfigModelAdapter());
     registerAdapter(MataKuliahPraktikumModelAdapter());
     registerAdapter(StorageCacheModelAdapter());
+    registerAdapter(UserPreferenceModelAdapter());
   }
 }
 
@@ -18,5 +19,6 @@ extension IsolatedHiveRegistrar on IsolatedHiveInterface {
     registerAdapter(GlobalConfigModelAdapter());
     registerAdapter(MataKuliahPraktikumModelAdapter());
     registerAdapter(StorageCacheModelAdapter());
+    registerAdapter(UserPreferenceModelAdapter());
   }
 }
