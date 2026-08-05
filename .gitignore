@@ -188,12 +188,13 @@ app.*.map.json
 android/app/debug
 android/app/profile
 android/app/release
-api/ldte_stei_itb-api.code-workspace
-flutter/lib/core/ldte_stei_itb-flutter.code-workspace
-ldte_stei_itb-flutter.code-workspace
-ldte_stei_itb-api.code-workspace
-flutter/!flow plan.txt
+lib/core/eform_ldte.code-workspace
+eform_ldte.code-workspace
+flow plan.txt
 matkul.txt
 kode.txt
 nama.txt
 praktikum.txt
+
+web/*CompilePdfWorker.js.deps
+web/*CompilePdfWorker.js.map
