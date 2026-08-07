@@ -12,23 +12,29 @@ class AppLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
-      builder: (context, constraints) => Obx(() => Row(
-        children: [
-          if (constraints.constrainWidth() > (800)) Material(child: SideMenuNavigation(context, NC.currentPage.value!)),
-          Expanded(
-            child: Scaffold(appBar: AppBar(title: Text(NC.title[NC.currentPage.value]!)),
-                drawer: constraints.constrainWidth() > (800) ? null : SideMenuNavigation(context, NC.currentPage.value!),
-              body: RefreshIndicator(
-                  onRefresh: hardRefresh,
-                  child: SingleChildScrollView(
-                    physics: AlwaysScrollableScrollPhysics(),
-                    child: SizedBox(height: constraints.maxHeight - 56, child: NC.pages[NC.currentPage.value]),
+      builder: (context, constraints) {
+        NC.constraints.value = constraints;
+        return Obx(() => Row(
+          children: [
+            if (constraints.constrainWidth() > (800)) Material(child: SideMenuNavigation(context, NC.currentPage.value!)),
+            Expanded(
+              child: Scaffold(appBar: AppBar(title: Text(NC.title[NC.currentPage.value]!)),
+                  drawer: constraints.constrainWidth() > (800) ? null : SideMenuNavigation(context, NC.currentPage.value!),
+                body: RefreshIndicator(
+                    onRefresh: hardRefresh,
+                    child: SingleChildScrollView(
+                      physics: AlwaysScrollableScrollPhysics(),
+                      child: SizedBox(
+                        height: constraints.maxHeight - 56, 
+                        child: NC.pages[NC.currentPage.value]
+                      ),
+                    ),
                   ),
-                ),
-              )
-          ),
-        ],
-      )
-    ));
+                )
+            ),
+          ],
+        )
+      );
+    });
   }
 }

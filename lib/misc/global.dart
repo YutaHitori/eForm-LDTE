@@ -11,21 +11,6 @@ final storage = StorageService();
 
 final NC = Get.put(NavigationController());
 
-final fakultas = [
-  "Fakultas Ilmu dan Teknologi Kebumian (FITB)", 
-  "Fakultas Matematika dan Ilmu Pengetahuan Alam (FMIPA)", 
-  "Fakultas Seni Rupa dan Desain (FSRD)", 
-  "Fakultas Teknik Mesin dan Dirgantara (FTMD)", 
-  "Fakultas Teknik Pertambangan dan Perminyakan (FTTM)", 
-  "Fakultas Teknik Sipil dan Lingkungan (FTSL)", 
-  "Fakultas Teknologi Industri (FTI)", 
-  "Sekolah Arsitektur, Perencanaan dan Pengembangan Kebijakan (SAPPK)", 
-  "Sekolah Bisnis dan Manajemen (SBM)", 
-  "Sekolah Farmasi (SF)", 
-  "Sekolah Ilmu dan Teknologi Hayati (SITH)", 
-  "Sekolah Teknik Elektro dan Informatika (STEI)"
-];
-
 final items = ['custom', 'Oscilloscope', 'Multimeter', 'Signal Generator'];
 
 pw.TextStyle textStyle({double? fontSize, double? lineSpacing}) {
@@ -51,6 +36,7 @@ class NamedRoute {
   static const login = '/login';
 
   static const admin = '/admin';
+  static const config = '/admin/config';
   static const pinjamAdmin = '/admin/peminjaman-peralatan';
   static const keteranganAdmin = '/admin/surat-keterangan';
 }

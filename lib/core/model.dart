@@ -50,12 +50,11 @@ class SuratKeteranganPraktikumModel {
 } 
 
 class LastUpdatedModel {
-  String? fakultas, type;
-  DateTime? timestamp;
+  String? field;
+  late DateTime timestamp;
   
   LastUpdatedModel.fromJson(Map<String, dynamic> json) {
-    fakultas = json['fakultas'];
-    type = json['type'];
+    field = json['field'];
     timestamp = DateTime.parse(json['updated_at']);
   }
 }
@@ -75,24 +74,64 @@ class GlobalConfigModel {
   }
 }
 
+class FakultasModel {
+  late int id;
+  late String name;
+  List<ProgramStudiModel> programStudi = [];
+
+  FakultasModel({
+    required this.id,
+    required this.name,
+    required this.programStudi,
+  });
+
+  FakultasModel.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    name = json['name'];
+    List.of(json['program_studi']).forEach((v) => programStudi.add(ProgramStudiModel.fromJson(v)));
+  }
+
+  List<String> formatedProgramStudi() => programStudi.map((v) => v.name).toList();
+}
+
+class ProgramStudiModel {
+  late int id;
+  late String name;
+  List<MataKuliahPraktikumModel> mataKuliah = [];
+  List<MataKuliahPraktikumModel> praktikum = [];
+  
+  ProgramStudiModel({
+    required this.id,
+    required this.name,
+    required this.mataKuliah,
+    required this.praktikum,
+  });
+
+  ProgramStudiModel.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    name = json['name'];
+    List.of(json['mata_kuliah']).forEach((v) => mataKuliah.add(MataKuliahPraktikumModel.fromJson(v)));
+    List.of(json['praktikum']).forEach((v) => praktikum.add(MataKuliahPraktikumModel.fromJson(v)));
+  }
+
+  List<String> formatedMataKuliah() => mataKuliah.map((v) => '${v.kode} ${v.nama}').toList();
+  List<String> formatedPraktikum() => praktikum.map((v) => '${v.kode} ${v.nama}').toList();
+}
+
 class MataKuliahPraktikumModel {
-  late String fakultas, programStudi, kode, nama;
-  late bool isPraktikum;
+  late int id;
+  late String kode, nama;
 
   MataKuliahPraktikumModel({
-    required this.fakultas,
-    required this.programStudi,
+    required this.id,
     required this.kode,
     required this.nama,
-    required this.isPraktikum,
   });
 
   MataKuliahPraktikumModel.fromJson(Map<String, dynamic> json) {
-    fakultas = json['fakultas']; 
-    programStudi = json['program_studi']; 
+    id = json['id']; 
     kode = json['kode']; 
     nama = json['nama']; 
-    isPraktikum = json['is_praktikum']; 
   }
 }
 
@@ -110,41 +149,23 @@ class UserPreferenceModel {
 
 class StorageCacheModel {
   GlobalConfigModel globalConfig;
-  List<MataKuliahPraktikumModel> mataKuliahPraktikum;
+  List<FakultasModel> fakultas;
   UserPreferenceModel userPreference;
   DateTime? lastSync;
   
   StorageCacheModel({
     required this.globalConfig,
-    required this.mataKuliahPraktikum,
+    required this.fakultas,
     required this.lastSync,
     required this.userPreference
   });
 
-  List<MataKuliahPraktikumModel> get mataKuliah => mataKuliahPraktikum.where((v) => !v.isPraktikum).toList();
-  List<MataKuliahPraktikumModel> get praktikum => mataKuliahPraktikum.where((v) => v.isPraktikum).toList();
+  List<ProgramStudiModel> get programStudi => fakultas.expand((f) => f.programStudi).toList();
+  List<MataKuliahPraktikumModel> get mataKuliah => programStudi.expand((p) => p.mataKuliah).toList();
+  List<MataKuliahPraktikumModel> get praktikum => programStudi.expand((p) => p.praktikum).toList();
 
-  List<MataKuliahPraktikumModel> byFakultas(String fakultas) {
-    return mataKuliahPraktikum.where((v) => v.fakultas == fakultas).toList();
-  }
-
-  List<MataKuliahPraktikumModel> byProgramStudi(String programStudi) {
-    return mataKuliahPraktikum.where((v) => v.programStudi == programStudi).toList();
-  }
-
-  MataKuliahPraktikumModel? byKode(String kode) {
-    return mataKuliahPraktikum.where((v) => v.kode == kode).firstOrNull;
-  }
-
-  List<String> formatedMataKuliah() {
-    List<String> temp = [];
-    mataKuliah.forEach((v) => temp.add('${v.kode} ${v.nama}'));
-    return temp;
-  }
-
-  List<String> formatedPraktikum() {
-    List<String> temp = [];
-    praktikum.forEach((v) => temp.add('${v.kode} ${v.nama}'));
-    return temp;
-  }
+  List<String> formatedFakultas() => fakultas.map((v) => v.name).toList();
+  List<String> formatedProgramStudi() => programStudi.map((v) => v.name).toList();
+  List<String> formatedMataKuliah() => mataKuliah.map((v) => '${v.kode} ${v.nama}').toList();
+  List<String> formatedPraktikum() => praktikum.map((v) => '${v.kode} ${v.nama}').toList();
 }

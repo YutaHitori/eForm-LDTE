@@ -7,8 +7,10 @@ import 'package:eform_ldte/hive/hive_adapters.dart';
 
 extension HiveRegistrar on HiveInterface {
   void registerAdapters() {
+    registerAdapter(FakultasModelAdapter());
     registerAdapter(GlobalConfigModelAdapter());
     registerAdapter(MataKuliahPraktikumModelAdapter());
+    registerAdapter(ProgramStudiModelAdapter());
     registerAdapter(StorageCacheModelAdapter());
     registerAdapter(UserPreferenceModelAdapter());
   }
@@ -16,8 +18,10 @@ extension HiveRegistrar on HiveInterface {
 
 extension IsolatedHiveRegistrar on IsolatedHiveInterface {
   void registerAdapters() {
+    registerAdapter(FakultasModelAdapter());
     registerAdapter(GlobalConfigModelAdapter());
     registerAdapter(MataKuliahPraktikumModelAdapter());
+    registerAdapter(ProgramStudiModelAdapter());
     registerAdapter(StorageCacheModelAdapter());
     registerAdapter(UserPreferenceModelAdapter());
   }

@@ -85,7 +85,8 @@ class Pinjam extends StatelessWidget {
                         listItemStyle: TextStyle(color: Colors.black),
                       ),
                       excludeSelected: false,
-                      items: ['reset', ...fakultas],
+                      items: ['reset'] + (NC.isSyncing.value ? [] : c.fakultasList),
+                    hintText: NC.isSyncing.value ? 'Syncing in progress, please wait...' : 'select',
                       controller: c.fakultasC,
                       onChanged: (value) { 
                         if (value == 'reset') c.fakultasC.value = null;

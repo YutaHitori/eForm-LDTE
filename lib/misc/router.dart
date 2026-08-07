@@ -1,5 +1,6 @@
 import 'package:eform_ldte/form/peminjaman_peralatan/detail.dart';
 import 'package:eform_ldte/form/surat_keterangan_praktikum/detail.dart';
+import 'package:eform_ldte/admin/config.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:eform_ldte/core/controller.dart';
@@ -105,6 +106,15 @@ final GoRouter router = GoRouter(
                 onExit: (context, state) => onExit<DetailSuratKeteranganPraktikumController>(),
               ),
             ]
+          ),
+          GoRoute(
+            path: 'config',
+            redirect: (context, state) {
+              return redirect(state.matchedLocation);
+            },
+            builder: (context, state) => const GlobalConfig(),
+            onExit: (context, state) => onExit<GlobalConfigController>(),
+            routes: []
           ),
         ]
       ),

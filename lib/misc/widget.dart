@@ -1,10 +1,8 @@
 import 'package:dropdown_flutter/custom_dropdown.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_side_menu/flutter_side_menu.dart';
 import 'package:get/get.dart';
-import 'package:get/route_manager.dart';
 import 'package:eform_ldte/core/service.dart';
 import 'package:eform_ldte/misc/function.dart';
 import 'package:eform_ldte/misc/global.dart';
@@ -134,12 +132,13 @@ class CustomTextField extends StatelessWidget {
     this.controller,
     this.focusNode,
     this.maxLines = 1,
-    this.decoration = const InputDecoration(),
+    this.decoration,
     this.keyboardType,
     this.obscureText,
     this.canError = true,
     this.onChanged,
-    this.enabled = true,
+    this.enabled,
+    this.readOnly = false,
     this.onSubmitted,
     this.autofillHints = const <String>[],
     this.inputFormatters,
@@ -151,11 +150,12 @@ class CustomTextField extends StatelessWidget {
   final TextEditingController? controller;
   final FocusNode? focusNode;
   final int? maxLines;
-  final InputDecoration decoration;
+  final InputDecoration? decoration;
   final TextInputType? keyboardType;
   final bool? obscureText;
   final bool canError;
-  final bool enabled;
+  final bool? enabled;
+  final bool readOnly;
   final void Function(String)? onChanged;
   final void Function(String)? onSubmitted;
   final Iterable<String>? autofillHints;
@@ -186,7 +186,7 @@ class CustomTextField extends StatelessWidget {
           controller: controller,
           focusNode: focusNode,
           maxLines: maxLines,
-          decoration: decoration.copyWith(
+          decoration: (decoration ?? InputDecoration()).copyWith(
             filled: true,
             helperText: canError ? '' : null,
             errorText: errorText == null ? null : ''
@@ -196,6 +196,8 @@ class CustomTextField extends StatelessWidget {
           obscureText: obscureText ?? false,
           onSubmitted: onSubmitted,
           autofillHints: autofillHints,
+          enabled: enabled,
+          readOnly: readOnly,
         ),
       ],
     );
@@ -309,7 +311,7 @@ class SortRow extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('eForm LDTE', textScaleFactor: 1.42,),
+                Text('eFrom LDTE', textScaleFactor: 1.42, textAlign: TextAlign.center,),
                 Text(auth.isLoggedIn ? 'Logged in as ${auth.user?.email}' : 'User not logged in', textScaleFactor: 0.92)
               ],
             ),
@@ -339,7 +341,7 @@ class SortRow extends StatelessWidget {
                 Text('Last Sync'),
                 Text('${NC.lastSync.value}', textScaleFactor: 0.72,),
                 SizedBox(height: 8),
-                Text('App version 0.4.3 build 28', textScaleFactor: 0.92),
+                Text('${NC.buildVersion.value}', textScaleFactor: 0.92),
               ],
             ),
           )),

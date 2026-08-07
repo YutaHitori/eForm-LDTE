@@ -18,28 +18,22 @@ class MataKuliahPraktikumModelAdapter
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return MataKuliahPraktikumModel(
-      fakultas: fields[0] as String,
-      programStudi: fields[1] as String,
+      id: (fields[5] as num).toInt(),
       kode: fields[2] as String,
       nama: fields[3] as String,
-      isPraktikum: fields[4] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, MataKuliahPraktikumModel obj) {
     writer
-      ..writeByte(5)
-      ..writeByte(0)
-      ..write(obj.fakultas)
-      ..writeByte(1)
-      ..write(obj.programStudi)
+      ..writeByte(3)
       ..writeByte(2)
       ..write(obj.kode)
       ..writeByte(3)
       ..write(obj.nama)
-      ..writeByte(4)
-      ..write(obj.isPraktikum);
+      ..writeByte(5)
+      ..write(obj.id);
   }
 
   @override
@@ -65,7 +59,7 @@ class StorageCacheModelAdapter extends TypeAdapter<StorageCacheModel> {
     };
     return StorageCacheModel(
       globalConfig: fields[6] as GlobalConfigModel,
-      mataKuliahPraktikum: (fields[7] as List).cast<MataKuliahPraktikumModel>(),
+      fakultas: (fields[9] as List).cast<FakultasModel>(),
       lastSync: fields[5] as DateTime?,
       userPreference: fields[8] as UserPreferenceModel,
     );
@@ -79,10 +73,10 @@ class StorageCacheModelAdapter extends TypeAdapter<StorageCacheModel> {
       ..write(obj.lastSync)
       ..writeByte(6)
       ..write(obj.globalConfig)
-      ..writeByte(7)
-      ..write(obj.mataKuliahPraktikum)
       ..writeByte(8)
-      ..write(obj.userPreference);
+      ..write(obj.userPreference)
+      ..writeByte(9)
+      ..write(obj.fakultas);
   }
 
   @override
@@ -171,6 +165,89 @@ class UserPreferenceModelAdapter extends TypeAdapter<UserPreferenceModel> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is UserPreferenceModelAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class FakultasModelAdapter extends TypeAdapter<FakultasModel> {
+  @override
+  final typeId = 4;
+
+  @override
+  FakultasModel read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return FakultasModel(
+      id: (fields[0] as num).toInt(),
+      name: fields[1] as String,
+      programStudi: (fields[2] as List).cast<ProgramStudiModel>(),
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, FakultasModel obj) {
+    writer
+      ..writeByte(3)
+      ..writeByte(0)
+      ..write(obj.id)
+      ..writeByte(1)
+      ..write(obj.name)
+      ..writeByte(2)
+      ..write(obj.programStudi);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is FakultasModelAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class ProgramStudiModelAdapter extends TypeAdapter<ProgramStudiModel> {
+  @override
+  final typeId = 5;
+
+  @override
+  ProgramStudiModel read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return ProgramStudiModel(
+      id: (fields[0] as num).toInt(),
+      name: fields[1] as String,
+      mataKuliah: (fields[2] as List).cast<MataKuliahPraktikumModel>(),
+      praktikum: (fields[3] as List).cast<MataKuliahPraktikumModel>(),
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, ProgramStudiModel obj) {
+    writer
+      ..writeByte(4)
+      ..writeByte(0)
+      ..write(obj.id)
+      ..writeByte(1)
+      ..write(obj.name)
+      ..writeByte(2)
+      ..write(obj.mataKuliah)
+      ..writeByte(3)
+      ..write(obj.praktikum);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ProgramStudiModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

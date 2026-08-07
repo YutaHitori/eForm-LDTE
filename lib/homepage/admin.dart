@@ -11,31 +11,26 @@ class Admin extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AdminController c = Get.put(AdminController());
-    return Row(
+    return c.isLoading.value
+      ? Center(child: CircularProgressIndicator())
+      : Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Expanded(
-              child: c.isLoading.value
-                ? Center(child: CircularProgressIndicator(),)
-                : Column(
-                  spacing: 24,
-                  children: [
-                    SizedBox(),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: Column(
-                        spacing: 8,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.pinjamAdmin), child: Text('Peminjaman Peralatan')),
-                          ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.keteranganAdmin), child: Text('Surat Keterangan Praktikum')),
-                          ElevatedButton(onPressed: c.SignOutDialog, child: Text('Logout')),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+            Column(
+              spacing: 8,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.config), child: Text('Global Config')),
+                ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.pinjamAdmin), child: Text('Peminjaman Peralatan')),
+                ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.keteranganAdmin), child: Text('Surat Keterangan Praktikum')),
+              ],
             ),
+            ElevatedButton(onPressed: c.SignOutDialog, child: Text('Logout')),
           ],
-    );
+        ),
+      );
   }
 }

@@ -14,6 +14,7 @@ import 'package:eform_ldte/misc/function.dart';
 import 'package:eform_ldte/misc/global.dart';
 import 'package:eform_ldte/misc/widget.dart';
 import 'package:number_paginator/number_paginator.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
@@ -64,6 +65,7 @@ class PermissionController {
 class NavigationController extends GetxController {
   var isSyncing = false.obs;
   var lastSync = Rxn<DateTime>(null);
+  var buildVersion = ''.obs;
   var isLoggedIn = auth.isLoggedIn.obs;
 
   final Map<String, String> title = {
@@ -79,8 +81,10 @@ class NavigationController extends GetxController {
   };
 
   @override
-  void onInit() {
+  void onInit() async {
     super.onInit();
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    buildVersion.value = 'App version ${packageInfo.version} build ${packageInfo.buildNumber}';
   }
 
   void navigateToPage(String route, [BuildContext? context]) {
@@ -93,6 +97,8 @@ class NavigationController extends GetxController {
   }
   
   var currentPage = RxnString(null);
+
+  var constraints = Rx<BoxConstraints>(BoxConstraints());
 }
 
 class LoginController extends GetxController {
@@ -131,6 +137,8 @@ class LoginController extends GetxController {
 class PeminjamanPeralatanController extends GetxController {
   final service = PeminjamanPeralatanService();
   var isLoading = false.obs;
+
+  List<String> get fakultasList => storage.cached.formatedFakultas();
 
   Rxn<XFile> idCard = Rxn<XFile>(ImagePickerService.lastImages['default']); 
 
@@ -264,7 +272,7 @@ class PeminjamanPeralatanController extends GetxController {
   
   void setProdi() {
     prodiC.value = null;
-    prodiList.value = getAvailableProdi(fakultasC.value);
+    prodiList.value = storage.cached.fakultas.where((v) => v.name == fakultasC.value).first.formatedProgramStudi();
   }
 
   var namaE = Rxn<String>(null); 
@@ -1164,5 +1172,128 @@ class DetailSuratKeteranganPraktikumController extends SuratKeteranganPraktikumC
       ac.submissions[lId] = res;
     }
     ac.isLoading.value = false;
+  }
+}
+
+class GlobalConfigController extends GetxController {
+  @override
+  void onInit() {
+    super.onInit();
+    lineOAFocus.addListener(() {
+      if (!lineOAFocus.hasFocus) {
+        lineOA.text = lineOA.text.toLowerCase().trim();
+        if (lineOA.text[0] == '@') lineOA.text.substring(1);
+      }
+    });
+    nomorSuratFocus.addListener(() {
+       if (!nomorSuratFocus.hasFocus) nomorSurat.text = nomorSurat.text.toUpperCase().trim();
+    });
+  }
+
+  @override
+  void onClose() {
+    lineOAFocus.unfocus();
+    nomorSuratFocus.unfocus();
+    Future(() {
+      lineOAFocus.dispose();
+      nomorSuratFocus.dispose();
+    });
+    super.onClose();
+  }
+  
+  final service = GlobalConfigService();
+
+  var isSaved = true.obs;
+  var isLoading = false.obs;
+  var loadingMessage = RxnString();
+
+  bool isSavedCheck() {
+    lineOASaved.value = lineOA.text == storage.cached.globalConfig.lineOALDTE;
+    nomorSuratSaved.value = nomorSurat.text == storage.cached.globalConfig.nomorSurat;
+    isSaved.value = lineOASaved.value && nomorSuratSaved.value;
+    return isSaved.value;
+  }
+
+  final lineOA = TextEditingController(text: storage.cached.globalConfig.lineOALDTE);
+  final lineOAFocus = FocusNode();
+  var lineOACanEdit = false.obs;
+  var lineOASaved = true.obs;
+
+  final nomorSurat = TextEditingController(text: storage.cached.globalConfig.nomorSurat);
+  final nomorSuratFocus = FocusNode();
+  var nomorSuratCanEdit = false.obs;
+  var nomorSuratSaved = true.obs;
+
+  Map<String, dynamic> get form {
+    lineOA.text = lineOA.text.toLowerCase().trim();
+    if (lineOA.text[0] == '@') lineOA.text.substring(1);
+    nomorSurat.text = nomorSurat.text.toUpperCase().trim();
+    return {
+      if (lineOA.text != storage.cached.globalConfig.lineOALDTE) 'lineoa_ldte' : lineOA.text,
+      if (nomorSurat.text != storage.cached.globalConfig.nomorSurat) 'nomor_surat' : nomorSurat.text,
+    };
+  }
+
+  void saveLineOa() async {
+    isLoading.value = true;
+    loadingMessage.value = 'Saving line official account, please wait...';
+    final isSuccess = await service.updateGlobalConfig({'lineoa_ldte' : form['lineoa_ldte']});
+    if (isSuccess) {
+      snackbar('Success!', 'Line official account updated');
+      loadingMessage.value = 'Syncing new config, please wait...';
+      await storage.sync();
+      lineOACanEdit.value = false;
+      isSavedCheck();
+    }
+    isLoading.value = false;
+  }
+
+  void saveNomorSurat() async {
+    isLoading.value = true;
+    loadingMessage.value = 'Saving nomor surat, please wait...';
+    final isSuccess = await service.updateGlobalConfig({'nomor_surat' : form['nomor_surat']});
+    if (isSuccess) {
+      snackbar('Success!', 'Nomor Surat updated');
+      loadingMessage.value = 'Syncing new config, please wait...';
+      nomorSuratCanEdit.value = false;
+      await storage.sync();
+      isSavedCheck();
+    }
+    isLoading.value = false;
+  }
+
+  void saveAll() async {
+    isLoading.value = true;
+    loadingMessage.value = 'Saving updated config, please wait...';
+    final isSuccess = await service.updateGlobalConfig(form);
+    if (isSuccess) {
+      snackbar('Success!', 'Global config updated');
+      loadingMessage.value = 'Syncing new config, please wait...';
+      await storage.sync();
+      nomorSuratCanEdit.value = lineOACanEdit.value = false;
+      isSavedCheck();
+    }
+    isLoading.value = false;
+  }
+
+  void saveAllDialog() {
+    if (isLoading.value) return;
+    if (!isSavedCheck()) {
+      alertDialog(
+        'Leave this page?',
+        'You have some unsaved changes, are you sure you want to leave without saving?',
+        cancelAction: () {
+          closeAllDialog();
+          currentContext?.pop();
+        },
+        cancelText: 'Leave',
+        confirmAction: () {
+          saveAll(); 
+          closeAllDialog();
+          currentContext?.pop();
+        },
+        confirmText: 'Save',
+      );
+    } else currentContext?.pop();
   }
 }

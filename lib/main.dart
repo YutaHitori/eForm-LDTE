@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
@@ -11,8 +10,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 
 void main() async {
-  if (kIsWeb) usePathUrlStrategy();
-
+  usePathUrlStrategy();
+  
   GoRouter.optionURLReflectsImperativeAPIs = true;
 
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,18 +32,6 @@ void main() async {
   runApp(
     MaterialApp.router(
       routerConfig: router,
-      // builder: (context, child) => LayoutBuilder(
-      //   builder:(context, constraints) {
-      //     debounceCallback(() {
-      //       Future(() { 
-      //         final double uiScale = Get.isRegistered<SettingsController>() ? Get.find<SettingsController>().uiScale.value : preference.uiScale;
-      //         ScaledWidgetsFlutterBinding.instance.scaleFactor = 
-      //           (size) => (size.width /  (Get.width > (432) ? Get.width : 432)) * uiScale;
-      //       });
-      //     });
-      //     return child!;
-      //   }
-      // ), 
       title: 'eForm LDTE',
       theme: appTheme,
     ),

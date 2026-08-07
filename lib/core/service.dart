@@ -148,7 +148,7 @@ class StorageService {
   Box<StorageCacheModel>? box;
   StorageCacheModel cached = StorageCacheModel(
     globalConfig: GlobalConfigModel(),
-    mataKuliahPraktikum: [],
+    fakultas: [],
     lastSync: null,
     userPreference: UserPreferenceModel()
   );
@@ -160,132 +160,124 @@ class StorageService {
         cached = box?.get('cached_storage') ?? cached;
         NC.lastSync.value = cached.lastSync;
       } catch (e) {}
-      sync();
+      await sync();
     }
   }
 
   Future<void> dispose() async {
-    box?.close();
+    box!.close();
     box = null;
   }
 
   Future<void> save() async {
-    box?.put('cached_storage', cached);
+    await box!.put('cached_storage', cached);
   }
 
   Future<void> sync() async {
+    NC.isSyncing.value = true;
+
     final lastSync = cached.lastSync;
-    List<MataKuliahPraktikumModel>? latest;
+    List<FakultasModel>? latest;
     GlobalConfigModel? global;
 
     if (lastSync == null) {
-      NC.isSyncing.value = true;
       latest = await getLatestFieldData();
       global = await getLatestGlobalConfig();
     } else {
-      final outdated = await getOutdatedField(lastSync);
-      print('outdated field : $outdated');
-
-      if (outdated.any((v) => v.type == 'global')) {
-        outdated.removeWhere((v) => v.type == 'global');
-        NC.isSyncing.value = true;
-        global = await getLatestGlobalConfig();
-      }
-
-      if (outdated.isNotEmpty) {
-        NC.isSyncing.value = true;
-        latest = await getLatestFieldData(outdated);
+      final lastUpdated = await getFieldLastUpdated();
+      if (lastUpdated != null) {
+        final outdated = lastUpdated.where((v) => v.timestamp.isAfter(lastSync) || (v.field != null && !storage.cached.formatedProgramStudi().contains(v.field))).toList();
+        if (outdated.isNotEmpty) {
+          print('outdated field : ${outdated.map((v) => v.field ?? "Global Config")}');
+          if (outdated.any((v) => v.field == null)) {
+            outdated.removeWhere((v) => v.field == null);
+            global = await getLatestGlobalConfig();
+          }
+          if (outdated.isNotEmpty) latest = await getLatestFieldData(outdated);
+        }
+        removeUnregisteredField(lastUpdated);
       }
     }
-
-    print('synced matkul data : $latest');
-    print('synced global settings : $global');
-    if (latest != null) updateOutdatedField(latest);
-    if (global != null) updateGlobalConfig(global);
     
     if (latest != null || global != null) {
-      cached.lastSync = now;
-      NC.lastSync.value = now;
-      await save();
+      await updateOutdatedField(latest);
+      await updateGlobalConfig(global);
+      NC.lastSync.value = cached.lastSync = now.add(Duration(seconds: 1));
       print('device synced at : ${cached.lastSync}');
     }
 
+    await save();
     NC.isSyncing.value = false;
   }
 
-  Future<List<LastUpdatedModel>> getOutdatedField(DateTime lastSync) async {
-      List<LastUpdatedModel> list = [];
+  Future<List<LastUpdatedModel>?> getFieldLastUpdated() async {
     try {
       final data = await auth.supabase
         .from('last_updated') 
         .select();
 
-      data.forEach((v) {
-        final temp = LastUpdatedModel.fromJson(v);
-        final isOutdated = temp.timestamp!.isAfter(lastSync);
-        if (isOutdated) list.add(temp);
-      });
-
+      return data.map((v) => LastUpdatedModel.fromJson(v)).toList();
     } on PostgrestException catch (error) {
       alertDialog('PostgrestException', '(getOutdatedField) PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
     } catch (error) {
       alertDialog('Unexpected error', '(getOutdatedField) $error');
     }
-    return list;
+    return null;
   }
 
-  Future<void> getGlobalConfig() async {
-    try {
-      final global = await auth.supabase
-       .from('global')
-       .select();
-       
-    } on PostgrestException catch (error) {
-      alertDialog('PostgrestException', '(getGlobalConfig) PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
-    } catch (error) {
-      alertDialog('Unexpected error', '(getGlobalConfig) $error');
+  void removeUnregisteredField(List<LastUpdatedModel> list) {
+    for (final f in storage.cached.fakultas) {
+      f.programStudi.removeWhere((ps) {
+        final isNotRegistered = !list.any((v) => v.field == ps.name);
+        if (isNotRegistered) print('removed program studi : ${ps.name}');
+        return isNotRegistered;
+      });
+      final i = storage.cached.fakultas.indexWhere((v) => v.name == f.name);
+      if (f.programStudi.isEmpty) storage.cached.fakultas.removeAt(i);
+      else storage.cached.fakultas[i] = f;
     }
   }
 
   Future<Uri?> getLineOALDTEUrl([String? message]) async {
-    var lineID = storage.cached.globalConfig.lineOALDTE;
-    if (lineID == null) {
-      await storage.sync();
-      lineID = storage.cached.globalConfig.lineOALDTE;
-      if (lineID == null) return null;
-    }
+    final lineID = storage.cached.globalConfig.lineOALDTE;
+    if (lineID == null) return null;
     return Uri(
       scheme: 'https',
       host: 'line.me',
-      path: 'R/oaMessage/$lineID',
+      path: 'R/oaMessage/@$lineID',
       query: message == null ? null :Uri.encodeComponent(message)
     );
   }
 
-  Future<List<MataKuliahPraktikumModel>?> getLatestFieldData([List<LastUpdatedModel>? outdated]) async {
+  Future<List<FakultasModel>?> getLatestFieldData([List<LastUpdatedModel>? outdated]) async {
     try {
       var query = auth.supabase
-        .from('mata_kuliah')
-        .select();
+        .from('fakultas')
+        .select('''
+          *, 
+          program_studi !inner (
+            id, created_at, name,
+            mata_kuliah (id, created_at, nama, kode),
+            praktikum (id, created_at, nama, kode)
+          )
+        ''');
 
-      if(outdated != null) {
+      if (outdated != null) {
         String filter = '';
-        outdated.forEach((v) {
-          filter = '$filter,and(fakultas.eq.${v.fakultas!},is_praktikum.eq.${v.type == 'praktikum'})';
-        });
+        outdated.forEach((v) => filter = '$filter,name.eq."${v.field?.replaceAll('"', '""')}"');
         filter = filter.substring(1);
-        query = query.or(filter);
-        print('uutdated query filter : $filter');
+        query = query.or(filter, referencedTable: 'program_studi');
+        print('query filter : $filter');
       }
 
       final data = await query;
-      print('outdated field : $data');
+      print('outdated field data : $data');
 
-      List<MataKuliahPraktikumModel> list = [];
-      data.forEach((v) {
-        final temp = MataKuliahPraktikumModel.fromJson(v);
-        list.add(temp);
-      });
+      List<FakultasModel> list = [];
+      for (final v in data) {
+        final temp = FakultasModel.fromJson(v);
+        if (temp.programStudi.isNotEmpty) list.add(temp);
+      }
       
       return list;
     } on PostgrestException catch (error) {
@@ -296,27 +288,43 @@ class StorageService {
     return null;
   }
 
-  Future<void> updateOutdatedField(List<MataKuliahPraktikumModel> latest) async {
-    final Set<Map<String, bool>> set = latest.map((v) => {v.fakultas: v.isPraktikum}).toSet();
-    print('fetched matkul set : $set');
-    for (final Map<String, bool> v in set) {
-      cached.mataKuliahPraktikum.removeWhere(
-        (v1) => v1.fakultas == v.keys.first && v1.isPraktikum == v.values.first,
-      );
+  Future<void> updateOutdatedField(List<FakultasModel>? latestList) async {
+    if (latestList == null) return;
+    for (final lf in latestList) {
+      final tempf = cached.fakultas.where((v) => v.name == lf.name).firstOrNull;
+      if (tempf != null) {
+        for (final lps in lf.programStudi) {
+          final tempps = tempf.programStudi.where((v) => v.name == lps.name).firstOrNull;
+          if (tempps != null) {
+            final i = tempf.programStudi.indexWhere((v) => v.name == lps.name);
+            tempf.programStudi[i] = tempps;
+            print('update program studi : ${lps.name}');
+          } else {
+            tempf.programStudi.add(lps);
+            print('added new program studi : ${lps.name}');
+          }
+        }
+        final i = cached.fakultas.indexWhere((v) => v.name == lf.name);
+        cached.fakultas[i] = tempf;
+        print('update fakultas : ${lf.name}');
+      } else {
+        cached.fakultas.add(lf);
+        print('added new fakultas : ${lf.name}');
+      }
     }
-    cached.mataKuliahPraktikum.addAll(latest);
   }
 
-  Future<void> updateGlobalConfig(GlobalConfigModel global) async {
+  Future<void> updateGlobalConfig(GlobalConfigModel? global) async {
+    if (global == null) return;
     cached.globalConfig = global;
   }
 
   Future<GlobalConfigModel?> getLatestGlobalConfig() async {
     try {
-      var data = await auth.supabase
+      final data = await auth.supabase
         .from('global')
         .select()
-        .limit(1)
+        .eq('id', 1)
         .single();
 
       print('fetched global settings : $data');
@@ -855,5 +863,23 @@ class AdminSuratKeteranganPraktikumService extends PDFService {
       alertDialog('Unexpected error', '$error');
     }
     return null;
+  }
+}
+
+class GlobalConfigService {
+  Future<bool> updateGlobalConfig(Map<String, dynamic> form) async {
+    try {
+      await auth.supabase
+        .from('global')
+        .update(form)
+        .eq('id', 1);
+
+      return true;
+    } on PostgrestException catch (error) {
+      alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
+    } catch (error) {
+      alertDialog('Unexpected error', '$error');
+    }
+    return false;
   }
 }

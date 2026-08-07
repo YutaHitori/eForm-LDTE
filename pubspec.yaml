@@ -1,7 +1,7 @@
 name: eform_ldte
 description: "Website pembuatan berbagai formulir Lab Dasar Teknik Elektro - Sekolah Teknik Elektro dan Informatika Institut Teknologi Bandung"
 publish_to: 'none'
-version: 0.4.3+28
+version: 0.4.4+30
 
 environment:
   sdk: ^3.10.7
@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter 
   get: ^4.7.3
   get_storage: ^2.1.1
   http: ^1.6.0
@@ -31,6 +33,7 @@ dependencies:
   go_router: ^17.3.0
   internet_connection_checker_plus: ^3.0.0
   isolate_manager: ^6.3.2
+  package_info_plus: ^10.2.1
 
 dev_dependencies:
   flutter_test:

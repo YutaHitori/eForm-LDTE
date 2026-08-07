@@ -8,31 +8,24 @@ class Homepage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 12,
         children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Center(
-                child: Column(
-                  spacing: 12,
-                  children: [
-                    Image.asset('assets/logo.png', width: 182),
-                    Text('eFormulir LDTE STEI ITB', textScaleFactor: 1.8,),
-                    SizedBox(height: 4),
-                    Column(
-                      spacing: 8,
-                      children: [
-                        ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.pinjam), child: Text('Pinjam Peralatan')),
-                        ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.keterangan), child: Text('Keterangan Praktikum')),
-                        ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.pertukaran), child: Text('Pertukaran Jadwal Praktikum')),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          Image.asset('assets/logo.png', width: 182),
+          Text('Formulir Elektronik\nLab Dasar Teknik Elektro\nSTEI ITB', textScaleFactor: 1.64, textAlign: TextAlign.center,),
+          SizedBox(height: 4),
+          Column(
+            spacing: 8,
+            children: [
+              ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.pinjam), child: Text('Pinjam Peralatan')),
+              ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.keterangan), child: Text('Keterangan Praktikum')),
+              ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.pertukaran), child: Text('Pertukaran Jadwal Praktikum')),
+            ],
           ),
         ],
+      ),
     );
   }
 }
