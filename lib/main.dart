@@ -18,9 +18,6 @@ void main() async {
 
   initializeDateFormatting('id_ID');
 
-  await Hive.initFlutter();
-  Hive.registerAdapters(); 
-
   await Supabase.initialize(
     url: "https://xulfjcgekimkkijjswqm.supabase.co",
     publishableKey: "sb_publishable_2FRbSQMkCHktF4c8jKqEuA_eDMrZZkp",

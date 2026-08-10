@@ -5,7 +5,7 @@ nextTypeId: 6
 types:
   MataKuliahPraktikumModel:
     typeId: 0
-    nextIndex: 6
+    nextIndex: 7
     fields:
       kode:
         index: 2
@@ -13,6 +13,8 @@ types:
         index: 3
       id:
         index: 5
+      isPraktikum:
+        index: 6
   StorageCacheModel:
     typeId: 1
     nextIndex: 10
@@ -55,13 +57,11 @@ types:
         index: 2
   ProgramStudiModel:
     typeId: 5
-    nextIndex: 4
+    nextIndex: 5
     fields:
       id:
         index: 0
       name:
         index: 1
-      mataKuliah:
-        index: 2
-      praktikum:
-        index: 3
+      mataKuliahPraktikum:
+        index: 4

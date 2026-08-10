@@ -37,6 +37,7 @@ class NamedRoute {
 
   static const admin = '/admin';
   static const config = '/admin/config';
+  static const list = '/admin/config/list';
   static const pinjamAdmin = '/admin/peminjaman-peralatan';
   static const keteranganAdmin = '/admin/surat-keterangan';
 }

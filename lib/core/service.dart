@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:dropdown_flutter/custom_dropdown.dart';
+import 'package:eform_ldte/hive/hive_registrar.g.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,6 +20,7 @@ import 'package:eform_ldte/misc/function.dart';
 import 'package:eform_ldte/misc/global.dart';
 import 'package:eform_ldte/misc/extension.dart';
 import 'package:number_paginator/number_paginator.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -145,7 +147,7 @@ class DateTimePickerService {
 }
 
 class StorageService {
-  Box<StorageCacheModel>? box;
+  late Box<StorageCacheModel> box;
   StorageCacheModel cached = StorageCacheModel(
     globalConfig: GlobalConfigModel(),
     fakultas: [],
@@ -154,33 +156,33 @@ class StorageService {
   );
   
   Future<void> initialize() async {
-    if (box == null) {
-      box = await Hive.openBox<StorageCacheModel>('local');
-      try {
-        cached = box?.get('cached_storage') ?? cached;
-        NC.lastSync.value = cached.lastSync;
-      } catch (e) {}
-      await sync();
-    }
-  }
+    await Hive.initFlutter();
+    Hive.registerAdapters();
 
-  Future<void> dispose() async {
-    box!.close();
-    box = null;
+    try {
+      box = await Hive.openBox<StorageCacheModel>('local');
+      cached = box.get('cached_storage') ?? cached;
+    } catch (e) {
+      await Hive.deleteBoxFromDisk('local');
+      box = await Hive.openBox<StorageCacheModel>('local');
+    }
+
+    NC.lastSync.value = cached.lastSync;
+    await sync();
   }
 
   Future<void> save() async {
-    await box!.put('cached_storage', cached);
+    await box.put('cached_storage', cached);
   }
 
-  Future<void> sync() async {
+  Future<void> sync([bool force = false]) async {
     NC.isSyncing.value = true;
 
     final lastSync = cached.lastSync;
     List<FakultasModel>? latest;
     GlobalConfigModel? global;
 
-    if (lastSync == null) {
+    if (lastSync == null || force) {
       latest = await getLatestFieldData();
       global = await getLatestGlobalConfig();
     } else {
@@ -257,8 +259,7 @@ class StorageService {
           *, 
           program_studi !inner (
             id, created_at, name,
-            mata_kuliah (id, created_at, nama, kode),
-            praktikum (id, created_at, nama, kode)
+            mata_kuliah (*)
           )
         ''');
 
@@ -396,31 +397,37 @@ class AuthService {
 class QFSPService {
   List entries = [];
   
-  void updateButton(RxMap<String, bool> filter, String key) {
-    filter.value[key] = !filter.value[key]!;
-    filter.value['all'] = false;
-    if (key == 'all') {
+  void updateButton(QFSPController c, String filterKey, String itemkey) {
+    final filter = c.getFilterEnrty(filterKey);
+    if (c.filter.where((v) => v.filterKey == filterKey).first.multiSelect) {
+      filter.value[itemkey] = !filter.value[itemkey]!;
+      filter.value['all'] = false;
+      if (itemkey == 'all') {
+        filter.value.updateAll((k,v) => false);
+      }
+    } else {
       filter.value.updateAll((k,v) => false);
+      filter.value[itemkey] = true;
     }
     if (filter.value.values.every((v) => v == false)) filter.value['all'] = true;
     filter.refresh();
   }
 
   List<T> query<T>(List<T> raw, QFSPController c, List<String?> Function(T) match) {
-    return raw.where((item) => match(item).any((text) => text == null ? false : text.toLowerCase().contains(c.queryController.text))).toList();
+    return raw.where((item) => match(item).any((text) => text == null ? false : text.toLowerCase().contains(c.queryController.text.toLowerCase().trim()))).toList();
   }
 
-  List<T> filter<T>(List<T> raw, QFSPController c, [String? itemKey, String? filterKey, List<DateTime?>? date, DateTime? Function(T)? dateAttribure]) {
-    if (itemKey != null && filterKey != null) updateButton(c.getFilterEnrty(filterKey), itemKey);
+  List<T> filter<T>(List<T> raw, QFSPController<T> c, [String? itemKey, String? filterKey, List<DateTime?>? date, DateTime? Function(T)? dateAttribure]) {
+    if (itemKey != null && filterKey != null) updateButton(c, filterKey, itemKey);
     var entries = raw;
     if (date?.every((d) => d != null) == true && dateAttribure != null) {
       entries = entries.where((e) => dateAttribure(e) == null ? false : dateAttribure(e)!.isAfter(date![0]!) && dateAttribure(e)!.isBefore(date[1]!)).toList();
     }
     for (var item in c.filter) {
-      List<T> temp = [];
       if (!item.filterEntry.value['all']!) {
+        final List<T> temp = [];
         item.filterEntry.value.forEach((key, value) {
-          if (value) temp.addAll(entries.where((m) => item.function(m).any((v) => v == key)));
+          if (value) temp.addAll(entries.where((v) => item.reference(v) == key));
         });
         entries = temp;
       }
@@ -455,15 +462,15 @@ class QFSPService {
   }
 }
 
-class QFSPController {
+class QFSPController<T> {
   QFSPController({
-    required this.filter,
+    this.filter = const [],
     required this.onChanged,
     required this.pageC,
     this.dataPerPage = 25,
   });
 
-  final List<FilterController> filter;
+  final List<FilterController<T>> filter;
   final Function onChanged;
   final NumberPaginatorController pageC;
   final int dataPerPage;
@@ -472,22 +479,22 @@ class QFSPController {
   var sortController = SingleSelectController<String>('Latest');
 
   RxMap<String, bool> getFilterEnrty(String key) {
-    return filter.where((e) => e.filterKey == key).toList().first.filterEntry;
+    return filter.where((v) => v.filterKey == key).toList().first.filterEntry;
   }
 }
 
-class FilterController {
+class FilterController<T> {
+  String filterKey;
+  List<String> filterList;
+  String? Function(T) reference;
+  bool multiSelect;
+  
   FilterController({
     required this.filterKey,
     required this.filterList,
-    required this.function,
-    this.multi = false
+    required this.reference,
+    this.multiSelect = true
   });
-
-  String filterKey;
-  List<String> filterList;
-  List<dynamic> Function(dynamic) function;
-  bool multi;
 
   late RxMap<String, bool> filterEntry = {
     'all': true,
@@ -874,6 +881,150 @@ class GlobalConfigService {
         .update(form)
         .eq('id', 1);
 
+      return true;
+    } on PostgrestException catch (error) {
+      alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
+    } catch (error) {
+      alertDialog('Unexpected error', '$error');
+    }
+    return false;
+  }
+}
+
+class FakultasService {
+  final QFSP = QFSPService();
+
+  Future<List<FakultasModel>?> insertData(List<Map<String, dynamic>> form) async {
+    try {
+      final res = await auth.supabase
+        .from('fakultas')
+        .insert(form);
+      return res.map((v) => FakultasModel.fromJson(v)).toList();
+    } on PostgrestException catch (error) {
+      alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
+    } catch (error) {
+      alertDialog('Unexpected error', '$error');
+    }
+    return null;
+  }
+
+  Future<List<FakultasModel>?> updateData(List<Map<String, dynamic>> form) async {
+    try {
+      final res = await auth.supabase
+        .from('fakultas')
+        .upsert(form)
+        .select();
+      return res.map((v) => FakultasModel.fromJson(v)).toList();
+    } on PostgrestException catch (error) {
+      alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
+    } catch (error) {
+      alertDialog('Unexpected error', '$error');
+    }
+    return null;
+  }
+
+  Future<bool> deleteData(List<int> ids) async {
+    try {
+      await auth.supabase
+        .from('fakultas')
+        .delete()
+        .inFilter('id', ids);
+      return true;
+    } on PostgrestException catch (error) {
+      alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
+    } catch (error) {
+      alertDialog('Unexpected error', '$error');
+    }
+    return false;
+  }
+}
+
+class ProgramStudiService {
+  final QFSP = QFSPService();
+
+  Future<List<ProgramStudiModel>?> insertData(List<Map<String, dynamic>> form) async {
+    try {
+      final res = await auth.supabase
+        .from('program_studi')
+        .insert(form);
+      return res.map((v) => ProgramStudiModel.fromJson(v)).toList();
+    } on PostgrestException catch (error) {
+      alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
+    } catch (error) {
+      alertDialog('Unexpected error', '$error');
+    }
+    return null;
+  }
+
+  Future<List<ProgramStudiModel>?> updateData(List<Map<String, dynamic>> form) async {
+    try {
+      final res = await auth.supabase
+        .from('program_studi')
+        .upsert(form)
+        .select();
+      return res.map((v) => ProgramStudiModel.fromJson(v)).toList();
+    } on PostgrestException catch (error) {
+      alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
+    } catch (error) {
+      alertDialog('Unexpected error', '$error');
+    }
+    return null;
+  }
+
+  Future<bool> deleteData(List<int> ids) async {
+    try {
+      await auth.supabase
+        .from('program_studi')
+        .delete()
+        .inFilter('id', ids);
+      return true;
+    } on PostgrestException catch (error) {
+      alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
+    } catch (error) {
+      alertDialog('Unexpected error', '$error');
+    }
+    return false;
+  }
+}
+
+class MataKuliahPraktikumService {
+  final QFSP = QFSPService();
+
+  Future<List<MataKuliahPraktikumModel>?> insertData(List<Map<String, dynamic>> form) async {
+    try {
+      final res = await auth.supabase
+        .from('mata_kuliah')
+        .insert(form);
+      return res.map((v) => MataKuliahPraktikumModel.fromJson(v)).toList();
+    } on PostgrestException catch (error) {
+      alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
+    } catch (error) {
+      alertDialog('Unexpected error', '$error');
+    }
+    return null;
+  }
+
+  Future<List<MataKuliahPraktikumModel>?> updateData(List<Map<String, dynamic>> form) async {
+    try {
+      final res = await auth.supabase
+        .from('mata_kuliah')
+        .upsert(form)
+        .select();
+      return res.map((v) => MataKuliahPraktikumModel.fromJson(v)).toList();
+    } on PostgrestException catch (error) {
+      alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
+    } catch (error) {
+      alertDialog('Unexpected error', '$error');
+    }
+    return null;
+  }
+
+  Future<bool> deleteData(List<int> ids) async {
+    try {
+      await auth.supabase
+        .from('mata_kuliah')
+        .delete()
+        .inFilter('id', ids);
       return true;
     } on PostgrestException catch (error) {
       alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');

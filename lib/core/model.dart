@@ -97,21 +97,21 @@ class FakultasModel {
 class ProgramStudiModel {
   late int id;
   late String name;
-  List<MataKuliahPraktikumModel> mataKuliah = [];
-  List<MataKuliahPraktikumModel> praktikum = [];
+  List<MataKuliahPraktikumModel> mataKuliahPraktikum = [];
+
+  List<MataKuliahPraktikumModel> get mataKuliah => mataKuliahPraktikum.where((v) => !v.isPraktikum).toList();
+  List<MataKuliahPraktikumModel> get praktikum => mataKuliahPraktikum.where((v) => v.isPraktikum).toList();
   
   ProgramStudiModel({
     required this.id,
     required this.name,
-    required this.mataKuliah,
-    required this.praktikum,
+    required this.mataKuliahPraktikum,
   });
 
   ProgramStudiModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
-    List.of(json['mata_kuliah']).forEach((v) => mataKuliah.add(MataKuliahPraktikumModel.fromJson(v)));
-    List.of(json['praktikum']).forEach((v) => praktikum.add(MataKuliahPraktikumModel.fromJson(v)));
+    List.of(json['mata_kuliah']).forEach((v) => mataKuliahPraktikum.add(MataKuliahPraktikumModel.fromJson(v)));
   }
 
   List<String> formatedMataKuliah() => mataKuliah.map((v) => '${v.kode} ${v.nama}').toList();
@@ -121,17 +121,22 @@ class ProgramStudiModel {
 class MataKuliahPraktikumModel {
   late int id;
   late String kode, nama;
+  late bool isPraktikum;
+
+  String get type => isPraktikum ? 'praktikum' : 'mata kuliah';
 
   MataKuliahPraktikumModel({
     required this.id,
     required this.kode,
     required this.nama,
+    required this.isPraktikum,
   });
 
   MataKuliahPraktikumModel.fromJson(Map<String, dynamic> json) {
     id = json['id']; 
     kode = json['kode']; 
     nama = json['nama']; 
+    isPraktikum = json['is_praktikum']; 
   }
 }
 
@@ -161,6 +166,7 @@ class StorageCacheModel {
   });
 
   List<ProgramStudiModel> get programStudi => fakultas.expand((f) => f.programStudi).toList();
+  List<MataKuliahPraktikumModel> get mataKuliahPraktikum => programStudi.expand((p) => p.mataKuliahPraktikum).toList();
   List<MataKuliahPraktikumModel> get mataKuliah => programStudi.expand((p) => p.mataKuliah).toList();
   List<MataKuliahPraktikumModel> get praktikum => programStudi.expand((p) => p.praktikum).toList();
 
@@ -168,4 +174,7 @@ class StorageCacheModel {
   List<String> formatedProgramStudi() => programStudi.map((v) => v.name).toList();
   List<String> formatedMataKuliah() => mataKuliah.map((v) => '${v.kode} ${v.nama}').toList();
   List<String> formatedPraktikum() => praktikum.map((v) => '${v.kode} ${v.nama}').toList();
+
+  FakultasModel getFakultas(String name) => fakultas.where((v) => v.name == name).first;
+  ProgramStudiModel getProgramStudi(String name) => programStudi.where((v) => v.name == name).first;
 }

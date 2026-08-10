@@ -1,3 +1,6 @@
+import 'package:eform_ldte/admin/fakultas.dart';
+import 'package:eform_ldte/admin/mata_kuliah.dart';
+import 'package:eform_ldte/admin/program_studi.dart';
 import 'package:eform_ldte/form/peminjaman_peralatan/detail.dart';
 import 'package:eform_ldte/form/surat_keterangan_praktikum/detail.dart';
 import 'package:eform_ldte/admin/config.dart';
@@ -114,7 +117,37 @@ final GoRouter router = GoRouter(
             },
             builder: (context, state) => const GlobalConfig(),
             onExit: (context, state) => onExit<GlobalConfigController>(),
-            routes: []
+            routes: [
+              GoRoute(
+                path: 'list',
+                redirect: (context, state) {
+                  return redirect(state.matchedLocation);
+                },
+                builder: (context, state) => const Fakultas(),
+                onExit: (context, state) => onExit<FakultasController>(),
+                routes: [
+                  GoRoute(
+                    path: ':fakultas',
+                    redirect: (context, state) {
+                      return redirect(state.matchedLocation);
+                    },
+                    builder: (context, state) => ProgramStudi(fakultas: state.pathParameters['fakultas'] ?? ''),
+                    onExit: (context, state) => onExit<ProgramStudiController>(),
+                    routes: [
+                      GoRoute(
+                        path: ':program_studi',
+                        redirect: (context, state) {
+                          return redirect(state.matchedLocation);
+                        },
+                        builder: (context, state) => MataKuliahPraktikum(programStudi: state.pathParameters['program_studi'] ?? ''),
+                        onExit: (context, state) => onExit<MataKuliahPraktikumController>(),
+                        routes: []
+                      ),
+                    ]
+                  ),
+                ]
+              ),
+            ]
           ),
         ]
       ),

@@ -14,8 +14,10 @@ class AdminSuratKeteranganPraktikum extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = Get.put(AdminSuratKeteranganPraktikumController());
     return  Obx(() {
-      c.QFSPedSubmissions.value;
-      final isMassLoading = !c.QFSPedSubmissions.value.any((v) => c.isSelected[v.id]!) || c.QFSPedSubmissions.value.every((v) => c.loadingIndicator[v.id]!);
+      final sub = c.QFSPedSubmissions.value;
+      final isAnySelected = sub.any((v) => c.isSelected.contains(v.id));
+      final isMassLoading = c.isMassLoading.value;
+      final canMassUpdate = isAnySelected && !isMassLoading;      
       return Scaffold(
         appBar: AppBar(
           title: Text('Kiriman - Surat Keterangan Praktikum'),
@@ -89,7 +91,7 @@ class AdminSuratKeteranganPraktikum extends StatelessWidget {
                       constraints: BoxConstraints(
                         minHeight: constrains.maxHeight,
                       ),
-                      child: c.QFSPedSubmissions.value.isEmpty
+                      child: sub.isEmpty
                       ? SingleChildScrollView(
                         physics: AlwaysScrollableScrollPhysics(),
                         child: SizedBox( 
@@ -118,11 +120,11 @@ class AdminSuratKeteranganPraktikum extends StatelessWidget {
                                     children: [
                                       Checkbox(
                                         tristate: true,
-                                        value: c.QFSPedSubmissions.value.any((v) => c.isSelected[v.id]!) 
-                                        ? c.QFSPedSubmissions.value.every((v) => c.isSelected[v.id]!) 
+                                        value: sub.any((v) => c.isSelected.contains(v.id)) 
+                                        ? sub.every((v) => c.isSelected.contains(v.id)) 
                                           ? true : null 
                                         : false,
-                                        onChanged: c.selectPageItem,
+                                        onChanged: isMassLoading ? null : c.selectPageItem,
                                       ),
                                       SizedBox(
                                         width: 40,
@@ -141,16 +143,16 @@ class AdminSuratKeteranganPraktikum extends StatelessWidget {
                                       child: Text('Tanggal Dibuat', textScaleFactor: 1.2),
                                     ),
                                     IconButton(
-                                      onPressed: isMassLoading ? null : () => c.setSelectedStatus('pending'),
-                                        icon: Icon(Icons.pending_rounded, color: isMassLoading ? null : Colors.orange), tooltip: 'mark as pending'
+                                      onPressed: !canMassUpdate ? null : () => c.setSelectedStatus('pending'),
+                                        icon: Icon(Icons.pending_rounded, color: !canMassUpdate ? null : Colors.orange), tooltip: 'mark as pending'
                                     ),
                                     IconButton(
-                                      onPressed: isMassLoading ? null : () => c.setSelectedStatus('exported'),
-                                      icon: Icon(Icons.unarchive_rounded, color: isMassLoading ? null : Colors.green), tooltip: 'mark as exported'
+                                      onPressed: !canMassUpdate ? null : () => c.setSelectedStatus('exported'),
+                                      icon: Icon(Icons.unarchive_rounded, color: !canMassUpdate ? null : Colors.green), tooltip: 'mark as exported'
                                     ),
                                     IconButton(
-                                      onPressed: isMassLoading ? null : () => c.setSelectedStatus('spam'),
-                                      icon: Icon(Icons.report_rounded, color: isMassLoading ? null : Colors.red), tooltip: 'mark as spam'
+                                      onPressed: !canMassUpdate ? null : () => c.setSelectedStatus('spam'),
+                                      icon: Icon(Icons.report_rounded, color: !canMassUpdate ? null : Colors.red), tooltip: 'mark as spam'
                                     ),
                                     VerticalDivider(color: appTheme.colorScheme.surface),
                                     IconButton(
@@ -161,80 +163,86 @@ class AdminSuratKeteranganPraktikum extends StatelessWidget {
                                 ),
                               ),
                               Divider(height: 0, color: appTheme.colorScheme.surface),
-                              RefreshIndicator(
-                                onRefresh: c.getAllSubmissions,
-                                child: ListView.builder(
-                                  physics: AlwaysScrollableScrollPhysics(),
-                                  shrinkWrap: true,
-                                  itemBuilder: (context, i) {
-                                    final entry = c.QFSPedSubmissions.value[i];
-                                    final isPending = (c.loadingIndicator[entry.id] ?? true) || entry.status == 'pending';
-                                    final isExported = (c.loadingIndicator[entry.id] ?? true) || entry.status == 'exported';
-                                    final isSpam = (c.loadingIndicator[entry.id] ?? true) || entry.status == 'spam';
-                                    return ListTile(
-                                      contentPadding: EdgeInsets.only(right: 12),
-                                      // onLongPress: entry.nama.isBlank() ? null : () {
-                                      //   Clipboard.setData(
-                                      //     ClipboardData(text: entry.phone!),
-                                      //   );
-                                      //   ScaffoldMessenger.of(context).showSnackBar(
-                                      //     SnackBar(content: Text('Phone number copied to clipboard!')),
-                                      //   );
-                                      // },
-                                      onTap: () => c.detail(entry.id),
-                                      leading: Transform.translate(
-                                        offset: Offset(8, 0),
-                                        child: Row(
+                              Expanded(
+                                child: RefreshIndicator(
+                                  onRefresh: c.getAllSubmissions,
+                                  child: ListView.builder(
+                                    physics: AlwaysScrollableScrollPhysics(),
+                                    shrinkWrap: true,
+                                    itemBuilder: (context, i) {
+                                      final entry = sub[i];
+                                      final isLoading = c.loadingIndicator.contains(entry.id);
+                                      final isPending = isLoading || entry.status == 'pending';
+                                      final isExported = isLoading || entry.status == 'exported';
+                                      final isSpam = isLoading || entry.status == 'spam';
+                                      return ListTile(
+                                        contentPadding: EdgeInsets.only(right: 12),
+                                        // onLongPress: entry.nama.isBlank() ? null : () {
+                                        //   Clipboard.setData(
+                                        //     ClipboardData(text: entry.phone!),
+                                        //   );
+                                        //   ScaffoldMessenger.of(context).showSnackBar(
+                                        //     SnackBar(content: Text('Phone number copied to clipboard!')),
+                                        //   );
+                                        // },
+                                        onTap: () => c.detail(entry.id),
+                                        leading: Transform.translate(
+                                          offset: Offset(8, 0),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Checkbox(
+                                                value: c.isSelected.contains(entry.id), 
+                                                onChanged: isMassLoading || isLoading ? null : (v) => c.selectItem(entry.id, v!)
+                                              ),
+                                              SizedBox(
+                                                width: 40,
+                                                child: Text(
+                                                  '${entry.id}',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    color: getColorFromSubmissionStatus(entry.status)
+                                                  ),
+                                                  maxLines: 1, 
+                                                  textAlign: TextAlign.center
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        title: Text(entry.nama.toFormatedString(), overflow: TextOverflow.ellipsis,),
+                                        subtitle: Text(entry.nim.toFormatedString()),
+                                        trailing: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            Checkbox(value: c.isSelected[entry.id], onChanged: (v) => c.selectItem(entry.id, v!)),
+                                            SizedBox(width: 12),
                                             SizedBox(
-                                              width: 40,
-                                              child: Text(
-                                                '${entry.id}',
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: getColorFromSubmissionStatus(entry.status)
-                                                ),
-                                                maxLines: 1, 
-                                                textAlign: TextAlign.center
-                                              ),
+                                              width: 152,
+                                              child: Text(entry.createdAt.toDateTimeFormatedString(), textScaleFactor: 1.2),
+                                            ),
+                                            IconButton(
+                                              onPressed: isPending ? null : () => c.setStatus(entry.id, 'pending'),
+                                                icon: Icon(Icons.pending_rounded, color: isPending ? null : Colors.orange), tooltip: 'mark as pending'
+                                            ),
+                                            IconButton(
+                                              onPressed: isExported ? null : () => c.setStatus(entry.id, 'exported'),
+                                              icon: Icon(Icons.unarchive_rounded, color: isExported ? null : Colors.green), tooltip: 'mark as exported'
+                                            ),
+                                            IconButton(
+                                              onPressed: isSpam ? null : () => c.setStatus(entry.id, 'spam'),
+                                              icon: Icon(Icons.report_rounded, color: isSpam ? null : Colors.red), tooltip: 'mark as spam'
+                                            ),
+                                            VerticalDivider(color: appTheme.colorScheme.surface),
+                                            IconButton(
+                                              onPressed: c.isExporting.value ? null : () => c.preview(entry),
+                                              icon: Icon(c.isExporting.value ? Icons.hourglass_top_rounded : Icons.print_rounded), tooltip: c.isExporting.value ? 'Export in progress, please wait' : 'preview and export'
                                             ),
                                           ],
                                         ),
-                                      ),
-                                      title: Text(entry.nama.toFormatedString(), overflow: TextOverflow.ellipsis,),
-                                      subtitle: Text(entry.nim.toFormatedString()),
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          SizedBox(width: 12),
-                                          SizedBox(
-                                            width: 152,
-                                            child: Text(entry.createdAt.toDateTimeFormatedString(), textScaleFactor: 1.2),
-                                          ),
-                                          IconButton(
-                                            onPressed: isPending ? null : () => c.setStatus(entry.id, 'pending'),
-                                              icon: Icon(Icons.pending_rounded, color: isPending ? null : Colors.orange), tooltip: 'mark as pending'
-                                          ),
-                                          IconButton(
-                                            onPressed: isExported ? null : () => c.setStatus(entry.id, 'exported'),
-                                            icon: Icon(Icons.unarchive_rounded, color: isExported ? null : Colors.green), tooltip: 'mark as exported'
-                                          ),
-                                          IconButton(
-                                            onPressed: isSpam ? null : () => c.setStatus(entry.id, 'spam'),
-                                            icon: Icon(Icons.report_rounded, color: isSpam ? null : Colors.red), tooltip: 'mark as spam'
-                                          ),
-                                          VerticalDivider(color: appTheme.colorScheme.surface),
-                                          IconButton(
-                                            onPressed: c.isExporting.value ? null : () => c.preview(entry),
-                                            icon: Icon(c.isExporting.value ? Icons.hourglass_top_rounded : Icons.print_rounded), tooltip: c.isExporting.value ? 'Export in progress, please wait' : 'preview and export'
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                  itemCount: c.QFSPedSubmissions.value.length,
+                                      );
+                                    },
+                                    itemCount: sub.length,
+                                  ),
                                 ),
                               ),
                             ],

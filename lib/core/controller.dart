@@ -807,9 +807,10 @@ class AdminPeminjamanPeralatanController extends GetxController {
   final admin = AdminPeminjamanPeralatanService();
 
   var isLoading = false.obs;
+  var isMassLoading = false.obs;
   var submissions = <PeminjamanPeralatanModel>[];
-  var loadingIndicator = <int, bool>{};
-  var isSelected = <int, bool>{};
+  var loadingIndicator = <int>[];
+  var isSelected = <int>[];
   var QFSPedSubmissions = RxList<PeminjamanPeralatanModel>([]);
 
   @override
@@ -841,12 +842,12 @@ class AdminPeminjamanPeralatanController extends GetxController {
     }
   }
 
-  late QFSPController qfsp = QFSPController(
+  late QFSPController<PeminjamanPeralatanModel> qfsp = QFSPController(
     filter: [
       FilterController(
         filterKey: "status",
         filterList: ['unchecked', 'borrowed', 'returned', 'overdue', 'damaged', 'lost', 'spam'],
-        function: (m) => [(m as PeminjamanPeralatanModel).status]
+        reference: (m) => m.status
       ),
     ],
     onChanged: ([String? itemKey, String? filterKey]) {
@@ -864,8 +865,6 @@ class AdminPeminjamanPeralatanController extends GetxController {
     final res = await admin.getAllSubmissions();
     print (res);
     if (res != null) {
-      loadingIndicator = Map<int, bool>.fromEntries(res.map((v) => MapEntry(v.id, false)));
-      isSelected = Map<int, bool>.fromEntries(res.map((v) => MapEntry(v.id, false)));
       submissions = res;
       qfsp.onChanged();
     }
@@ -874,40 +873,41 @@ class AdminPeminjamanPeralatanController extends GetxController {
   }
 
   void selectItem(int id, bool state) {
-    isSelected[id] = state;
+    state ? isSelected.add(id) : isSelected.remove(id);
     QFSPedSubmissions.refresh();
   }
 
   void selectPageItem(bool? state) {
-    QFSPedSubmissions.value.forEach((v) => isSelected[v.id] = state ?? false);
+    QFSPedSubmissions.value.forEach((v) => state == true ? isSelected.add(v.id) : isSelected.remove(v.id));
     Future(() => QFSPedSubmissions.refresh());
   }
 
   void setStatus(int id, String status) async {
-    loadingIndicator[id] = true;
+    loadingIndicator.add(id);
     QFSPedSubmissions.refresh();
     final res = await admin.updateStatus([id], status);
-    loadingIndicator[id] = false;
+    loadingIndicator.remove(id);
     if (res != null) updateSubmission(res);
   }
 
   void setSelectedStatus(String status) {
-    final ids = isSelected.entries.where((e) => e.value).map((e) => e.key).toList();
     alertDialog(
       'Confirmation', 
-      'You are going to update ${ids.length} row of status data to $status.\n'
-      'Are you completely sure? this action cannot be undone.',
+      'You are going to update ${isSelected.length} row of status data to $status. This action cannot be undone.\n'
+      'Are you completely sure?',
       confirmAction: () async {
+        isMassLoading.value = true;
         closeAllDialog();
-        ids.forEach((v) => loadingIndicator[v] = true);
+        isSelected.forEach(loadingIndicator.add);
         QFSPedSubmissions.refresh();
         await Future.delayed(Duration(seconds: 2));
-        final res = await admin.updateStatus(ids, status);
-        ids.forEach((v) {
-          loadingIndicator[v] = false;
-          isSelected[v] = false;
-        });
-        if (res != null) updateSubmission(res);
+        final res = await admin.updateStatus(isSelected, status);
+        isSelected.forEach(loadingIndicator.remove);
+        if (res != null) {
+          isSelected.clear();
+          updateSubmission(res);
+        }
+        isMassLoading.value = false;
       },
     );
   }
@@ -976,10 +976,11 @@ class AdminSuratKeteranganPraktikumController extends GetxController {
   final admin = AdminSuratKeteranganPraktikumService();
 
   var isLoading = false.obs;
+  var isMassLoading = false.obs;
   var isExporting = false.obs;
   var submissions = <SuratKeteranganPraktikumModel>[];
-  var loadingIndicator = <int, bool>{};
-  var isSelected = <int, bool>{};
+  var loadingIndicator = <int>[];
+  var isSelected = <int>[];
   var QFSPedSubmissions = RxList<SuratKeteranganPraktikumModel>([]);
 
   @override
@@ -1018,12 +1019,12 @@ class AdminSuratKeteranganPraktikumController extends GetxController {
     }
   }
 
-  late QFSPController qfsp = QFSPController(
+  late QFSPController<SuratKeteranganPraktikumModel> qfsp = QFSPController(
     filter: [
       FilterController(
         filterKey: "status",
         filterList: ['unchecked', 'pending', 'exported', 'spam'],
-        function: (m) => [(m as SuratKeteranganPraktikumModel).status]
+        reference: (m) => m.status
       ),
     ],
     onChanged: ([String? itemKey, String? filterKey]) {
@@ -1040,8 +1041,6 @@ class AdminSuratKeteranganPraktikumController extends GetxController {
     isLoading.value = true;
     final res = await admin.getAllSubmissions();
     if (res != null) {
-      loadingIndicator = Map<int, bool>.fromEntries(res.map((v) => MapEntry(v.id, false)));
-      isSelected = Map<int, bool>.fromEntries(res.map((v) => MapEntry(v.id, false)));
       submissions = res;
       qfsp.onChanged();
     }
@@ -1062,40 +1061,41 @@ class AdminSuratKeteranganPraktikumController extends GetxController {
   }
 
   void selectItem(int id, bool state) {
-    isSelected[id] = state;
+    state ? isSelected.add(id) : isSelected.remove(id);
     QFSPedSubmissions.refresh();
   }
 
   void selectPageItem(bool? state) {
-    QFSPedSubmissions.value.forEach((v) => isSelected[v.id] = state ?? false);
+    QFSPedSubmissions.value.forEach((v) => state == true ? isSelected.add(v.id) : isSelected.remove(v.id));
     Future(() => QFSPedSubmissions.refresh());
   }
 
   void setStatus(int id, String status) async {
-    loadingIndicator[id] = true;
+    loadingIndicator.add(id);
     QFSPedSubmissions.refresh();
     final res = await admin.updateStatus([id], status);
-    loadingIndicator[id] = false;
+    loadingIndicator.remove(id);
     if (res != null) updateSubmission(res);
   }
 
   void setSelectedStatus(String status) {
-    final ids = isSelected.entries.where((e) => e.value).map((e) => e.key).toList();
     alertDialog(
       'Confirmation', 
-      'You are going to update ${ids.length} row of status data to $status.\n'
-      'Are you completely sure? this action cannot be undone.',
+      'You are going to update ${isSelected.length} row of status data to $status. This action cannot be undone.\n'
+      'Are you completely sure?',
       confirmAction: () async {
+        isMassLoading.value = true;
         closeAllDialog();
-        ids.forEach((v) => loadingIndicator[v] = true);
+        isSelected.forEach(loadingIndicator.add);
         QFSPedSubmissions.refresh();
         await Future.delayed(Duration(seconds: 2));
-        final res = await admin.updateStatus(ids, status);
-        ids.forEach((v) {
-          loadingIndicator[v] = false;
-          isSelected[v] = false;
-        });
-        if (res != null) updateSubmission(res);
+        final res = await admin.updateStatus(isSelected, status);
+        isSelected.forEach(loadingIndicator.remove);
+        if (res != null) {
+          isSelected.clear();
+          updateSubmission(res);
+        }
+        isMassLoading.value = false;
       },
     );
   }
@@ -1295,5 +1295,401 @@ class GlobalConfigController extends GetxController {
         confirmText: 'Save',
       );
     } else currentContext?.pop();
+  }
+}
+
+class FakultasController extends GetxController {
+  final admin = FakultasService();
+
+  var isLoading = false.obs;
+  var isMassLoading = false.obs;
+  var canSelect = false.obs;
+  var submissions = <FakultasModel>[];
+  var loadingIndicator = <int>[];
+  var isSelected = <int>[];
+  var canEdit = <int>[];
+  var QFSPedSubmissions = RxList<FakultasModel>([]);
+
+  final nameC = TextEditingController();
+
+  @override
+  void onInit() {
+    super.onInit();
+    initialize();
+  }
+
+  void initialize() {
+    submissions = storage.cached.fakultas;
+    qfsp.onChanged();
+  }
+
+  var pageNum = 1.obs;
+  var pageC = NumberPaginatorController();
+
+  late QFSPController<FakultasModel> qfsp = QFSPController(
+    filter: [
+      FilterController(
+        filterKey: "type",
+        filterList: ['sekolah', 'fakultas'],
+        reference: (m) => m.name.toLowerCase().split(' ').firstOrNull,
+        multiSelect: false
+      ),
+    ],
+    onChanged: ([String? itemKey, String? filterKey]) {
+      var queried = admin.QFSP.query(submissions, qfsp, (v) => [v.name]);
+      var filtered = admin.QFSP.filter(queried, qfsp, itemKey, filterKey);
+      var sorted = admin.QFSP.sort(filtered, qfsp);
+      var paged = admin.QFSP.page(sorted, qfsp, pageNum);
+      QFSPedSubmissions.value = paged;
+    },
+    pageC: pageC,
+    dataPerPage: 25
+  );
+
+  void selectItem(int id, bool state) {
+    state ? isSelected.add(id) : isSelected.remove(id);
+    QFSPedSubmissions.refresh();
+  }
+
+  void selectPageItem(bool? state) {
+    QFSPedSubmissions.value.forEach((v) => state == true ? isSelected.add(v.id) : isSelected.remove(v.id));
+    Future(() => QFSPedSubmissions.refresh());
+  }
+
+  void canEditItem(int id) {
+    canEdit.contains(id) ? canEdit.remove(id) : canEdit.add(id);
+    QFSPedSubmissions.refresh();
+  }
+
+  void setData(int id, String status) async {
+    loadingIndicator.add(id);
+    QFSPedSubmissions.refresh();
+    final res = await admin.updateData([]);
+    loadingIndicator.remove(id);
+    if (res != null) updateSubmission(res);
+  }
+
+  void deleteSelectedData() {
+    alertDialog(
+      'Confirmation', 
+      'You are going to delete ${isSelected.length} row(s) of data. This action cannot be undone.\n'
+      'Are you completely sure?',
+      confirmAction: () async {
+        closeAllDialog();
+        isSelected.forEach(loadingIndicator.add);
+        QFSPedSubmissions.refresh();
+        await Future.delayed(Duration(seconds: 2));
+        final isSuccess = await admin.deleteData(isSelected);
+        isSelected.forEach(loadingIndicator.remove);
+        if (isSuccess) {
+          storage.cached.fakultas.removeWhere((v) => isSelected.contains(v.id));
+          storage.save();
+          initialize();
+        }
+      },
+    );
+  }
+
+  void deleteData(int id) async {
+    alertDialog(
+      'Confirmation', 
+      'You are going to delete "${submissions.firstWhere((v) => v.id == id).name}" row. This action cannot be undone.\n'
+      'Are you completely sure?',
+      confirmAction: () async {
+        closeAllDialog();
+        loadingIndicator.add(id);
+        final isSuccess = await admin.deleteData([id]);
+        if (isSuccess) {
+          storage.cached.fakultas.removeWhere((v) => v.id == id);
+          storage.save();
+          initialize();
+        }
+        loadingIndicator.remove(id);
+      },
+    );
+  }
+
+  void updateSubmission(List<FakultasModel> newData) {
+    for (final item in newData) {
+      final index = submissions.indexWhere((v) => v.id == item.id);
+      if (index != -1) submissions[index] = item;
+    }
+    qfsp.onChanged();
+  }
+}
+
+class ProgramStudiController extends GetxController {
+  final String fakultas;
+  final fc = Get.find<FakultasController>();
+  ProgramStudiController(this.fakultas);
+
+  final admin = ProgramStudiService();
+
+  var isLoading = false.obs;
+  var isMassLoading = false.obs;
+  var canSelect = false.obs;
+  var submissions = <ProgramStudiModel>[];
+  var loadingIndicator = <int>[];
+  var isSelected = <int>[];
+  var canEdit = <int>[];
+  var QFSPedSubmissions = RxList<ProgramStudiModel>([]);
+
+  @override
+  void onInit() {
+    super.onInit();
+    initialize();
+  }
+
+  void initialize() {
+    submissions = storage.cached.getFakultas(fakultas).programStudi;
+    qfsp.onChanged();
+  }
+
+  var pageNum = 1.obs;
+  var pageC = NumberPaginatorController();
+
+  late QFSPController<ProgramStudiModel> qfsp = QFSPController(
+    onChanged: ([String? itemKey, String? filterKey]) {
+      var queried = admin.QFSP.query(submissions, qfsp, (v) => [v.name]);
+      var filtered = admin.QFSP.filter(queried, qfsp, itemKey, filterKey);
+      var sorted = admin.QFSP.sort(filtered, qfsp);
+      var paged = admin.QFSP.page(sorted, qfsp, pageNum);
+      QFSPedSubmissions.value = paged;
+    },
+    pageC: pageC,
+    dataPerPage: 25
+  );
+
+  void selectItem(int id, bool state) {
+    state ? isSelected.add(id) : isSelected.remove(id);
+    QFSPedSubmissions.refresh();
+  }
+
+  void selectPageItem(bool? state) {
+    QFSPedSubmissions.value.forEach((v) => state == true ? isSelected.add(v.id) : isSelected.remove(v.id));
+    Future(() => QFSPedSubmissions.refresh());
+  }
+
+  void canEditItem(int id) {
+    canEdit.contains(id) ? canEdit.remove(id) : canEdit.add(id);
+    QFSPedSubmissions.refresh();
+  }
+
+  void setData(int id) async {
+    loadingIndicator.add(id);
+    QFSPedSubmissions.refresh();
+    final res = await admin.updateData([]);
+    loadingIndicator.remove(id);
+    if (res != null) updateSubmission(res);
+  }
+
+  void setSelectedData() {
+    alertDialog(
+      'Confirmation', 
+      'You are going to update ${isSelected.length} row of fakultas data to. This action cannot be undone.\n'
+      'Are you completely sure?',
+      confirmAction: () async {
+        closeAllDialog();
+        isSelected.forEach(loadingIndicator.add);
+        QFSPedSubmissions.refresh();
+        await Future.delayed(Duration(seconds: 2));
+        final res = await admin.updateData([]);
+        isSelected.forEach(loadingIndicator.remove);
+        if (res != null) {
+          isSelected.clear();
+          updateSubmission(res);
+        }
+      },
+    );
+  }
+
+  void deleteSelectedData() {
+    alertDialog(
+      'Confirmation', 
+      'You are going to delete ${isSelected.length} row(s) of data. This action cannot be undone.\n'
+      'Are you completely sure?',
+      confirmAction: () async {
+        closeAllDialog();
+        isSelected.forEach(loadingIndicator.add);
+        QFSPedSubmissions.refresh();
+        await Future.delayed(Duration(seconds: 2));
+        final isSuccess = await admin.deleteData(isSelected);
+        isSelected.forEach(loadingIndicator.remove);
+        if (isSuccess) {
+          storage.cached.fakultas.removeWhere((v) => isSelected.contains(v.id));
+          storage.save();
+          initialize();
+        }
+      },
+    );
+  }
+
+  void deleteData(int id) async {
+    alertDialog(
+      'Confirmation', 
+      'You are going to delete "${submissions.firstWhere((v) => v.id == id).name}" row. This action cannot be undone.\n'
+      'Are you completely sure?',
+      confirmAction: () async {
+        closeAllDialog();
+        loadingIndicator.add(id);
+        final isSuccess = await admin.deleteData([id]);
+        if (isSuccess) {
+          storage.cached.fakultas.removeWhere((v) => v.id == id);
+          storage.save();
+          initialize();
+        }
+        loadingIndicator.remove(id);
+      },
+    );
+  }
+
+  void updateSubmission(List<ProgramStudiModel> newData) {
+    for (final item in newData) {
+      final index = submissions.indexWhere((v) => v.id == item.id);
+      if (index != -1) submissions[index] = item;
+    }
+    qfsp.onChanged();
+  }
+}
+
+class MataKuliahPraktikumController extends GetxController {
+  final String programStudi;
+  final psc = Get.find<ProgramStudiController>();
+  MataKuliahPraktikumController(this.programStudi);
+
+  final admin = MataKuliahPraktikumService();
+
+  var isLoading = false.obs;
+  var isMassLoading = false.obs;
+  var canSelect = false.obs;
+  var submissions = <MataKuliahPraktikumModel>[];
+  var loadingIndicator = <int>[];
+  var isSelected = <int>[];
+  var canEdit = <int>[];
+  var QFSPedSubmissions = RxList<MataKuliahPraktikumModel>([]);
+
+  @override
+  void onInit() {
+    super.onInit();
+    initialize();
+  }
+
+  void initialize() {
+    submissions = storage.cached.getProgramStudi(programStudi).mataKuliahPraktikum;
+    qfsp.onChanged();
+  }
+
+  var pageNum = 1.obs;
+  var pageC = NumberPaginatorController();
+
+  late QFSPController<MataKuliahPraktikumModel> qfsp = QFSPController(
+    filter: [
+      FilterController(
+        filterKey: "type",
+        filterList: ['mata kuliah', 'praktikum'],
+        reference: (m) => m.type,
+        multiSelect: false
+      ),
+    ],
+    onChanged: ([String? itemKey, String? filterKey]) {
+      var queried = admin.QFSP.query(submissions, qfsp, (v) => [v.nama, v.kode]);
+      var filtered = admin.QFSP.filter(queried, qfsp, itemKey, filterKey);
+      var sorted = admin.QFSP.sort(filtered, qfsp);
+      var paged = admin.QFSP.page(sorted, qfsp, pageNum);
+      QFSPedSubmissions.value = paged;
+    },
+    pageC: pageC,
+    dataPerPage: 25
+  );
+
+  void selectItem(int id, bool state) {
+    state ? isSelected.add(id) : isSelected.remove(id);
+    QFSPedSubmissions.refresh();
+  }
+
+  void selectPageItem(bool? state) {
+    QFSPedSubmissions.value.forEach((v) => state == true ? isSelected.add(v.id) : isSelected.remove(v.id));
+    Future(() => QFSPedSubmissions.refresh());
+  }
+
+  void canEditItem(int id) {
+    canEdit.contains(id) ? canEdit.remove(id) : canEdit.add(id);
+    QFSPedSubmissions.refresh();
+  }
+
+  void setData(int id, String status) async {
+    loadingIndicator.add(id);
+    QFSPedSubmissions.refresh();
+    final res = await admin.updateData([]);
+    loadingIndicator.remove(id);
+    if (res != null) updateSubmission(res);
+  }
+
+  void setSelectedData() {
+    alertDialog(
+      'Confirmation', 
+      'You are going to update ${isSelected.length} row of program studi data to. This action cannot be undone.\n'
+      'Are you completely sure?',
+      confirmAction: () async {
+        closeAllDialog();
+        isSelected.forEach(loadingIndicator.add);
+        QFSPedSubmissions.refresh();
+        await Future.delayed(Duration(seconds: 2));
+        final res = await admin.updateData([]);
+        isSelected.forEach(loadingIndicator.remove);
+        if (res != null) {
+          isSelected.clear();
+          updateSubmission(res);
+        }
+      },
+    );
+  }
+
+  void deleteSelectedData() {
+    alertDialog(
+      'Confirmation', 
+      'You are going to delete ${isSelected.length} row(s) of data. This action cannot be undone.\n'
+      'Are you completely sure?',
+      confirmAction: () async {
+        closeAllDialog();
+        isSelected.forEach(loadingIndicator.add);
+        QFSPedSubmissions.refresh();
+        await Future.delayed(Duration(seconds: 2));
+        final isSuccess = await admin.deleteData(isSelected);
+        isSelected.forEach(loadingIndicator.remove);
+        if (isSuccess) {
+          storage.cached.fakultas.removeWhere((v) => isSelected.contains(v.id));
+          storage.save();
+          initialize();
+        }
+      },
+    );
+  }
+
+  void deleteData(int id) async {
+    alertDialog(
+      'Confirmation', 
+      'You are going to delete "${submissions.firstWhere((v) => v.id == id).nama}" row. This action cannot be undone.\n'
+      'Are you completely sure?',
+      confirmAction: () async {
+        closeAllDialog();
+        loadingIndicator.add(id);
+        final isSuccess = await admin.deleteData([id]);
+        if (isSuccess) {
+          storage.cached.fakultas.removeWhere((v) => v.id == id);
+          storage.save();
+          initialize();
+        }
+        loadingIndicator.remove(id);
+      },
+    );
+  }
+
+  void updateSubmission(List<MataKuliahPraktikumModel> newData) {
+    for (final item in newData) {
+      final index = submissions.indexWhere((v) => v.id == item.id);
+      if (index != -1) submissions[index] = item;
+    }
+    qfsp.onChanged();
   }
 }
