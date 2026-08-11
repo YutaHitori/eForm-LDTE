@@ -106,17 +106,19 @@ class GlobalConfigModelAdapter extends TypeAdapter<GlobalConfigModel> {
     return GlobalConfigModel(
       nomorSurat: fields[0] as String?,
       lineOALDTE: fields[1] as String?,
-    );
+    )..fakultas = fields[2] as DateTime;
   }
 
   @override
   void write(BinaryWriter writer, GlobalConfigModel obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.nomorSurat)
       ..writeByte(1)
-      ..write(obj.lineOALDTE);
+      ..write(obj.lineOALDTE)
+      ..writeByte(2)
+      ..write(obj.fakultas);
   }
 
   @override

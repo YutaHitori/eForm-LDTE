@@ -900,7 +900,6 @@ class AdminPeminjamanPeralatanController extends GetxController {
         closeAllDialog();
         isSelected.forEach(loadingIndicator.add);
         QFSPedSubmissions.refresh();
-        await Future.delayed(Duration(seconds: 2));
         final res = await admin.updateStatus(isSelected, status);
         isSelected.forEach(loadingIndicator.remove);
         if (res != null) {
@@ -1088,7 +1087,6 @@ class AdminSuratKeteranganPraktikumController extends GetxController {
         closeAllDialog();
         isSelected.forEach(loadingIndicator.add);
         QFSPedSubmissions.refresh();
-        await Future.delayed(Duration(seconds: 2));
         final res = await admin.updateStatus(isSelected, status);
         isSelected.forEach(loadingIndicator.remove);
         if (res != null) {
@@ -1420,7 +1418,6 @@ class FakultasController extends GetxController {
 
 class ProgramStudiController extends GetxController {
   final String fakultas;
-  final fc = Get.find<FakultasController>();
   ProgramStudiController(this.fakultas);
 
   final admin = ProgramStudiService();
@@ -1554,18 +1551,20 @@ class ProgramStudiController extends GetxController {
 
 class MataKuliahPraktikumController extends GetxController {
   final String programStudi;
-  final psc = Get.find<ProgramStudiController>();
   MataKuliahPraktikumController(this.programStudi);
 
+  List<MataKuliahPraktikumModel> get stored => storage.cached.getProgramStudi(programStudi).mataKuliahPraktikum;
   final admin = MataKuliahPraktikumService();
 
   var isLoading = false.obs;
   var isMassLoading = false.obs;
-  var canSelect = false.obs;
   var submissions = <MataKuliahPraktikumModel>[];
   var loadingIndicator = <int>[];
   var isSelected = <int>[];
   var canEdit = <int>[];
+  var insertForms = <int>[];
+  var updateForms = <int>[];
+  var deleteForms = <int>[];
   var QFSPedSubmissions = RxList<MataKuliahPraktikumModel>([]);
 
   @override
@@ -1575,7 +1574,12 @@ class MataKuliahPraktikumController extends GetxController {
   }
 
   void initialize() {
-    submissions = storage.cached.getProgramStudi(programStudi).mataKuliahPraktikum;
+    submissions = stored.map((v) => MataKuliahPraktikumModel(
+      id: v.id,
+      kode: v.kode,
+      nama: v.nama,
+      isPraktikum: v.isPraktikum,
+    )).toList();
     qfsp.onChanged();
   }
 
@@ -1612,77 +1616,291 @@ class MataKuliahPraktikumController extends GetxController {
     Future(() => QFSPedSubmissions.refresh());
   }
 
-  void canEditItem(int id) {
-    canEdit.contains(id) ? canEdit.remove(id) : canEdit.add(id);
-    QFSPedSubmissions.refresh();
+  // void setData(int id, String status) async {
+  //   loadingIndicator.add(id);
+  //   QFSPedSubmissions.refresh();
+  //   final res = await admin.updateData([]);
+  //   loadingIndicator.remove(id);
+  //   if (res != null) updateSubmission(res);
+  // }
+
+  void delete(int id) {
+    deleteForms.add(id);
+    qfsp.onChanged();
   }
 
-  void setData(int id, String status) async {
-    loadingIndicator.add(id);
-    QFSPedSubmissions.refresh();
-    final res = await admin.updateData([]);
-    loadingIndicator.remove(id);
-    if (res != null) updateSubmission(res);
-  }
-
-  void setSelectedData() {
-    alertDialog(
-      'Confirmation', 
-      'You are going to update ${isSelected.length} row of program studi data to. This action cannot be undone.\n'
-      'Are you completely sure?',
-      confirmAction: () async {
-        closeAllDialog();
-        isSelected.forEach(loadingIndicator.add);
-        QFSPedSubmissions.refresh();
-        await Future.delayed(Duration(seconds: 2));
-        final res = await admin.updateData([]);
-        isSelected.forEach(loadingIndicator.remove);
-        if (res != null) {
-          isSelected.clear();
-          updateSubmission(res);
-        }
-      },
-    );
+  void undoDelete(int id) {
+    deleteForms.remove(id);
+    qfsp.onChanged();
   }
 
   void deleteSelectedData() {
+    for (final v in QFSPedSubmissions.value.where(((v) => isSelected.contains(v.id)))) {
+      if (!deleteForms.contains(v.id)) deleteForms.add(v.id);
+    }
+    qfsp.onChanged();
+  }
+
+  void undoDeleteSelectedData() {
+    for (final v in QFSPedSubmissions.value.where(((v) => isSelected.contains(v.id)))) {
+      deleteForms.remove(v.id);
+    }
+    qfsp.onChanged();
+  }
+
+  void undoChange(int id) {
+    final source = stored.where((v) => v.id == id).firstOrNull;
+    final i = submissions.indexWhere((v) => v.id == id);
+    if (source != null && i != -1) {
+      updateForms.remove(id);
+      submissions[i] = source.duplicate();
+    }
+    qfsp.onChanged();
+  }
+
+  void inputDialog([MataKuliahPraktikumModel? s]) {
+    final kode = TextEditingController(text: s?.kode ?? (regexp.firstMatch(programStudi)?.group(1)));
+    final nama = TextEditingController(text: s?.nama);
+    final type = SingleSelectController<String>(s?.type);
+    var kodeE = Rxn<String>(null);
+    var namaE = Rxn<String>(null);
+    var typeE = Rxn<String>(null);
+
+    bool checkEmptyFields() {
+      if (
+        kode.text.isBlank() || 
+        nama.text.isBlank() || 
+        !type.hasValue
+      ) {
+        kodeE.value = kode.text.isBlank() ? '*required' : null;
+        namaE.value = nama.text.isBlank() ? '*required' : null;
+        typeE.value = !type.hasValue ? '*required' : null;
+        return false;
+      }
+      kodeE.value = namaE.value = typeE.value = null;
+      return true;
+    }
+    
     alertDialog(
-      'Confirmation', 
-      'You are going to delete ${isSelected.length} row(s) of data. This action cannot be undone.\n'
-      'Are you completely sure?',
-      confirmAction: () async {
+      s == null ? 'Add new item' : 'Edit item', 
+      null,
+      width: 420,
+      message: Obx(() => Column(
+        children: [
+          CustomTextField(
+            controller: kode,
+            labelText: 'Kode',
+            errorText: kodeE.value,
+          ),
+          CustomTextField(
+            controller: nama,
+            labelText: 'Nama',
+            errorText: namaE.value,
+          ),
+          Column(
+            spacing: 4,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Type', textScaleFactor: 1.02,),
+                  if (typeE.value != null) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
+                ],
+              ),
+              DropdownFlutter<String>(
+                controller: type,
+                listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
+                decoration: CustomDropdownDecoration(
+                  closedFillColor: appTheme.inputDecorationTheme.fillColor,
+                  expandedFillColor: appTheme.inputDecorationTheme.fillColor,
+                  closedBorder: typeE.value != null ? Border.all(color: appTheme.colorScheme.error) : null
+                ),
+                excludeSelected: false,
+                items: ['mata kuliah', 'praktikum'],
+                hintText: 'select type',
+                onChanged: (v) {},
+              ),
+            ],
+          ),
+          SizedBox(height: 16,)
+        ]
+      )),
+      confirmText: s == null ? 'add' : 'save',
+      confirmAction: () {
+        if (!checkEmptyFields()) return;
         closeAllDialog();
-        isSelected.forEach(loadingIndicator.add);
-        QFSPedSubmissions.refresh();
-        await Future.delayed(Duration(seconds: 2));
-        final isSuccess = await admin.deleteData(isSelected);
-        isSelected.forEach(loadingIndicator.remove);
-        if (isSuccess) {
-          storage.cached.fakultas.removeWhere((v) => isSelected.contains(v.id));
-          storage.save();
-          initialize();
+        if (s == null || s.id <= 0) {
+          final id = s?.id ?? ((insertForms.lastOrNull ?? 0) - 1);
+          final model = MataKuliahPraktikumModel(id: id, kode: kode.text, nama: nama.text, isPraktikum: type.value == 'praktikum');
+          if (s == null) {
+            insertForms.add(id);
+            submissions.insert(1, model);
+          } else {
+            final si = submissions.indexWhere((v) => v.id == s.id);
+            submissions[si] = model;
+          }
+        } else {
+          s.kode = kode.text;
+          s.nama = nama.text;
+          s.isPraktikum = type.value == 'praktikum';
+          final i = updateForms.indexWhere((v) => v == s.id);
+          print(i);
+          final isExist = stored.any((v) => v.id == s.id && v.kode == s.kode && v.nama == s.nama && v.isPraktikum == s.isPraktikum);
+          if (isExist) {
+            if (i != -1) updateForms.remove(s.id);
+          } else {
+            if (i == -1) {
+              updateForms.add(s.id);
+            }
+          }
         }
+        qfsp.onChanged();
       },
     );
   }
 
-  void deleteData(int id) async {
-    alertDialog(
-      'Confirmation', 
-      'You are going to delete "${submissions.firstWhere((v) => v.id == id).nama}" row. This action cannot be undone.\n'
-      'Are you completely sure?',
-      confirmAction: () async {
-        closeAllDialog();
-        loadingIndicator.add(id);
-        final isSuccess = await admin.deleteData([id]);
-        if (isSuccess) {
-          storage.cached.fakultas.removeWhere((v) => v.id == id);
-          storage.save();
-          initialize();
+  // void setSelectedData() {
+  //   alertDialog(
+  //     'Confirmation', 
+  //     'You are going to update ${isSelected.length} row of data. This action cannot be undone.\n'
+  //     'Are you completely sure?',
+  //     confirmAction: () async {
+  //       closeAllDialog();
+  //       isSelected.forEach(loadingIndicator.add);
+  //       QFSPedSubmissions.refresh();
+  //       await Future.delayed(Duration(seconds: 2));
+  //       final res = await admin.upsertData([]);
+  //       isSelected.forEach(loadingIndicator.remove);
+  //       if (res != null) {
+  //         isSelected.clear();
+  //         updateSubmission(res);
+  //       }
+  //     },
+  //   );
+  // }
+
+  // void deleteData(int id) async {
+  //   alertDialog(
+  //     'Confirmation', 
+  //     'You are going to delete "${submissions.firstWhere((v) => v.id == id).nama}" row. This action cannot be undone.\n'
+  //     'Are you completely sure?',
+  //     confirmAction: () async {
+  //       closeAllDialog();
+  //       loadingIndicator.add(id);
+  //       final isSuccess = await admin.deleteData([id]);
+  //       if (isSuccess) {
+  //         storage.cached.fakultas.removeWhere((v) => v.id == id);
+  //         storage.save();
+  //         initialize();
+  //       }
+  //       loadingIndicator.remove(id);
+  //     },
+  //   );
+  // }
+  
+  Map<String, dynamic> compileForm(MataKuliahPraktikumModel model) => {
+    if (model.id > 0) 'id': model.id,
+    'kode': model.kode,
+    'nama': model.nama,
+    'is_praktikum': model.isPraktikum,
+    'program_studi' : programStudi
+  };
+  
+  void pushAction(int id) async {
+    final data = submissions.where((v) => v.id == id).first;
+    final isAdding = insertForms.contains(id);
+    final isUpdating = updateForms.contains(id);
+    final isDeleting = deleteForms.contains(id);
+
+    if (isDeleting && isAdding) {
+      isSelected.remove(id);
+      deleteForms.remove(id);
+      insertForms.remove(id);
+      submissions.remove(data);
+      qfsp.onChanged();
+      return;
+    }
+
+    loadingIndicator.add(id);
+    QFSPedSubmissions.refresh();
+
+    if (isDeleting) {
+      final isSuccess = await admin.deleteData([id]);
+      
+      if (isSuccess) {
+        isSelected.remove(id);
+        deleteForms.remove(id);
+        submissions.remove(data);
+      }
+    } else if (isUpdating) {
+      final res = await admin.upsertData([compileForm(data)]);
+      if (res != null) {
+        updateForms.remove(id);
+      }
+    } else if (isAdding) {
+      final res = await admin.upsertData([compileForm(data)]);
+      if (res != null) {
+        insertForms.remove(id);
+        submissions.where((v) => v.id == id).first.id = res.first.id;
+      }
+    }
+    
+    loadingIndicator.remove(id);
+    qfsp.onChanged();
+  }
+
+  void pushQueuedAction() async {
+    final insertData = submissions.where((v) => insertForms.contains(v.id)).toList();
+    final updateData = submissions.where((v) => updateForms.contains(v.id)).toList();
+
+    for (final id in insertForms.where((v) => deleteForms.contains(v)).toList()) {
+      isSelected.remove(id);
+      deleteForms.remove(id);
+      insertForms.remove(id);
+      submissions.removeWhere((v) => v.id == id);
+      qfsp.onChanged();
+    }
+
+    final set = {...updateForms, ...deleteForms, ...insertForms};
+
+    set.forEach(loadingIndicator.add);
+    QFSPedSubmissions.refresh();
+
+    if (deleteForms.isNotEmpty) {
+      final isSuccess = await admin.deleteData(deleteForms);
+      if (isSuccess) {
+        for (final id in deleteForms.toList()) {
+          isSelected.remove(id);
+          deleteForms.remove(id);
+          submissions.removeWhere((v) => v.id == id);
         }
-        loadingIndicator.remove(id);
-      },
-    );
+      }
+    } 
+    
+    if (insertData.isNotEmpty) {
+      final data = insertData.map((v) => compileForm(v)).toList();
+      final res = await admin.upsertData(data);
+      if (res != null) {
+        for (final id in insertForms.toList()) {
+          insertForms.remove(id);
+        }
+      }
+    }
+
+    if (updateData.isNotEmpty) {
+      final data = updateData.map((v) => compileForm(v)).toList();
+      final res = await admin.upsertData(data);
+      if (res != null) {
+        for (final id in updateForms.toList()) {
+          updateForms.remove(id);
+          submissions.where((v) => v.id == id).first.id = res.first.id;
+        }
+      }
+    }
+    
+    set.forEach(loadingIndicator.remove);
+    qfsp.onChanged();
   }
 
   void updateSubmission(List<MataKuliahPraktikumModel> newData) {

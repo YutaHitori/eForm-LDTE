@@ -29,7 +29,7 @@ void phoneValidateFormatFocus(TextEditingController phone, FocusNode phoneFN, Rx
   phone.text = result;
 }
 
-void alertDialog(String title, String? subtitle, {double? titleFontSize, double? subtitleFontSize, double? height, double? width, Color? backgroundColor, String? image, Widget? message, List<Widget>? actions,  VoidCallback? cancelAction, String cancelText = 'Close', VoidCallback? confirmAction, String confirmText = 'Confirm', bool dismissible = true}) {
+void alertDialog(String title, String? subtitle, {double? titleFontSize, double? subtitleFontSize, double? height, double? width = 256 + 32, Color? backgroundColor, String? image, Widget? message, List<Widget>? actions,  VoidCallback? cancelAction, String cancelText = 'Close', VoidCallback? confirmAction, String confirmText = 'Confirm', bool dismissible = true}) {
   Future(() => Get.dialog(
     PopScope(
       canPop: dismissible,
@@ -37,7 +37,7 @@ void alertDialog(String title, String? subtitle, {double? titleFontSize, double?
         title: Text(title, style: TextStyle(fontSize: titleFontSize)),
         content: SizedBox(
           height: height,
-          width: width ?? 256 + 32,
+          width: width,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,

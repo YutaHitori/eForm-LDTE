@@ -29,12 +29,14 @@ types:
         index: 9
   GlobalConfigModel:
     typeId: 2
-    nextIndex: 2
+    nextIndex: 3
     fields:
       nomorSurat:
         index: 0
       lineOALDTE:
         index: 1
+      fakultas:
+        index: 2
   UserPreferenceModel:
     typeId: 3
     nextIndex: 3

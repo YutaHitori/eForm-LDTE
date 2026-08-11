@@ -62,6 +62,7 @@ class LastUpdatedModel {
 class GlobalConfigModel {
   String? nomorSurat;
   String? lineOALDTE;
+  late DateTime fakultas;
 
   GlobalConfigModel({
     this.nomorSurat,
@@ -71,6 +72,7 @@ class GlobalConfigModel {
   GlobalConfigModel.fromJson(Map<String, dynamic> json) {
     nomorSurat = json['nomor_surat'];
     lineOALDTE = json['lineoa_ldte'];
+    fakultas = DateTime.tryParse(json['fakultas']) ?? DateTime(2000);
   }
 }
 
@@ -137,6 +139,15 @@ class MataKuliahPraktikumModel {
     kode = json['kode']; 
     nama = json['nama']; 
     isPraktikum = json['is_praktikum']; 
+  }
+
+  MataKuliahPraktikumModel duplicate() {
+    return MataKuliahPraktikumModel(
+      id: id,
+      kode: kode,
+      nama: nama,
+      isPraktikum: isPraktikum,
+    );
   }
 }
 

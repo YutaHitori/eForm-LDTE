@@ -81,7 +81,7 @@ class ProgramStudi extends StatelessWidget {
                       : SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: SizedBox(
-                          width: constrains.maxWidth > 920 ? constrains.maxWidth : 920,
+                          width: constrains.maxWidth > 800 ? constrains.maxWidth : 800,
                           height: constrains.maxHeight,
                           child: Column(
                             children: [

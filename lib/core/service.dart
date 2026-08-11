@@ -20,7 +20,6 @@ import 'package:eform_ldte/misc/function.dart';
 import 'package:eform_ldte/misc/global.dart';
 import 'package:eform_ldte/misc/extension.dart';
 import 'package:number_paginator/number_paginator.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -147,7 +146,7 @@ class DateTimePickerService {
 }
 
 class StorageService {
-  late Box<StorageCacheModel> box;
+  late final Box<StorageCacheModel> box;
   StorageCacheModel cached = StorageCacheModel(
     globalConfig: GlobalConfigModel(),
     fakultas: [],
@@ -166,12 +165,14 @@ class StorageService {
       await Hive.deleteBoxFromDisk('local');
       box = await Hive.openBox<StorageCacheModel>('local');
     }
+    await box.compact();
 
     NC.lastSync.value = cached.lastSync;
     await sync();
   }
 
   Future<void> save() async {
+    await box.clear();
     await box.put('cached_storage', cached);
   }
 
@@ -188,16 +189,19 @@ class StorageService {
     } else {
       final lastUpdated = await getFieldLastUpdated();
       if (lastUpdated != null) {
+        bool getAll = false;
         final outdated = lastUpdated.where((v) => v.timestamp.isAfter(lastSync) || (v.field != null && !storage.cached.formatedProgramStudi().contains(v.field))).toList();
         if (outdated.isNotEmpty) {
           print('outdated field : ${outdated.map((v) => v.field ?? "Global Config")}');
           if (outdated.any((v) => v.field == null)) {
             outdated.removeWhere((v) => v.field == null);
             global = await getLatestGlobalConfig();
+            getAll = global?.fakultas.isAfter(cached.globalConfig.fakultas) ?? true;
           }
-          if (outdated.isNotEmpty) latest = await getLatestFieldData(outdated);
+          if (outdated.isNotEmpty) latest = await getLatestFieldData(outdated, getAll);
         }
-        removeUnregisteredField(lastUpdated);
+        final list = getAll ? latest?.map((v) => v.name).toList() : null;
+        removeUnregisteredField(lastUpdated, list);
       }
     }
     
@@ -220,23 +224,25 @@ class StorageService {
 
       return data.map((v) => LastUpdatedModel.fromJson(v)).toList();
     } on PostgrestException catch (error) {
-      alertDialog('PostgrestException', '(getOutdatedField) PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
+      alertDialog('PostgrestException', '(getFieldLastUpdated) PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
     } catch (error) {
-      alertDialog('Unexpected error', '(getOutdatedField) $error');
+      alertDialog('Unexpected error', '(getFieldLastUpdated) $error');
     }
     return null;
   }
 
-  void removeUnregisteredField(List<LastUpdatedModel> list) {
-    for (final f in storage.cached.fakultas) {
+  void removeUnregisteredField(List<LastUpdatedModel> list, [List<String>? fakultas]) {
+    for (final f in storage.cached.fakultas.toList()) {
       f.programStudi.removeWhere((ps) {
         final isNotRegistered = !list.any((v) => v.field == ps.name);
         if (isNotRegistered) print('removed program studi : ${ps.name}');
         return isNotRegistered;
       });
       final i = storage.cached.fakultas.indexWhere((v) => v.name == f.name);
-      if (f.programStudi.isEmpty) storage.cached.fakultas.removeAt(i);
-      else storage.cached.fakultas[i] = f;
+      if (fakultas?.contains(f.name) == false) {
+        print("remove fakultas ${f.name}");
+        storage.cached.fakultas.removeAt(i);
+      } else storage.cached.fakultas[i] = f;
     }
   }
 
@@ -251,13 +257,13 @@ class StorageService {
     );
   }
 
-  Future<List<FakultasModel>?> getLatestFieldData([List<LastUpdatedModel>? outdated]) async {
+  Future<List<FakultasModel>?> getLatestFieldData([List<LastUpdatedModel>? outdated, bool getAll = false]) async {
     try {
       var query = auth.supabase
         .from('fakultas')
         .select('''
           *, 
-          program_studi !inner (
+          program_studi ${getAll ? '' : '!inner'} (
             id, created_at, name,
             mata_kuliah (*)
           )
@@ -274,13 +280,7 @@ class StorageService {
       final data = await query;
       print('outdated field data : $data');
 
-      List<FakultasModel> list = [];
-      for (final v in data) {
-        final temp = FakultasModel.fromJson(v);
-        if (temp.programStudi.isNotEmpty) list.add(temp);
-      }
-      
-      return list;
+      return data.map((v) => FakultasModel.fromJson(v)).toList();
     } on PostgrestException catch (error) {
       alertDialog('PostgrestException', '(getLatestFieldData) PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
     } catch (error) {
@@ -294,11 +294,12 @@ class StorageService {
     for (final lf in latestList) {
       final tempf = cached.fakultas.where((v) => v.name == lf.name).firstOrNull;
       if (tempf != null) {
+        if (lf.programStudi.isEmpty) continue;
         for (final lps in lf.programStudi) {
           final tempps = tempf.programStudi.where((v) => v.name == lps.name).firstOrNull;
           if (tempps != null) {
             final i = tempf.programStudi.indexWhere((v) => v.name == lps.name);
-            tempf.programStudi[i] = tempps;
+            tempf.programStudi[i] = lps;
             print('update program studi : ${lps.name}');
           } else {
             tempf.programStudi.add(lps);
@@ -437,9 +438,10 @@ class QFSPService {
 
   List<T> sort<T>(List<T> raw, QFSPController c) {
     final temp = raw.cast<dynamic>();
+    1.compareTo(2);
     switch (c.sortController.value) {
-      case 'Latest': temp.sort((a, b) => b.id.compareTo(a.id)); break;
-      case 'Oldest': temp.sort((a, b) => a.id.compareTo(b.id)); break;
+      case 'Latest': temp.sort((a, b) => (a.id < 0 && b.id >= 0) ? -1 : (b.id < 0 && a.id >= 0) ? 1 : b.id.compareTo(a.id)); break;
+      case 'Oldest': temp.sort((a, b) => (a.id < 0 && b.id >= 0) ? 1 : (b.id < 0 && a.id >= 0) ? -1 : a.id.compareTo(b.id)); break;
       case 'Name (A-Z)': temp.sort((a, b) => a.nama.toLowerCase().compareTo(b.nama.toLowerCase())); break;
       case 'Name (Z-A)': temp.sort((a, b) => b.nama.toLowerCase().compareTo(a.nama.toLowerCase())); break;
     }
@@ -912,7 +914,7 @@ class FakultasService {
     try {
       final res = await auth.supabase
         .from('fakultas')
-        .upsert(form)
+        .upsert(form, onConflict: 'id')
         .select();
       return res.map((v) => FakultasModel.fromJson(v)).toList();
     } on PostgrestException catch (error) {
@@ -960,7 +962,7 @@ class ProgramStudiService {
     try {
       final res = await auth.supabase
         .from('program_studi')
-        .upsert(form)
+        .upsert(form, onConflict: 'id')
         .select();
       return res.map((v) => ProgramStudiModel.fromJson(v)).toList();
     } on PostgrestException catch (error) {
@@ -1004,11 +1006,11 @@ class MataKuliahPraktikumService {
     return null;
   }
 
-  Future<List<MataKuliahPraktikumModel>?> updateData(List<Map<String, dynamic>> form) async {
+  Future<List<MataKuliahPraktikumModel>?> upsertData(List<Map<String, dynamic>> form) async {
     try {
       final res = await auth.supabase
         .from('mata_kuliah')
-        .upsert(form)
+        .upsert(form, onConflict: 'id')
         .select();
       return res.map((v) => MataKuliahPraktikumModel.fromJson(v)).toList();
     } on PostgrestException catch (error) {

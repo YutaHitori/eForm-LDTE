@@ -17,7 +17,7 @@ class AdminSuratKeteranganPraktikum extends StatelessWidget {
       final sub = c.QFSPedSubmissions.value;
       final isAnySelected = sub.any((v) => c.isSelected.contains(v.id));
       final isMassLoading = c.isMassLoading.value;
-      final canMassUpdate = isAnySelected && !isMassLoading;      
+      final canMassUpdate = isAnySelected && !isMassLoading && c.loadingIndicator.isEmpty;      
       return Scaffold(
         appBar: AppBar(
           title: Text('Kiriman - Surat Keterangan Praktikum'),
