@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hive_ce_flutter/hive_flutter.dart';
-import 'package:eform_ldte/hive/hive_registrar.g.dart';
 import 'package:eform_ldte/misc/widget.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:eform_ldte/misc/global.dart';

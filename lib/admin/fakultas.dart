@@ -14,14 +14,16 @@ class Fakultas extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = Get.put(FakultasController());
+    final c = Get.find<FakultasController>();
     return Obx(() {
-      c.QFSPedSubmissions.value;
-      final sub = c.QFSPedSubmissions.value;
+      c.qfsped.value;
+      final sub = c.qfsped.value;
       final isAnySelected = sub.any((v) => c.isSelected.contains(v.id));
       final isMassLoading = c.isMassLoading.value;
       final canSelect = c.canSelect.value;
       final canMassUpdate = isAnySelected && !isMassLoading;
+      
+      final isAnyQueued = c.config.isAnyQueued;
       return Scaffold(
         appBar: AppBar(
           title: Text('Admin - Daftar Fakultas'),
@@ -63,7 +65,7 @@ class Fakultas extends StatelessWidget {
                       constraints: BoxConstraints(
                         minHeight: constrains.maxHeight,
                       ),
-                      child: c.QFSPedSubmissions.value.isEmpty
+                      child: c.qfsped.value.isEmpty
                       ? SingleChildScrollView(
                         physics: AlwaysScrollableScrollPhysics(),
                         child: SizedBox( 
@@ -111,7 +113,7 @@ class Fakultas extends StatelessWidget {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     if (canSelect) IconButton(
-                                      onPressed: !canMassUpdate ? null : c.deleteSelectedData,
+                                      onPressed: !canMassUpdate ? null : null,
                                       icon: Icon(Icons.delete_forever_rounded, color: !canMassUpdate ? null : Colors.red), tooltip: 'Delete Selected'
                                     ),
                                     IconButton(
@@ -131,7 +133,7 @@ class Fakultas extends StatelessWidget {
                                     physics: AlwaysScrollableScrollPhysics(),
                                     shrinkWrap: true,
                                     itemBuilder: (context, i) {
-                                      final entry = c.QFSPedSubmissions.value[i];
+                                      final entry = c.qfsped.value[i];
                                       final isLoading = c.loadingIndicator.contains(entry.id);
                                       final canEdit = c.canEdit.contains(entry.id);
                                       return ListTile(
@@ -170,11 +172,11 @@ class Fakultas extends StatelessWidget {
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             if (canEdit) IconButton(
-                                              onPressed: isLoading ? null : () => c.deleteData(entry.id),
+                                              onPressed: isLoading ? null : () => null,
                                               icon: Icon(Icons.delete_forever_rounded, color: isLoading ? null : Colors.red), tooltip: 'Delete'
                                             ),
                                             IconButton(
-                                              onPressed: isLoading ? null : () => c.canEditItem(entry.id),
+                                              onPressed: isLoading ? null : () => c.canEditState(entry.id),
                                               icon: Icon(
                                                 canEdit ? Icons.edit_off_rounded : Icons.edit_rounded,
                                               ), tooltip: 'Edit'
@@ -183,7 +185,7 @@ class Fakultas extends StatelessWidget {
                                         ),
                                       );
                                     },
-                                    itemCount: c.QFSPedSubmissions.value.length,
+                                    itemCount: c.qfsped.value.length,
                                   ),
                                 ),
                               ),

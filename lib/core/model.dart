@@ -74,6 +74,11 @@ class GlobalConfigModel {
     lineOALDTE = json['lineoa_ldte'];
     fakultas = DateTime.tryParse(json['fakultas']) ?? DateTime(2000);
   }
+
+  GlobalConfigModel duplicate() => GlobalConfigModel(
+    nomorSurat: nomorSurat,
+    lineOALDTE: lineOALDTE,
+  );
 }
 
 class FakultasModel {
@@ -90,65 +95,83 @@ class FakultasModel {
   FakultasModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
-    List.of(json['program_studi']).forEach((v) => programStudi.add(ProgramStudiModel.fromJson(v)));
+    List.of(json['program_studi']).forEach((v) => programStudi.add(ProgramStudiModel.fromJson(v, name)));
   }
+
+  FakultasModel duplicate() => FakultasModel(
+    id: id, 
+    name: name, 
+    programStudi: programStudi.map((v) => v.duplicate()).toList()
+  );
 
   List<String> formatedProgramStudi() => programStudi.map((v) => v.name).toList();
 }
 
 class ProgramStudiModel {
   late int id;
-  late String name;
+  late String name, fakultas;
   List<MataKuliahPraktikumModel> mataKuliahPraktikum = [];
 
-  List<MataKuliahPraktikumModel> get mataKuliah => mataKuliahPraktikum.where((v) => !v.isPraktikum).toList();
-  List<MataKuliahPraktikumModel> get praktikum => mataKuliahPraktikum.where((v) => v.isPraktikum).toList();
+  List<MataKuliahPraktikumModel> get mataKuliah => mataKuliahPraktikum.where((v) => v.isPraktikum != true).toList();
+  List<MataKuliahPraktikumModel> get praktikum => mataKuliahPraktikum.where((v) => v.isPraktikum != false).toList();
   
   ProgramStudiModel({
     required this.id,
     required this.name,
+    required this.fakultas,
     required this.mataKuliahPraktikum,
   });
 
-  ProgramStudiModel.fromJson(Map<String, dynamic> json) {
+  ProgramStudiModel.fromJson(Map<String, dynamic> json, [String? fakultasName]) {
     id = json['id'];
     name = json['name'];
-    List.of(json['mata_kuliah']).forEach((v) => mataKuliahPraktikum.add(MataKuliahPraktikumModel.fromJson(v)));
+    fakultas = fakultasName ?? json['fakultas'];
+    List.of(json['mata_kuliah']).forEach((v) => mataKuliahPraktikum.add(MataKuliahPraktikumModel.fromJson(v, name)));
   }
 
   List<String> formatedMataKuliah() => mataKuliah.map((v) => '${v.kode} ${v.nama}').toList();
   List<String> formatedPraktikum() => praktikum.map((v) => '${v.kode} ${v.nama}').toList();
+
+  ProgramStudiModel duplicate() => ProgramStudiModel(
+    id: id,
+    name: name,
+    fakultas: fakultas,
+    mataKuliahPraktikum: mataKuliahPraktikum.map((v) => v.duplicate()).toList(),
+  );
 }
 
 class MataKuliahPraktikumModel {
   late int id;
-  late String kode, nama;
-  late bool isPraktikum;
+  late String kode, nama, programStudi;
+  bool? isPraktikum;
 
-  String get type => isPraktikum ? 'praktikum' : 'mata kuliah';
+  String get type => isPraktikum == null ? 'keduanya' : isPraktikum! ? 'praktikum' : 'mata kuliah';
 
   MataKuliahPraktikumModel({
     required this.id,
     required this.kode,
     required this.nama,
+    required this.programStudi,
     required this.isPraktikum,
   });
 
-  MataKuliahPraktikumModel.fromJson(Map<String, dynamic> json) {
+  MataKuliahPraktikumModel.fromJson(Map<String, dynamic> json, [String? programStudiName]) {
     id = json['id']; 
     kode = json['kode']; 
     nama = json['nama']; 
+    programStudi = programStudiName ?? json['program_studi']; 
     isPraktikum = json['is_praktikum']; 
   }
 
-  MataKuliahPraktikumModel duplicate() {
-    return MataKuliahPraktikumModel(
-      id: id,
-      kode: kode,
-      nama: nama,
-      isPraktikum: isPraktikum,
-    );
-  }
+  MataKuliahPraktikumModel duplicate() => MataKuliahPraktikumModel(
+    id: id,
+    kode: kode,
+    nama: nama,
+    programStudi: programStudi,
+    isPraktikum: isPraktikum,
+  );
+
+  bool isEqualTo(MataKuliahPraktikumModel ref) => id == ref.id && kode == ref.kode && nama == ref.nama && programStudi == ref.programStudi && isPraktikum == ref.isPraktikum;
 }
 
 class UserPreferenceModel {
@@ -161,6 +184,12 @@ class UserPreferenceModel {
     this.remindSuratKeteranganPraktikum = true,
     this.remindPertukaranJadwal = true,
   });
+
+  UserPreferenceModel duplicate() => UserPreferenceModel(
+    remindPeminjamanPeralatan: remindPeminjamanPeralatan,
+    remindSuratKeteranganPraktikum: remindSuratKeteranganPraktikum,
+    remindPertukaranJadwal: remindPertukaranJadwal,
+  );
 }
 
 class StorageCacheModel {
@@ -181,11 +210,29 @@ class StorageCacheModel {
   List<MataKuliahPraktikumModel> get mataKuliah => programStudi.expand((p) => p.mataKuliah).toList();
   List<MataKuliahPraktikumModel> get praktikum => programStudi.expand((p) => p.praktikum).toList();
 
-  List<String> formatedFakultas() => fakultas.map((v) => v.name).toList();
+  List<String> formatedFakultas() => fakultas.map((v) => v.name).toList().toList();
   List<String> formatedProgramStudi() => programStudi.map((v) => v.name).toList();
   List<String> formatedMataKuliah() => mataKuliah.map((v) => '${v.kode} ${v.nama}').toList();
   List<String> formatedPraktikum() => praktikum.map((v) => '${v.kode} ${v.nama}').toList();
 
   FakultasModel getFakultas(String name) => fakultas.where((v) => v.name == name).first;
   ProgramStudiModel getProgramStudi(String name) => programStudi.where((v) => v.name == name).first;
+  ProgramStudiModel? getProgramStudiFromMatprak(MataKuliahPraktikumModel model) => programStudi.where((v) => v.mataKuliahPraktikum.any((v) => v.id == model.id)).firstOrNull;
+
+  StorageCacheModel duplicate() => StorageCacheModel(
+    globalConfig: globalConfig.duplicate(),
+    fakultas: fakultas.map((v) => v.duplicate()).toList(),
+    userPreference: userPreference.duplicate(),
+    lastSync: lastSync,
+  );
+}
+
+class QueueActionModel {
+  var insert = <int>{};
+  var update = <int>{};
+  var delete = <int>{};
+
+  Set<int> get set => {...insert, ...update, ...delete};
+  bool get isAnyQueued => set.isNotEmpty;
+  bool contains(int id) => set.contains(id);
 }

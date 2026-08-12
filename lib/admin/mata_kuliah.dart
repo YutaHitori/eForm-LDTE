@@ -6,25 +6,32 @@ import 'package:eform_ldte/misc/widget.dart';
 import 'package:number_paginator/number_paginator.dart';
 
 class MataKuliahPraktikum extends StatelessWidget {
-  final String programStudi;
-  const MataKuliahPraktikum({super.key, required this.programStudi});
+  const MataKuliahPraktikum({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final c = Get.put(MataKuliahPraktikumController(programStudi));
+    final c = Get.find<MataKuliahPraktikumController>();
     return Obx(() {
-      c.QFSPedSubmissions.value;
-      final sub = c.QFSPedSubmissions.value;
-      final isAnyQueued = c.submissions.any((v) => c.updateForms.contains(v.id) || c.insertForms.contains(v.id) || c.deleteForms.contains(v.id));
-      final isAnySelected = sub.any((v) => c.isSelected.contains(v.id));
+      c.qfsped.value;
+      final paged = c.qfsped.value;
+      final selected = paged.where((v) => c.isSelected.contains(v.id));
+      final isAnyQueued = c.config.isAnyQueued;
+      final isAnyMatprakQueued = c.sim.any((v) => {...c.insertQueue, ...c.updateQueue, ...c.deleteQueue}.contains(v.id));
+      final isAnySelected = paged.any((v) => c.isSelected.contains(v.id));
+      final isPageAnyQueued = paged.any((v) => c.updateQueue.contains(v.id) || c.insertQueue.contains(v.id) || c.deleteQueue.contains(v.id));
+      final isPageDeleting = !isAnySelected ? paged.every((v) => c.deleteQueue.contains(v.id)) : c.deleteQueue.isEmpty ? false : selected.every((v) => c.deleteQueue.contains(v.id));
+      final isPageInserting = !isAnySelected ? paged.every((v) => c.insertQueue.contains(v.id)) : c.insertQueue.isEmpty ? false : selected.every((v) => c.insertQueue.contains(v.id));
+      final isPageUpdating = !isAnySelected ? paged.every((v) => c.updateQueue.contains(v.id)) : c.updateQueue.isEmpty ? false : selected.every((v) => c.updateQueue.contains(v.id));
       final canQueue = c.loadingIndicator.isEmpty;
       final canPageUpdate = canQueue && isAnySelected;
-      final canSelectedUndoDelete = canQueue && c.isSelected.where(((v) => sub.any((a) => a.id == v))).every((v) => c.deleteForms.contains(v));
+      final canSelectedUndoDelete = canQueue && selected.every((v) => c.deleteQueue.contains(v.id));
       return Scaffold(
         appBar: AppBar(
-          title: Text(programStudi),
+          title: Text(c.programStudi),
           actions: [
-            if (isAnyQueued) IconButton(onPressed: !canQueue ? null : c.pushQueuedAction, icon: Icon(Icons.save_rounded)),
+            // if (isAnyQueued) IconButton(onPressed: !canQueue ? null : c.pushQueuedAction, icon: Icon(Icons.save_rounded), tooltip: 'Save All',),
+            if (isAnyMatprakQueued) IconButton(onPressed: !canQueue ? null : c.pushQueuedAction, icon: Icon(Icons.save_rounded), tooltip: 'Save All',),
+            if (isAnyMatprakQueued) IconButton(onPressed: !canQueue ? null : c.pushQueuedAction, icon: Icon(Icons.save_rounded), tooltip: 'Save All',),
             IconButton(onPressed: c.isLoading.value ? null : null, icon: Icon(Icons.refresh_rounded)),
           ],
         ),
@@ -66,7 +73,7 @@ class MataKuliahPraktikum extends StatelessWidget {
                       constraints: BoxConstraints(
                         minHeight: constrains.maxHeight,
                       ),
-                      child: c.QFSPedSubmissions.value.isEmpty
+                      child: c.qfsped.value.isEmpty
                       ? SingleChildScrollView(
                         physics: AlwaysScrollableScrollPhysics(),
                         child: SizedBox( 
@@ -87,51 +94,72 @@ class MataKuliahPraktikum extends StatelessWidget {
                           height: constrains.maxHeight,
                           child: Column(
                             children: [
-                              ListTile(
-                                contentPadding: EdgeInsets.only(right: 12),
-                                leading: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    VerticalDivider(
-                                      width: 5,
-                                      thickness: 2,
-                                    ),
-                                    Transform.translate(
-                                      offset: Offset(8, 0),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Checkbox(
-                                            tristate: true,
-                                            value: sub.any((v) => c.isSelected.contains(v.id)) 
-                                            ? sub.every((v) => c.isSelected.contains(v.id)) 
-                                              ? true : null 
-                                            : false,
-                                            onChanged: c.selectPageItem,
-                                          ),
-                                          SizedBox(
-                                            width: 40,
-                                            child: Text('ID', textScaleFactor: 1.2, maxLines: 1, textAlign: TextAlign.center),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
+                              Card(
+                                color: Colors.transparent,
+                                margin: EdgeInsets.zero,
+                                shape: BorderDirectional(
+                                  start: BorderSide(
+                                    color: isPageDeleting
+                                    ? Colors.red 
+                                    : isPageInserting
+                                      ? Colors.green 
+                                      : isPageUpdating
+                                        ? Colors.yellow  
+                                        : Colors.white, 
+                                    width: 8
+                                  ),
                                 ),
-                                title: Text('Kode - Nama'),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    if (canPageUpdate && canSelectedUndoDelete) IconButton(
-                                      onPressed: !canSelectedUndoDelete ? null : c.undoDeleteSelectedData,
-                                      icon: Icon(Icons.restore_from_trash_rounded, color: Colors.red),
-                                      tooltip: 'Undo Delete',
-                                    ) else IconButton(
-                                      onPressed: !canPageUpdate ? null : c.deleteSelectedData,
-                                      icon: Icon(isAnySelected ? Icons.delete_rounded : Icons.delete_forever_rounded, color: !canPageUpdate ? null : Colors.red),
-                                      tooltip: 'Delete Selected'
+                                child: ListTile(
+                                  contentPadding: EdgeInsets.only(right: 12, left: 8),
+                                  leading: Transform.translate(
+                                    offset: Offset(8, 0),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Checkbox(
+                                          tristate: true,
+                                          value: paged.any((v) => c.isSelected.contains(v.id)) 
+                                          ? paged.every((v) => c.isSelected.contains(v.id)) 
+                                            ? true : null 
+                                          : false,
+                                          onChanged: c.selectPageItem,
+                                        ),
+                                        SizedBox(
+                                          width: 40,
+                                          child: Text('ID', textScaleFactor: 1.2, maxLines: 1, textAlign: TextAlign.center),
+                                        ),
+                                      ],
                                     ),
-                                  ],
+                                  ),
+                                  title: Text('Kode - Nama'),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SizedBox(width: 12),
+                                      SizedBox(
+                                        width: 128,
+                                        child: Text('Type', textScaleFactor: 1.2),
+                                      ),
+                                      SizedBox(
+                                        width: 96,
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.end,
+                                          children: [
+                                            if (isPageAnyQueued) IconButton(onPressed: !canQueue ? null : c.pushPageAction, icon: Icon(Icons.save_rounded), tooltip: 'Save Page',),
+                                            if (canPageUpdate && canSelectedUndoDelete) IconButton(
+                                              onPressed: !canSelectedUndoDelete ? null : c.undoDeletePageSelectedData,
+                                              icon: Icon(Icons.restore_from_trash_rounded, color: Colors.red),
+                                              tooltip: 'Undo Delete',
+                                            ) else IconButton(
+                                              onPressed: !canPageUpdate ? null : c.deletePageSelectedData,
+                                              icon: Icon(isAnySelected ? Icons.delete_rounded : Icons.delete_forever_rounded, color: !canPageUpdate ? null : Colors.red),
+                                              tooltip: 'Delete Selected'
+                                            ),
+                                          ]
+                                        )
+                                      )
+                                    ],
+                                  ),
                                 ),
                               ),
                               Divider(height: 0, color: appTheme.colorScheme.surface),
@@ -141,96 +169,98 @@ class MataKuliahPraktikum extends StatelessWidget {
                                   child: ListView.builder(
                                     physics: AlwaysScrollableScrollPhysics(),
                                     shrinkWrap: true,
-                                    itemCount: c.QFSPedSubmissions.value.length,
+                                    itemCount: c.qfsped.value.length,
                                     itemBuilder: (context, i) {
-                                      final entry = c.QFSPedSubmissions.value[i];
+                                      final entry = c.qfsped.value[i];
                                       final isLoading = c.loadingIndicator.contains(entry.id);
                                       final isPraktikum = entry.isPraktikum;
-                                      final isAdding = c.insertForms.contains(entry.id);
-                                      final isUpdating = c.updateForms.contains(entry.id);
-                                      final isDeleting = c.deleteForms.contains(entry.id);
-                                      return Container(
-                                        color: isDeleting 
+                                      final isAdding = c.insertQueue.contains(entry.id);
+                                      final isUpdating = c.updateQueue.contains(entry.id);
+                                      final isDeleting = c.deleteQueue.contains(entry.id);
+                                      return Card(
+                                        color: appTheme.appBarTheme.backgroundColor,
+                                        margin: EdgeInsets.zero,
+                                        shape: BorderDirectional(
+                                          start: BorderSide(
+                                            color: isDeleting
+                                            ? Colors.red 
+                                            : isAdding
+                                              ? Colors.green 
+                                              : isUpdating
+                                                ? Colors.yellow  
+                                                : Colors.white, 
+                                            width: 8
+                                          ),
+                                        ),
+                                        child: ListTile(
+                                        tileColor: isDeleting 
                                           ? appTheme.scaffoldBackgroundColor.withRed(36) 
                                           : isAdding 
                                             ? appTheme.scaffoldBackgroundColor.withGreen(36) 
                                             : isUpdating 
                                               ? appTheme.scaffoldBackgroundColor.withRed(36).withGreen(36) 
                                               : null,
-                                        child: ListTile(
-                                          contentPadding: EdgeInsets.only(right: 12),
-                                          // onLongPress: entry.nama.isBlank() ? null : () {
-                                          //   Clipboard.setData(
-                                          //     ClipboardData(text: '${entry.kode} ${entry.nama}'),
-                                          //   );
-                                          //   ScaffoldMessenger.of(context).showSnackBar(
-                                          //     SnackBar(content: Text('Code and Name copied to clipboard!')),
-                                          //   );
-                                          // },
+                                          contentPadding: EdgeInsets.only(right: 12, left: 8),
                                           onTap: isDeleting || isLoading ? null : () => c.inputDialog(entry),
-                                          leading: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              VerticalDivider(
-                                                color: isDeleting
-                                                  ? Colors.red 
-                                                  : isAdding
-                                                    ? Colors.green 
-                                                    : isUpdating
-                                                      ? Colors.yellow  
-                                                      : Colors.white,
-                                                width: 5,
-                                                thickness: 2,
-                                              ),
-                                              Transform.translate(
-                                                offset: Offset(8, 0),
-                                                child: Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    Checkbox(
-                                                      value: c.isSelected.contains(entry.id), 
-                                                      onChanged: (v) => c.selectItem(entry.id, v!)
-                                                    ),
-                                                    SizedBox(
-                                                      width: 40,
-                                                      child: Text(
-                                                        '${entry.id.isNegative ? 'new' : entry.id}',
-                                                        style: TextStyle(
-                                                          fontSize: 16,
-                                                        ),
-                                                        maxLines: 1, 
-                                                        textAlign: TextAlign.center
-                                                      ),
-                                                    ),
-                                                  ],
+                                          leading: Transform.translate(
+                                            offset: Offset(8, 0),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Checkbox(
+                                                  value: c.isSelected.contains(entry.id), 
+                                                  onChanged: (v) => c.selectItem(entry.id, v!)
                                                 ),
-                                              ),
-                                            ],
+                                                SizedBox(
+                                                  width: 40,
+                                                  child: Text(
+                                                    '${entry.id.isNegative ? 'new' : entry.id}',
+                                                    style: TextStyle(
+                                                      fontSize: 12.8,
+                                                    ),
+                                                    maxLines: 1, 
+                                                    textAlign: TextAlign.center
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                           title: Text('${entry.kode} - ${entry.nama}', overflow: TextOverflow.ellipsis),
                                           trailing: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              if (isAdding || isUpdating || isDeleting) IconButton(
-                                                onPressed: isLoading ? null : () => c.pushAction(entry.id),
-                                                icon: Icon(
-                                                  Icons.save_rounded,
-                                                ), tooltip: 'Save'
+                                              SizedBox(width: 12),
+                                              SizedBox(
+                                                width: 128,
+                                                child: Text(entry.type, textScaleFactor: 1.2),
                                               ),
-                                              if (isUpdating) IconButton(
-                                                onPressed: isLoading ? null : () => c.undoChange(entry.id),
-                                                icon: Icon(Icons.restore_outlined, color: isLoading ? null : Colors.yellow),
-                                                tooltip: 'Undo Changes',
-                                              ),
-                                              if (isDeleting) IconButton(
-                                                onPressed: isLoading ? null : () => c.undoDelete(entry.id),
-                                                icon: Icon(Icons.restore_from_trash_rounded, color: isLoading ? null : Colors.red),
-                                                tooltip: 'Undo Delete',
-                                              ) else IconButton(
-                                                onPressed: isLoading ? null : () => c.delete(entry.id),
-                                                icon: Icon(Icons.delete_rounded, color: isLoading ? null : Colors.red),
-                                                tooltip: 'Delete',
-                                              ),
+                                              SizedBox(
+                                                width: 96,
+                                                child: Row(
+                                                  mainAxisAlignment: MainAxisAlignment.end,
+                                                  children: [
+                                                    if (isAdding || isUpdating || isDeleting) IconButton(
+                                                      onPressed: isLoading ? null : () => c.pushAction(entry.id),
+                                                      icon: Icon(
+                                                        Icons.save_rounded,
+                                                      ), tooltip: 'Save'
+                                                    ),
+                                                    if (isUpdating) IconButton(
+                                                      onPressed: isLoading ? null : () => c.undoChange(entry.id),
+                                                      icon: Icon(Icons.restore_outlined, color: isLoading ? null : Colors.yellow),
+                                                      tooltip: 'Undo Changes',
+                                                    ) else if (isDeleting) IconButton(
+                                                      onPressed: isLoading ? null : () => c.undoDelete(entry.id),
+                                                      icon: Icon(Icons.restore_from_trash_rounded, color: isLoading ? null : Colors.red),
+                                                      tooltip: 'Undo Delete',
+                                                    ) else IconButton(
+                                                      onPressed: isLoading ? null : () => c.delete(entry.id),
+                                                      icon: Icon(Icons.delete_rounded, color: isLoading ? null : Colors.red),
+                                                      tooltip: 'Delete',
+                                                    ),
+                                                  ],
+                                                ),
+                                              )
                                             ],
                                           ),
                                         ),

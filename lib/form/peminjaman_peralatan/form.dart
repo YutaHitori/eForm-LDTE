@@ -12,7 +12,7 @@ class Pinjam extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = Get.put(PeminjamanPeralatanController());
+    final c = Get.find<PeminjamanPeralatanController>();
     return Scaffold(
       appBar: AppBar(
         title: Text('Peminjaman Peralatan')
@@ -170,7 +170,7 @@ class Pinjam extends StatelessWidget {
                                 closedHeaderPadding: EdgeInsets.only(right: 12),
                                 listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
                                 decoration: CustomDropdownDecoration(
-                                  searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.inputDecorationTheme.fillColor),
+                                  searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.scaffoldBackgroundColor),
                                   closedFillColor: appTheme.inputDecorationTheme.fillColor,
                                   expandedFillColor: appTheme.inputDecorationTheme.fillColor,
                                   closedBorder: c.barangE.value[i] != null ? Border.all(color: appTheme.colorScheme.error) : null

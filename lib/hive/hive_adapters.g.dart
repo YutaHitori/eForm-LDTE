@@ -21,14 +21,15 @@ class MataKuliahPraktikumModelAdapter
       id: (fields[5] as num).toInt(),
       kode: fields[2] as String,
       nama: fields[3] as String,
-      isPraktikum: fields[6] as bool,
+      programStudi: fields[7] as String,
+      isPraktikum: fields[6] as bool?,
     );
   }
 
   @override
   void write(BinaryWriter writer, MataKuliahPraktikumModel obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(5)
       ..writeByte(2)
       ..write(obj.kode)
       ..writeByte(3)
@@ -36,7 +37,9 @@ class MataKuliahPraktikumModelAdapter
       ..writeByte(5)
       ..write(obj.id)
       ..writeByte(6)
-      ..write(obj.isPraktikum);
+      ..write(obj.isPraktikum)
+      ..writeByte(7)
+      ..write(obj.programStudi);
   }
 
   @override
@@ -227,6 +230,7 @@ class ProgramStudiModelAdapter extends TypeAdapter<ProgramStudiModel> {
     return ProgramStudiModel(
       id: (fields[0] as num).toInt(),
       name: fields[1] as String,
+      fakultas: fields[5] as String,
       mataKuliahPraktikum: (fields[4] as List).cast<MataKuliahPraktikumModel>(),
     );
   }
@@ -234,13 +238,15 @@ class ProgramStudiModelAdapter extends TypeAdapter<ProgramStudiModel> {
   @override
   void write(BinaryWriter writer, ProgramStudiModel obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
       ..write(obj.name)
       ..writeByte(4)
-      ..write(obj.mataKuliahPraktikum);
+      ..write(obj.mataKuliahPraktikum)
+      ..writeByte(5)
+      ..write(obj.fakultas);
   }
 
   @override

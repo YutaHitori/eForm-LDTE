@@ -11,7 +11,7 @@ class PertukaranJadwalPraktikum extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = Get.put(PertukaranJadwalPraktikumController());
+    final c = Get.find<PertukaranJadwalPraktikumController>();
     return Scaffold(
       appBar: AppBar(
         leading: canPop
@@ -87,7 +87,7 @@ class PertukaranJadwalPraktikum extends StatelessWidget {
                               noResultFoundText: "Praktikum tidak ditemukan, silahkan hapus kolom pencarian dan pilih opsi 'Lainnya...'",
                               listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
                               decoration: CustomDropdownDecoration(
-                                searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.inputDecorationTheme.fillColor),
+                                searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.scaffoldBackgroundColor),
                                 closedFillColor: appTheme.inputDecorationTheme.fillColor,
                                 expandedFillColor: appTheme.inputDecorationTheme.fillColor,
                                 closedBorder: c.praktikumE.value != null ? Border.all(color: appTheme.colorScheme.error) : null

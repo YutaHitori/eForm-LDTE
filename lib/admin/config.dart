@@ -11,7 +11,7 @@ class GlobalConfig extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = Get.put(GlobalConfigController());
+    final c = Get.find<GlobalConfigController>();
     return Obx(() => PopScope(
       canPop: c.isSaved.value,
       onPopInvoked: (didPop) {

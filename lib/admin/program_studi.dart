@@ -10,23 +10,24 @@ import 'package:go_router/go_router.dart';
 import 'package:number_paginator/number_paginator.dart';
 
 class ProgramStudi extends StatelessWidget {
-  final String fakultas;
-  const ProgramStudi({super.key, required this.fakultas});
+  const ProgramStudi({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final c = Get.put(ProgramStudiController(fakultas));
+    final c = Get.find<ProgramStudiController>();
     return Obx(() {
-      c.QFSPedSubmissions.value;
-      c.QFSPedSubmissions.value;
-      final sub = c.QFSPedSubmissions.value;
+      c.qfsped.value;
+      c.qfsped.value;
+      final sub = c.qfsped.value;
       final isAnySelected = sub.any((v) => c.isSelected.contains(v.id));
       final isMassLoading = c.isMassLoading.value;
       final canSelect = c.canSelect.value;
       final canMassUpdate = isAnySelected && !isMassLoading;
+
+      final isAnyQueued = c.config.isAnyQueued;
       return Scaffold(
         appBar: AppBar(
-          title: Text('$fakultas'),
+          title: Text(c.fakultas),
           actions: [
             IconButton(onPressed: c.isLoading.value ? null : null, icon: Icon(Icons.refresh_rounded))
           ],
@@ -64,7 +65,7 @@ class ProgramStudi extends StatelessWidget {
                       constraints: BoxConstraints(
                         minHeight: constrains.maxHeight,
                       ),
-                      child: c.QFSPedSubmissions.value.isEmpty
+                      child: c.qfsped.value.isEmpty
                       ? SingleChildScrollView(
                         physics: AlwaysScrollableScrollPhysics(),
                         child: SizedBox( 
@@ -112,7 +113,7 @@ class ProgramStudi extends StatelessWidget {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     if (canSelect) IconButton(
-                                      onPressed: !canMassUpdate ? null : c.deleteSelectedData,
+                                      onPressed: !canMassUpdate ? null : null,
                                       icon: Icon(Icons.delete_forever_rounded, color: !canMassUpdate ? null : Colors.red), tooltip: 'Delete Selected'
                                     ),
                                     IconButton(
@@ -132,7 +133,7 @@ class ProgramStudi extends StatelessWidget {
                                     physics: AlwaysScrollableScrollPhysics(),
                                     shrinkWrap: true,
                                     itemBuilder: (context, i) {
-                                      final entry = c.QFSPedSubmissions.value[i];
+                                      final entry = c.qfsped.value[i];
                                       final isLoading = c.loadingIndicator.contains(entry.id);
                                       final canEdit = c.canEdit.contains(entry.id);
                                       return ListTile(
@@ -145,7 +146,7 @@ class ProgramStudi extends StatelessWidget {
                                             SnackBar(content: Text('Name copied to clipboard!')),
                                           );
                                         },
-                                        onTap: () => currentContext?.push('${NamedRoute.list}/$fakultas/${entry.name}'),
+                                        onTap: () => currentContext?.push('${NamedRoute.list}/${c.fakultas}/${entry.name}'),
                                         leading: Transform.translate(
                                           offset: Offset(8, 0),
                                           child: Row(
@@ -171,7 +172,7 @@ class ProgramStudi extends StatelessWidget {
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             if (canEdit) IconButton(
-                                              onPressed: isLoading ? null : () => c.deleteData(entry.id),
+                                              onPressed: isLoading ? null : () => null,
                                               icon: Icon(Icons.delete_forever_rounded, color: isLoading ? null : Colors.red), tooltip: 'Delete'
                                             ),
                                             IconButton(
@@ -184,7 +185,7 @@ class ProgramStudi extends StatelessWidget {
                                         ),
                                       );
                                     },
-                                    itemCount: c.QFSPedSubmissions.value.length,
+                                    itemCount: c.qfsped.value.length,
                                   ),
                                 ),
                               ),

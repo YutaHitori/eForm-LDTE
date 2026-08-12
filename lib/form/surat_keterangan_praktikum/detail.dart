@@ -10,12 +10,11 @@ import 'package:eform_ldte/misc/widget.dart';
 import 'package:go_router/go_router.dart';
 
 class DetailSuratKeteranganPraktikum extends StatelessWidget {
-  final int id;
-  const DetailSuratKeteranganPraktikum({super.key, required this.id});
+  const DetailSuratKeteranganPraktikum({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final c = Get.put(DetailSuratKeteranganPraktikumController(id));
+    final c = Get.find<DetailSuratKeteranganPraktikumController>();
     final ac = Get.find<AdminSuratKeteranganPraktikumController>();
     return Scaffold(
       appBar: AppBar(
@@ -38,13 +37,13 @@ class DetailSuratKeteranganPraktikum extends StatelessWidget {
               ],
             ),
           ) 
-          : ac.submissions.every((v) => v.id != id)
+          : ac.submissions.every((v) => v.id != c.id)
           ? Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               spacing: 24,
               children: [
-                Text(id == -1 ? "invalid ID parameter, please check the inputed url" : "Data with ID $id didn't exist"),
+                Text(c.id == -1 ? "invalid ID parameter, please check the inputed url" : "Data with ID ${c.id} didn't exist"),
                 TextButton(onPressed: currentContext?.pop, child: Text('Go back'))
               ],
             ),
@@ -132,7 +131,7 @@ class DetailSuratKeteranganPraktikum extends StatelessWidget {
                     controller: c.matkul,
                     listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
                     decoration: CustomDropdownDecoration(
-                      searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.inputDecorationTheme.fillColor),
+                      searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.scaffoldBackgroundColor),
                       closedFillColor: appTheme.inputDecorationTheme.fillColor,
                       expandedFillColor: appTheme.inputDecorationTheme.fillColor,
                       closedBorder: c.matkulE.value != null ? Border.all(color: appTheme.colorScheme.error) : null
@@ -192,7 +191,7 @@ class DetailSuratKeteranganPraktikum extends StatelessWidget {
                               noResultFoundText: "Praktikum tidak ditemukan, silahkan hapus kolom pencarian dan pilih opsi 'Lainnya...'",
                               listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
                               decoration: CustomDropdownDecoration(
-                                searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.inputDecorationTheme.fillColor),
+                                searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.scaffoldBackgroundColor),
                                 closedFillColor: appTheme.inputDecorationTheme.fillColor,
                                 expandedFillColor: appTheme.inputDecorationTheme.fillColor,
                                 closedBorder: c.praktikumE.value != null ? Border.all(color: appTheme.colorScheme.error) : null

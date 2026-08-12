@@ -30,17 +30,26 @@ final GoRouter router = GoRouter(
         routes: [
           GoRoute(
             path: 'peminjaman-peralatan',
-            builder: (context, state) => Pinjam(),
+            builder: (context, state) {
+              Get.put(PeminjamanPeralatanController());
+              return const Pinjam();
+            },
             onExit: (context, state) => onExit<PeminjamanPeralatanController>(),
           ),
           GoRoute(
             path: 'surat-keterangan',
-            builder: (context, state) => const SuratKeteranganPraktikum(),
+            builder: (context, state) {
+              Get.put(SuratKeteranganPraktikumController());
+              return const SuratKeteranganPraktikum();
+            },
             onExit: (context, state) => onExit<SuratKeteranganPraktikumController>()
           ),
           GoRoute(
             path: 'pertukaran-jadwal',
-            builder: (context, state) => const PertukaranJadwalPraktikum(),
+            builder: (context, state) {
+              Get.put(PertukaranJadwalPraktikumController());
+              return  const PertukaranJadwalPraktikum();
+            },
             onExit: (context, state) => onExit<PertukaranJadwalPraktikumController>()
           ),
           // GoRoute(
@@ -59,7 +68,9 @@ final GoRouter router = GoRouter(
           } 
           return temp;
         },
-        pageBuilder: (context, state) => NoTransitionPage(child: const AppLayout()),
+        pageBuilder: (context, state) {
+          return const NoTransitionPage(child: AppLayout());
+        } ,
         onExit: (context, state) => onExit<LoginController>(),
       ),
       GoRoute(
@@ -71,7 +82,9 @@ final GoRouter router = GoRouter(
           }
           return temp;
         },
-        pageBuilder: (context, state) => NoTransitionPage(child: const AppLayout()),
+        pageBuilder: (context, state) {
+          return const NoTransitionPage(child: AppLayout());
+        },
         onExit: (context, state) => onExit<AdminController>(),
         routes: [
           GoRoute(
@@ -79,7 +92,10 @@ final GoRouter router = GoRouter(
             redirect: (context, state) {
               return redirect(state.matchedLocation);
             },
-            builder: (context, state) => const AdminPeminjamanPeralatan(),
+            builder: (context, state) {
+              Get.put(AdminPeminjamanPeralatanController());
+              return const AdminPeminjamanPeralatan();
+            },
             onExit: (context, state) => onExit<AdminPeminjamanPeralatanController>(),
             routes: [
               GoRoute(
@@ -87,7 +103,10 @@ final GoRouter router = GoRouter(
                 redirect: (context, state) {
                   return redirect(state.matchedLocation);
                 },
-                builder: (context, state) => DetailPeminjamanPeralatan(id: int.tryParse(state.pathParameters['id'] ?? '') ?? -1),
+                builder: (context, state) {
+                  Get.put(DetailPeminjamanPeralatanController(int.tryParse(state.pathParameters['id'] ?? '') ?? -1));
+                  return DetailPeminjamanPeralatan();
+                },
                 onExit: (context, state) => onExit<DetailPeminjamanPeralatanController>(),
               ),
             ]
@@ -97,7 +116,10 @@ final GoRouter router = GoRouter(
             redirect: (context, state) {
               return redirect(state.matchedLocation);
             },
-            builder: (context, state) => const AdminSuratKeteranganPraktikum(),
+            builder: (context, state) {
+              Get.put(AdminSuratKeteranganPraktikumController());
+              return const AdminSuratKeteranganPraktikum();
+            },
             onExit: (context, state) => onExit<AdminSuratKeteranganPraktikumController>(),
             routes: [
               GoRoute(
@@ -105,7 +127,10 @@ final GoRouter router = GoRouter(
                 redirect: (context, state) {
                   return redirect(state.matchedLocation);
                 },
-                builder: (context, state) => DetailSuratKeteranganPraktikum(id: int.tryParse(state.pathParameters['id'] ?? '') ?? -1),
+                builder: (context, state) {
+                  Get.put(DetailSuratKeteranganPraktikumController(int.tryParse(state.pathParameters['id'] ?? '') ?? -1));
+                  return DetailSuratKeteranganPraktikum();
+                },
                 onExit: (context, state) => onExit<DetailSuratKeteranganPraktikumController>(),
               ),
             ]
@@ -115,7 +140,10 @@ final GoRouter router = GoRouter(
             redirect: (context, state) {
               return redirect(state.matchedLocation);
             },
-            builder: (context, state) => const GlobalConfig(),
+            builder: (context, state) {
+              Get.put(GlobalConfigController());
+              return const GlobalConfig();
+            },
             onExit: (context, state) => onExit<GlobalConfigController>(),
             routes: [
               GoRoute(
@@ -123,7 +151,10 @@ final GoRouter router = GoRouter(
                 redirect: (context, state) {
                   return redirect(state.matchedLocation);
                 },
-                builder: (context, state) => const Fakultas(),
+                builder: (context, state) {
+                  Get.put(FakultasController());
+                  return const Fakultas();
+                },
                 onExit: (context, state) => onExit<FakultasController>(),
                 routes: [
                   GoRoute(
@@ -131,7 +162,10 @@ final GoRouter router = GoRouter(
                     redirect: (context, state) {
                       return redirect(state.matchedLocation);
                     },
-                    builder: (context, state) => ProgramStudi(fakultas: state.pathParameters['fakultas'] ?? ''),
+                    builder: (context, state) {
+                      Get.put(ProgramStudiController(state.pathParameters['fakultas']!));
+                      return ProgramStudi();
+                    },
                     onExit: (context, state) => onExit<ProgramStudiController>(),
                     routes: [
                       GoRoute(
@@ -139,7 +173,10 @@ final GoRouter router = GoRouter(
                         redirect: (context, state) {
                           return redirect(state.matchedLocation);
                         },
-                        builder: (context, state) => MataKuliahPraktikum(programStudi: state.pathParameters['program_studi'] ?? ''),
+                        builder: (context, state) {
+                          Get.put(MataKuliahPraktikumController(state.pathParameters['program_studi']!));
+                          return MataKuliahPraktikum();
+                        },
                         onExit: (context, state) => onExit<MataKuliahPraktikumController>(),
                         routes: []
                       ),

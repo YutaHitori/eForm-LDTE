@@ -12,7 +12,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = Get.put(SuratKeteranganPraktikumController());
+    final c = Get.find<SuratKeteranganPraktikumController>();
     return Scaffold(
       appBar: AppBar(
         title: Text('Surat Keterangan Praktikum')
@@ -112,7 +112,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                     controller: c.matkul,
                     listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
                     decoration: CustomDropdownDecoration(
-                      searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.inputDecorationTheme.fillColor),
+                      searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.scaffoldBackgroundColor),
                       closedFillColor: appTheme.inputDecorationTheme.fillColor,
                       expandedFillColor: appTheme.inputDecorationTheme.fillColor,
                       closedBorder: c.matkulE.value != null ? Border.all(color: appTheme.colorScheme.error) : null
@@ -172,7 +172,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                               noResultFoundText: "Praktikum tidak ditemukan, silahkan hapus kolom pencarian dan pilih opsi 'Lainnya...'",
                               listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
                               decoration: CustomDropdownDecoration(
-                                searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.inputDecorationTheme.fillColor),
+                                searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.scaffoldBackgroundColor),
                                 closedFillColor: appTheme.inputDecorationTheme.fillColor,
                                 expandedFillColor: appTheme.inputDecorationTheme.fillColor,
                                 closedBorder: c.praktikumE.value != null ? Border.all(color: appTheme.colorScheme.error) : null

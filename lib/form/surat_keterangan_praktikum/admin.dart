@@ -12,9 +12,9 @@ class AdminSuratKeteranganPraktikum extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = Get.put(AdminSuratKeteranganPraktikumController());
+    final c = Get.find<AdminSuratKeteranganPraktikumController>();
     return  Obx(() {
-      final sub = c.QFSPedSubmissions.value;
+      final sub = c.qfsped.value;
       final isAnySelected = sub.any((v) => c.isSelected.contains(v.id));
       final isMassLoading = c.isMassLoading.value;
       final canMassUpdate = isAnySelected && !isMassLoading && c.loadingIndicator.isEmpty;      

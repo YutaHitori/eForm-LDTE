@@ -9,12 +9,11 @@ import 'package:eform_ldte/misc/widget.dart';
 import 'package:go_router/go_router.dart';
 
 class DetailPeminjamanPeralatan extends StatelessWidget {
-  final int id;
-  const DetailPeminjamanPeralatan({super.key, required this.id});
+  const DetailPeminjamanPeralatan({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final c = Get.put(DetailPeminjamanPeralatanController(id));
+    final c = Get.find<DetailPeminjamanPeralatanController>();
     final ac = Get.find<AdminPeminjamanPeralatanController>();
     return Scaffold(
       appBar: AppBar(
@@ -35,13 +34,13 @@ class DetailPeminjamanPeralatan extends StatelessWidget {
           ],
         ),
       ) 
-      : ac.submissions.every((v) => v.id != id)
+      : ac.submissions.every((v) => v.id != c.id)
       ? Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           spacing: 24,
           children: [
-            Text(id == -1 ? "invalid ID parameter, please check the inputed url" : "Data with ID $id didn't exist"),
+            Text(c.id == -1 ? "invalid ID parameter, please check the inputed url" : "Data with ID ${c.id} didn't exist"),
             TextButton(onPressed: currentContext?.pop, child: Text('Go back'))
           ],
         ),
@@ -112,7 +111,7 @@ class DetailPeminjamanPeralatan extends StatelessWidget {
                                 closedHeaderPadding: EdgeInsets.only(right: 12),
                                 listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
                                 decoration: CustomDropdownDecoration(
-                                  searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.inputDecorationTheme.fillColor),
+                                  searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.scaffoldBackgroundColor),
                                   closedFillColor: appTheme.inputDecorationTheme.fillColor,
                                   expandedFillColor: appTheme.inputDecorationTheme.fillColor,
                                   closedBorder: c.barangE.value[i] != null ? Border.all(color: appTheme.colorScheme.error) : null

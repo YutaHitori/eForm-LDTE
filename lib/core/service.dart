@@ -292,11 +292,11 @@ class StorageService {
   Future<void> updateOutdatedField(List<FakultasModel>? latestList) async {
     if (latestList == null) return;
     for (final lf in latestList) {
-      final tempf = cached.fakultas.where((v) => v.name == lf.name).firstOrNull;
+      final tempf = cached.fakultas.firstWhereOrNull((v) => v.name == lf.name);
       if (tempf != null) {
         if (lf.programStudi.isEmpty) continue;
         for (final lps in lf.programStudi) {
-          final tempps = tempf.programStudi.where((v) => v.name == lps.name).firstOrNull;
+          final tempps = tempf.programStudi.firstWhereOrNull((v) => v.name == lps.name);
           if (tempps != null) {
             final i = tempf.programStudi.indexWhere((v) => v.name == lps.name);
             tempf.programStudi[i] = lps;
@@ -400,7 +400,7 @@ class QFSPService {
   
   void updateButton(QFSPController c, String filterKey, String itemkey) {
     final filter = c.getFilterEnrty(filterKey);
-    if (c.filter.where((v) => v.filterKey == filterKey).first.multiSelect) {
+    if (c.filter.firstWhere((v) => v.filterKey == filterKey).multiSelect) {
       filter.value[itemkey] = !filter.value[itemkey]!;
       filter.value['all'] = false;
       if (itemkey == 'all') {
@@ -481,7 +481,7 @@ class QFSPController<T> {
   var sortController = SingleSelectController<String>('Latest');
 
   RxMap<String, bool> getFilterEnrty(String key) {
-    return filter.where((v) => v.filterKey == key).toList().first.filterEntry;
+    return filter.firstWhere((v) => v.filterKey == key).filterEntry;
   }
 }
 
@@ -896,27 +896,13 @@ class GlobalConfigService {
 class FakultasService {
   final QFSP = QFSPService();
 
-  Future<List<FakultasModel>?> insertData(List<Map<String, dynamic>> form) async {
-    try {
-      final res = await auth.supabase
-        .from('fakultas')
-        .insert(form);
-      return res.map((v) => FakultasModel.fromJson(v)).toList();
-    } on PostgrestException catch (error) {
-      alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
-    } catch (error) {
-      alertDialog('Unexpected error', '$error');
-    }
-    return null;
-  }
-
-  Future<List<FakultasModel>?> updateData(List<Map<String, dynamic>> form) async {
+  Future<List<int>?> upsertData(List<Map<String, dynamic>> form) async {
     try {
       final res = await auth.supabase
         .from('fakultas')
         .upsert(form, onConflict: 'id')
         .select();
-      return res.map((v) => FakultasModel.fromJson(v)).toList();
+      return res.map((v) => FakultasModel.fromJson(v).id).toList();
     } on PostgrestException catch (error) {
       alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
     } catch (error) {
@@ -944,27 +930,13 @@ class FakultasService {
 class ProgramStudiService {
   final QFSP = QFSPService();
 
-  Future<List<ProgramStudiModel>?> insertData(List<Map<String, dynamic>> form) async {
-    try {
-      final res = await auth.supabase
-        .from('program_studi')
-        .insert(form);
-      return res.map((v) => ProgramStudiModel.fromJson(v)).toList();
-    } on PostgrestException catch (error) {
-      alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
-    } catch (error) {
-      alertDialog('Unexpected error', '$error');
-    }
-    return null;
-  }
-
-  Future<List<ProgramStudiModel>?> updateData(List<Map<String, dynamic>> form) async {
+  Future<List<int>?> upsertData(List<Map<String, dynamic>> form) async {
     try {
       final res = await auth.supabase
         .from('program_studi')
         .upsert(form, onConflict: 'id')
         .select();
-      return res.map((v) => ProgramStudiModel.fromJson(v)).toList();
+      return res.map((v) => ProgramStudiModel.fromJson(v).id).toList();
     } on PostgrestException catch (error) {
       alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
     } catch (error) {
@@ -991,20 +963,6 @@ class ProgramStudiService {
 
 class MataKuliahPraktikumService {
   final QFSP = QFSPService();
-
-  Future<List<MataKuliahPraktikumModel>?> insertData(List<Map<String, dynamic>> form) async {
-    try {
-      final res = await auth.supabase
-        .from('mata_kuliah')
-        .insert(form);
-      return res.map((v) => MataKuliahPraktikumModel.fromJson(v)).toList();
-    } on PostgrestException catch (error) {
-      alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
-    } catch (error) {
-      alertDialog('Unexpected error', '$error');
-    }
-    return null;
-  }
 
   Future<List<MataKuliahPraktikumModel>?> upsertData(List<Map<String, dynamic>> form) async {
     try {
