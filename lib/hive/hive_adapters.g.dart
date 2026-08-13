@@ -6,18 +6,18 @@ part of 'hive_adapters.dart';
 // AdaptersGenerator
 // **************************************************************************
 
-class MataKuliahPraktikumModelAdapter
-    extends TypeAdapter<MataKuliahPraktikumModel> {
+class MatprakModelAdapter
+    extends TypeAdapter<MatprakModel> {
   @override
   final typeId = 0;
 
   @override
-  MataKuliahPraktikumModel read(BinaryReader reader) {
+  MatprakModel read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return MataKuliahPraktikumModel(
+    return MatprakModel(
       id: (fields[5] as num).toInt(),
       kode: fields[2] as String,
       nama: fields[3] as String,
@@ -27,7 +27,7 @@ class MataKuliahPraktikumModelAdapter
   }
 
   @override
-  void write(BinaryWriter writer, MataKuliahPraktikumModel obj) {
+  void write(BinaryWriter writer, MatprakModel obj) {
     writer
       ..writeByte(5)
       ..writeByte(2)
@@ -48,7 +48,7 @@ class MataKuliahPraktikumModelAdapter
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is MataKuliahPraktikumModelAdapter &&
+      other is MatprakModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
@@ -231,7 +231,7 @@ class ProgramStudiModelAdapter extends TypeAdapter<ProgramStudiModel> {
       id: (fields[0] as num).toInt(),
       name: fields[1] as String,
       fakultas: fields[5] as String,
-      mataKuliahPraktikum: (fields[4] as List).cast<MataKuliahPraktikumModel>(),
+      matprak: (fields[4] as List).cast<MatprakModel>(),
     );
   }
 
@@ -244,7 +244,7 @@ class ProgramStudiModelAdapter extends TypeAdapter<ProgramStudiModel> {
       ..writeByte(1)
       ..write(obj.name)
       ..writeByte(4)
-      ..write(obj.mataKuliahPraktikum)
+      ..write(obj.matprak)
       ..writeByte(5)
       ..write(obj.fakultas);
   }

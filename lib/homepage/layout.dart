@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:eform_ldte/misc/function.dart';
@@ -18,9 +19,11 @@ class AppLayout extends StatelessWidget {
           children: [
             if (constraints.constrainWidth() > (800)) Material(child: SideMenuNavigation(context, NC.currentPage.value!)),
             Expanded(
-              child: Scaffold(appBar: AppBar(title: Text(NC.title[NC.currentPage.value]!)),
-                  drawer: constraints.constrainWidth() > (800) ? null : SideMenuNavigation(context, NC.currentPage.value!),
-                body: RefreshIndicator(
+              child: Scaffold(
+                appBar: AppBar(title: Text(NC.title[NC.currentPage.value]!)),
+                drawer: constraints.constrainWidth() > (800) ? null : SideMenuNavigation(context, NC.currentPage.value!),
+                body: kIsWeb
+                ? RefreshIndicator(
                     onRefresh: hardRefresh,
                     child: SingleChildScrollView(
                       physics: AlwaysScrollableScrollPhysics(),
@@ -29,8 +32,9 @@ class AppLayout extends StatelessWidget {
                         child: NC.pages[NC.currentPage.value]
                       ),
                     ),
-                  ),
-                )
+                  )
+                : NC.pages[NC.currentPage.value],
+              )
             ),
           ],
         )

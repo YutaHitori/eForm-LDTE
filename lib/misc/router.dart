@@ -144,7 +144,7 @@ final GoRouter router = GoRouter(
               Get.put(GlobalConfigController());
               return const GlobalConfig();
             },
-            onExit: (context, state) => onExit<GlobalConfigController>(),
+            onExit: (context, state) =>  Get.find<GlobalConfigController>().saveAllDialog() ? onExit<GlobalConfigController>() : false,
             routes: [
               GoRoute(
                 path: 'list',
@@ -174,10 +174,10 @@ final GoRouter router = GoRouter(
                           return redirect(state.matchedLocation);
                         },
                         builder: (context, state) {
-                          Get.put(MataKuliahPraktikumController(state.pathParameters['program_studi']!));
-                          return MataKuliahPraktikum();
+                          Get.put(MatprakController(state.pathParameters['program_studi']!));
+                          return Matprak();
                         },
-                        onExit: (context, state) => onExit<MataKuliahPraktikumController>(),
+                        onExit: (context, state) => onExit<MatprakController>(),
                         routes: []
                       ),
                     ]
@@ -192,7 +192,9 @@ final GoRouter router = GoRouter(
 );
 
 bool onExit<T>() {
-    if (null is! T) Get.delete<T>(force: true);
+    Future.microtask(() {
+      if (null is! T) Get.delete<T>(force: true);
+    });
     return true;
   }
 

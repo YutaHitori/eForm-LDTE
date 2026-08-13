@@ -9,7 +9,7 @@ extension HiveRegistrar on HiveInterface {
   void registerAdapters() {
     registerAdapter(FakultasModelAdapter());
     registerAdapter(GlobalConfigModelAdapter());
-    registerAdapter(MataKuliahPraktikumModelAdapter());
+    registerAdapter(MatprakModelAdapter());
     registerAdapter(ProgramStudiModelAdapter());
     registerAdapter(StorageCacheModelAdapter());
     registerAdapter(UserPreferenceModelAdapter());
@@ -20,7 +20,7 @@ extension IsolatedHiveRegistrar on IsolatedHiveInterface {
   void registerAdapters() {
     registerAdapter(FakultasModelAdapter());
     registerAdapter(GlobalConfigModelAdapter());
-    registerAdapter(MataKuliahPraktikumModelAdapter());
+    registerAdapter(MatprakModelAdapter());
     registerAdapter(ProgramStudiModelAdapter());
     registerAdapter(StorageCacheModelAdapter());
     registerAdapter(UserPreferenceModelAdapter());

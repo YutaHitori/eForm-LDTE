@@ -5,39 +5,27 @@ import 'package:eform_ldte/core/controller.dart';
 import 'package:eform_ldte/misc/widget.dart';
 import 'package:number_paginator/number_paginator.dart';
 
-class MataKuliahPraktikum extends StatelessWidget {
-  const MataKuliahPraktikum({super.key});
+class Matprak extends StatelessWidget {
+  const Matprak({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final c = Get.find<MataKuliahPraktikumController>();
+    final c = Get.find<MatprakController>();
     return Obx(() {
       c.qfsped.value;
-      final paged = c.qfsped.value;
-      final selected = paged.where((v) => c.isSelected.contains(v.id));
-      final isAnyQueued = c.config.isAnyQueued;
-      final isAnyMatprakQueued = c.sim.any((v) => {...c.insertQueue, ...c.updateQueue, ...c.deleteQueue}.contains(v.id));
-      final isAnySelected = paged.any((v) => c.isSelected.contains(v.id));
-      final isPageAnyQueued = paged.any((v) => c.updateQueue.contains(v.id) || c.insertQueue.contains(v.id) || c.deleteQueue.contains(v.id));
-      final isPageDeleting = !isAnySelected ? paged.every((v) => c.deleteQueue.contains(v.id)) : c.deleteQueue.isEmpty ? false : selected.every((v) => c.deleteQueue.contains(v.id));
-      final isPageInserting = !isAnySelected ? paged.every((v) => c.insertQueue.contains(v.id)) : c.insertQueue.isEmpty ? false : selected.every((v) => c.insertQueue.contains(v.id));
-      final isPageUpdating = !isAnySelected ? paged.every((v) => c.updateQueue.contains(v.id)) : c.updateQueue.isEmpty ? false : selected.every((v) => c.updateQueue.contains(v.id));
-      final canQueue = c.loadingIndicator.isEmpty;
-      final canPageUpdate = canQueue && isAnySelected;
-      final canSelectedUndoDelete = canQueue && selected.every((v) => c.deleteQueue.contains(v.id));
       return Scaffold(
         appBar: AppBar(
           title: Text(c.programStudi),
           actions: [
-            // if (isAnyQueued) IconButton(onPressed: !canQueue ? null : c.pushQueuedAction, icon: Icon(Icons.save_rounded), tooltip: 'Save All',),
-            if (isAnyMatprakQueued) IconButton(onPressed: !canQueue ? null : c.pushQueuedAction, icon: Icon(Icons.save_rounded), tooltip: 'Save All',),
-            if (isAnyMatprakQueued) IconButton(onPressed: !canQueue ? null : c.pushQueuedAction, icon: Icon(Icons.save_rounded), tooltip: 'Save All',),
+            // if (isAnyQueued) IconButton(onPressed: !canPushQueue ? null : c.pushQueuedAction, icon: Icon(Icons.save_rounded), tooltip: 'Save All'),
+            // if (isAnyMatprakQueued) IconButton(onPressed: !canPushQueue ? null : c.pushQueuedAction, icon: Icon(Icons.save_rounded), tooltip: 'Save All',),
+            if (c.isSimAnyQueued) IconButton(onPressed: !c.isSimEveryLoaing ? null : c.pushSimAction, icon: Icon(Icons.save_rounded), tooltip: 'Save Matkul'),
             IconButton(onPressed: c.isLoading.value ? null : null, icon: Icon(Icons.refresh_rounded)),
           ],
         ),
         floatingActionButton: Padding(
-          padding: const EdgeInsets.only(bottom: 52.0),
-          child: FloatingActionButton(onPressed: !canQueue ? null : c.inputDialog, child: Icon(Icons.add_rounded),),
+          padding: const EdgeInsets.only(bottom: 52),
+          child: FloatingActionButton(onPressed: c.inputDialog, child: Icon(Icons.add_rounded)),
         ),
         body: Column(
           children: [
@@ -45,7 +33,6 @@ class MataKuliahPraktikum extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 6,
                 children: [
                   CustomTextField(
                     controller: c.qfsp.queryController,
@@ -56,7 +43,10 @@ class MataKuliahPraktikum extends StatelessWidget {
                     ),
                     canError: false
                   ),
+                  SizedBox(height: 6),
                   FilterRow(controller: c.qfsp, filterKey: 'type'),
+                  FilterRow(controller: c.qfsp, filterKey: 'action'),
+                  SizedBox(height: 4),
                   SortRow(controller: c.qfsp),
                 ],
               ),
@@ -99,13 +89,13 @@ class MataKuliahPraktikum extends StatelessWidget {
                                 margin: EdgeInsets.zero,
                                 shape: BorderDirectional(
                                   start: BorderSide(
-                                    color: isPageDeleting
-                                    ? Colors.red 
-                                    : isPageInserting
-                                      ? Colors.green 
-                                      : isPageUpdating
-                                        ? Colors.yellow  
-                                        : Colors.white, 
+                                    color: (c.areDeleting
+                                      ? Colors.red 
+                                      : c.areInserting
+                                        ? Colors.green 
+                                        : c.areUpdating
+                                          ? Colors.amber  
+                                          : Colors.white).withAlpha(c.isPagedLoading ? 192 : 255), 
                                     width: 8
                                   ),
                                 ),
@@ -118,11 +108,8 @@ class MataKuliahPraktikum extends StatelessWidget {
                                       children: [
                                         Checkbox(
                                           tristate: true,
-                                          value: paged.any((v) => c.isSelected.contains(v.id)) 
-                                          ? paged.every((v) => c.isSelected.contains(v.id)) 
-                                            ? true : null 
-                                          : false,
-                                          onChanged: c.selectPageItem,
+                                          value: c.isPagedLoading ? null : c.isPageSelected,
+                                          onChanged: c.isPagedLoading ? null : c.selectPageItem,
                                         ),
                                         SizedBox(
                                           width: 40,
@@ -141,18 +128,29 @@ class MataKuliahPraktikum extends StatelessWidget {
                                         child: Text('Type', textScaleFactor: 1.2),
                                       ),
                                       SizedBox(
-                                        width: 96,
+                                        // width: 96,
                                         child: Row(
                                           mainAxisAlignment: MainAxisAlignment.end,
                                           children: [
-                                            if (isPageAnyQueued) IconButton(onPressed: !canQueue ? null : c.pushPageAction, icon: Icon(Icons.save_rounded), tooltip: 'Save Page',),
-                                            if (canPageUpdate && canSelectedUndoDelete) IconButton(
-                                              onPressed: !canSelectedUndoDelete ? null : c.undoDeletePageSelectedData,
+                                            if (c.isPageSelectedAnyQueued) IconButton(
+                                              onPressed: c.pushPageAction,
+                                              icon: Icon(Icons.save_rounded),
+                                              tooltip: 'Save Selected'
+                                            ) else if (c.isPageAnyQueued && !c.isPagedAnySelected) IconButton(
+                                              onPressed: c.pushPageAction, 
+                                              icon: Icon(Icons.save_outlined), 
+                                              tooltip: 'Save Page'
+                                            ),
+                                            if (c.canPagedSelectedUndoDelete) IconButton(
+                                              onPressed: c.undoDeletePageSelectedData,
                                               icon: Icon(Icons.restore_from_trash_rounded, color: Colors.red),
                                               tooltip: 'Undo Delete',
+                                            ) else if (c.canPagedUndoDelete) IconButton(
+                                              onPressed: c.undoDeletePageData, 
+                                              icon: Icon(Icons.restore_from_trash_outlined, color: Colors.red),
                                             ) else IconButton(
-                                              onPressed: !canPageUpdate ? null : c.deletePageSelectedData,
-                                              icon: Icon(isAnySelected ? Icons.delete_rounded : Icons.delete_forever_rounded, color: !canPageUpdate ? null : Colors.red),
+                                              onPressed: !c.isPagedAnySelected ? null : c.deletePageSelectedData,
+                                              icon: Icon(c.isPagedAnySelected ? Icons.delete_rounded : Icons.delete_forever_rounded, color: !c.isPagedAnySelected ? null : Colors.red),
                                               tooltip: 'Delete Selected'
                                             ),
                                           ]
@@ -169,10 +167,11 @@ class MataKuliahPraktikum extends StatelessWidget {
                                   child: ListView.builder(
                                     physics: AlwaysScrollableScrollPhysics(),
                                     shrinkWrap: true,
+                                    padding: EdgeInsets.only(bottom: 92),
                                     itemCount: c.qfsped.value.length,
                                     itemBuilder: (context, i) {
                                       final entry = c.qfsped.value[i];
-                                      final isLoading = c.loadingIndicator.contains(entry.id);
+                                      final isLoading = c.loadingQueue.contains(entry.id);
                                       final isPraktikum = entry.isPraktikum;
                                       final isAdding = c.insertQueue.contains(entry.id);
                                       final isUpdating = c.updateQueue.contains(entry.id);
@@ -182,23 +181,23 @@ class MataKuliahPraktikum extends StatelessWidget {
                                         margin: EdgeInsets.zero,
                                         shape: BorderDirectional(
                                           start: BorderSide(
-                                            color: isDeleting
-                                            ? Colors.red 
-                                            : isAdding
-                                              ? Colors.green 
-                                              : isUpdating
-                                                ? Colors.yellow  
-                                                : Colors.white, 
+                                            color: (isDeleting
+                                              ? Colors.red 
+                                              : isAdding
+                                                ? Colors.green 
+                                                : isUpdating
+                                                  ? Colors.amber
+                                                  : Colors.white).withAlpha(isLoading ? 128 : 255), 
                                             width: 8
                                           ),
                                         ),
                                         child: ListTile(
                                         tileColor: isDeleting 
-                                          ? appTheme.scaffoldBackgroundColor.withRed(36) 
+                                          ? appTheme.scaffoldBackgroundColor.withRed(isLoading ? 36 : 42) 
                                           : isAdding 
-                                            ? appTheme.scaffoldBackgroundColor.withGreen(36) 
+                                            ? appTheme.scaffoldBackgroundColor.withGreen(isLoading ? 36 : 42) 
                                             : isUpdating 
-                                              ? appTheme.scaffoldBackgroundColor.withRed(36).withGreen(36) 
+                                              ? appTheme.scaffoldBackgroundColor.withRed(isLoading ? 36 : 42).withGreen(isLoading ? 36 : 42) 
                                               : null,
                                           contentPadding: EdgeInsets.only(right: 12, left: 8),
                                           onTap: isDeleting || isLoading ? null : () => c.inputDialog(entry),
@@ -208,8 +207,9 @@ class MataKuliahPraktikum extends StatelessWidget {
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 Checkbox(
-                                                  value: c.isSelected.contains(entry.id), 
-                                                  onChanged: (v) => c.selectItem(entry.id, v!)
+                                                  tristate: true,
+                                                  value: isLoading ? null : c.isSelected.contains(entry.id), 
+                                                  onChanged: isLoading ? null : (v) => c.selectItem(entry.id, v ?? false)
                                                 ),
                                                 SizedBox(
                                                   width: 40,
@@ -235,19 +235,28 @@ class MataKuliahPraktikum extends StatelessWidget {
                                                 child: Text(entry.type, textScaleFactor: 1.2),
                                               ),
                                               SizedBox(
-                                                width: 96,
+                                                // width: 96,
                                                 child: Row(
                                                   mainAxisAlignment: MainAxisAlignment.end,
                                                   children: [
+                                                    IconButton(
+                                                      onPressed: () {
+                                                        isLoading ? c.loadingQueue.remove(entry.id) : c.loadingQueue.add(entry.id);
+                                                        c.qfsped.refresh();
+                                                      },
+                                                      icon: Icon(
+                                                        isLoading ? Icons.remove : Icons.add,
+                                                      ), tooltip: isLoading ? 'Testing...' : 'Test'
+                                                    ),
                                                     if (isAdding || isUpdating || isDeleting) IconButton(
                                                       onPressed: isLoading ? null : () => c.pushAction(entry.id),
                                                       icon: Icon(
                                                         Icons.save_rounded,
-                                                      ), tooltip: 'Save'
+                                                      ), tooltip: isLoading ? 'Saving...' : 'Save'
                                                     ),
                                                     if (isUpdating) IconButton(
                                                       onPressed: isLoading ? null : () => c.undoChange(entry.id),
-                                                      icon: Icon(Icons.restore_outlined, color: isLoading ? null : Colors.yellow),
+                                                      icon: Icon(Icons.restore_outlined, color: isLoading ? null : Colors.amber),
                                                       tooltip: 'Undo Changes',
                                                     ) else if (isDeleting) IconButton(
                                                       onPressed: isLoading ? null : () => c.undoDelete(entry.id),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class PeminjamanPeralatanModel {
   late int id;
@@ -71,7 +72,7 @@ class GlobalConfigModel {
 
   GlobalConfigModel.fromJson(Map<String, dynamic> json) {
     nomorSurat = json['nomor_surat'];
-    lineOALDTE = json['lineoa_ldte'];
+    lineOALDTE = (json['lineoa_ldte'] as String).trim().toLowerCase();
     fakultas = DateTime.tryParse(json['fakultas']) ?? DateTime(2000);
   }
 
@@ -94,7 +95,7 @@ class FakultasModel {
 
   FakultasModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
-    name = json['name'];
+    name = (json['name'] as String).trim().capitalize!;
     List.of(json['program_studi']).forEach((v) => programStudi.add(ProgramStudiModel.fromJson(v, name)));
   }
 
@@ -110,23 +111,23 @@ class FakultasModel {
 class ProgramStudiModel {
   late int id;
   late String name, fakultas;
-  List<MataKuliahPraktikumModel> mataKuliahPraktikum = [];
+  List<MatprakModel> matprak = [];
 
-  List<MataKuliahPraktikumModel> get mataKuliah => mataKuliahPraktikum.where((v) => v.isPraktikum != true).toList();
-  List<MataKuliahPraktikumModel> get praktikum => mataKuliahPraktikum.where((v) => v.isPraktikum != false).toList();
+  List<MatprakModel> get mataKuliah => matprak.where((v) => v.isPraktikum != true).toList();
+  List<MatprakModel> get praktikum => matprak.where((v) => v.isPraktikum != false).toList();
   
   ProgramStudiModel({
     required this.id,
     required this.name,
     required this.fakultas,
-    required this.mataKuliahPraktikum,
+    required this.matprak,
   });
 
   ProgramStudiModel.fromJson(Map<String, dynamic> json, [String? fakultasName]) {
     id = json['id'];
-    name = json['name'];
+    name = (json['name'] as String).trim().capitalize!;
     fakultas = fakultasName ?? json['fakultas'];
-    List.of(json['mata_kuliah']).forEach((v) => mataKuliahPraktikum.add(MataKuliahPraktikumModel.fromJson(v, name)));
+    List.of(json['mata_kuliah']).forEach((v) => matprak.add(MatprakModel.fromJson(v, name)));
   }
 
   List<String> formatedMataKuliah() => mataKuliah.map((v) => '${v.kode} ${v.nama}').toList();
@@ -136,18 +137,18 @@ class ProgramStudiModel {
     id: id,
     name: name,
     fakultas: fakultas,
-    mataKuliahPraktikum: mataKuliahPraktikum.map((v) => v.duplicate()).toList(),
+    matprak: matprak.map((v) => v.duplicate()).toList(),
   );
 }
 
-class MataKuliahPraktikumModel {
+class MatprakModel {
   late int id;
   late String kode, nama, programStudi;
   bool? isPraktikum;
 
   String get type => isPraktikum == null ? 'keduanya' : isPraktikum! ? 'praktikum' : 'mata kuliah';
 
-  MataKuliahPraktikumModel({
+  MatprakModel({
     required this.id,
     required this.kode,
     required this.nama,
@@ -155,15 +156,15 @@ class MataKuliahPraktikumModel {
     required this.isPraktikum,
   });
 
-  MataKuliahPraktikumModel.fromJson(Map<String, dynamic> json, [String? programStudiName]) {
+  MatprakModel.fromJson(Map<String, dynamic> json, [String? programStudiName]) {
     id = json['id']; 
-    kode = json['kode']; 
-    nama = json['nama']; 
+    kode = (json['kode'] as String).trim().toUpperCase(); 
+    nama = (json['nama'] as String).trim().capitalize!; 
     programStudi = programStudiName ?? json['program_studi']; 
     isPraktikum = json['is_praktikum']; 
   }
 
-  MataKuliahPraktikumModel duplicate() => MataKuliahPraktikumModel(
+  MatprakModel duplicate() => MatprakModel(
     id: id,
     kode: kode,
     nama: nama,
@@ -171,7 +172,7 @@ class MataKuliahPraktikumModel {
     isPraktikum: isPraktikum,
   );
 
-  bool isEqualTo(MataKuliahPraktikumModel ref) => id == ref.id && kode == ref.kode && nama == ref.nama && programStudi == ref.programStudi && isPraktikum == ref.isPraktikum;
+  bool isEqualTo(MatprakModel ref) => id == ref.id && kode == ref.kode && nama == ref.nama && programStudi == ref.programStudi && isPraktikum == ref.isPraktikum;
 }
 
 class UserPreferenceModel {
@@ -206,18 +207,19 @@ class StorageCacheModel {
   });
 
   List<ProgramStudiModel> get programStudi => fakultas.expand((f) => f.programStudi).toList();
-  List<MataKuliahPraktikumModel> get mataKuliahPraktikum => programStudi.expand((p) => p.mataKuliahPraktikum).toList();
-  List<MataKuliahPraktikumModel> get mataKuliah => programStudi.expand((p) => p.mataKuliah).toList();
-  List<MataKuliahPraktikumModel> get praktikum => programStudi.expand((p) => p.praktikum).toList();
+  List<MatprakModel> get matprak => programStudi.expand((p) => p.matprak).toList();
+  List<MatprakModel> get mataKuliah => programStudi.expand((p) => p.mataKuliah).toList();
+  List<MatprakModel> get praktikum => programStudi.expand((p) => p.praktikum).toList();
 
   List<String> formatedFakultas() => fakultas.map((v) => v.name).toList().toList();
   List<String> formatedProgramStudi() => programStudi.map((v) => v.name).toList();
   List<String> formatedMataKuliah() => mataKuliah.map((v) => '${v.kode} ${v.nama}').toList();
   List<String> formatedPraktikum() => praktikum.map((v) => '${v.kode} ${v.nama}').toList();
+  List<String> formatedMatprak() => matprak.map((v) => '${v.kode} ${v.nama}').toList();
 
   FakultasModel getFakultas(String name) => fakultas.where((v) => v.name == name).first;
   ProgramStudiModel getProgramStudi(String name) => programStudi.where((v) => v.name == name).first;
-  ProgramStudiModel? getProgramStudiFromMatprak(MataKuliahPraktikumModel model) => programStudi.where((v) => v.mataKuliahPraktikum.any((v) => v.id == model.id)).firstOrNull;
+  ProgramStudiModel? getProgramStudiFromMatprak(MatprakModel model) => programStudi.where((v) => v.matprak.any((v) => v.id == model.id)).firstOrNull;
 
   StorageCacheModel duplicate() => StorageCacheModel(
     globalConfig: globalConfig.duplicate(),
@@ -228,9 +230,18 @@ class StorageCacheModel {
 }
 
 class QueueActionModel {
-  var insert = <int>{};
-  var update = <int>{};
-  var delete = <int>{};
+  Set<int> insert = <int>{};
+  Set<int> update = <int>{};
+  Set<int> delete = <int>{};
+  Set<int> loading = <int>{};
+
+  QueueActionModel({
+    required this.insert,
+    required this.update,
+    required this.delete,
+  });
+
+  QueueActionModel.d();
 
   Set<int> get set => {...insert, ...update, ...delete};
   bool get isAnyQueued => set.isNotEmpty;

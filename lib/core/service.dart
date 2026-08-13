@@ -961,16 +961,16 @@ class ProgramStudiService {
   }
 }
 
-class MataKuliahPraktikumService {
+class MatprakService {
   final QFSP = QFSPService();
 
-  Future<List<MataKuliahPraktikumModel>?> upsertData(List<Map<String, dynamic>> form) async {
+  Future<List<MatprakModel>?> upsertData(List<Map<String, dynamic>> form) async {
     try {
       final res = await auth.supabase
         .from('mata_kuliah')
         .upsert(form, onConflict: 'id')
         .select();
-      return res.map((v) => MataKuliahPraktikumModel.fromJson(v)).toList();
+      return res.map((v) => MatprakModel.fromJson(v)).toList();
     } on PostgrestException catch (error) {
       alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
     } catch (error) {

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:eform_ldte/misc/extension.dart';
 import 'package:eform_ldte/misc/global.dart';
+import 'package:go_router/go_router.dart';
 import "package:universal_html/universal_html.dart" as html;
 
 BuildContext? get currentContext => Get.key.currentContext;
@@ -29,9 +30,10 @@ void phoneValidateFormatFocus(TextEditingController phone, FocusNode phoneFN, Rx
   phone.text = result;
 }
 
-void alertDialog(String title, String? subtitle, {double? titleFontSize, double? subtitleFontSize, double? height, double? width = 256 + 32, Color? backgroundColor, String? image, Widget? message, List<Widget>? actions,  VoidCallback? cancelAction, String cancelText = 'Close', VoidCallback? confirmAction, String confirmText = 'Confirm', bool dismissible = true}) {
+void alertDialog<T>(String title, String? subtitle, {double? titleFontSize, double? subtitleFontSize, double? height, double? width = 256 + 32, Color? backgroundColor, String? image, Widget? message, List<Widget>? actions,  VoidCallback? cancelAction, Function(bool, T?)? onPopInvokedWithResult, String cancelText = 'Close', VoidCallback? confirmAction, String confirmText = 'Confirm', bool dismissible = true}) {
   Future(() => Get.dialog(
     PopScope(
+      onPopInvokedWithResult: onPopInvokedWithResult,
       canPop: dismissible,
       child: AlertDialog(
         title: Text(title, style: TextStyle(fontSize: titleFontSize)),
@@ -53,7 +55,7 @@ void alertDialog(String title, String? subtitle, {double? titleFontSize, double?
         backgroundColor: backgroundColor,
         contentPadding: EdgeInsets.symmetric(horizontal: 24),
         actions: [
-          TextButton(onPressed: cancelAction ?? Get.back, child: Text(cancelText)),
+          TextButton(onPressed: cancelAction ?? currentContext?.pop, child: Text(cancelText)),
           if (confirmAction != null) ElevatedButton(onPressed: confirmAction, child: Text(confirmText)),
           if (actions != null) for (var action in actions) action
         ],
@@ -94,11 +96,13 @@ void snackbar(String title, String message, [IconData ? icon]) {
   ));
 }
 
-Color? getColorFromSubmissionStatus(String? status) {
-  return status == 'exported' || status == 'returned'
-    ? Colors.green
-    : status == 'borrowed'
-      ? Colors.blue
+Color? getColorFromSubmissionStatus(String? status) =>
+  status == 'exported' || status == 'returned' || status == 'insert'
+  ? Colors.green
+  : status == 'borrowed'
+    ? Colors.blue
+    : status == 'update'
+      ? Colors.amber
       : status == 'pending' || status == 'overdue'
         ? Colors.orange
         : status == 'damaged'
@@ -107,10 +111,9 @@ Color? getColorFromSubmissionStatus(String? status) {
             ? Colors.purpleAccent
             : status == 'unchecked'
               ? Colors.grey
-              : status == 'spam'
+              : status == 'spam' || status == 'delete'
                 ? Colors.red
                 : null;
-}
 
 Future<bool> hasInternet([bool throwException = true]) async {
     final isConnected = await connection.hasInternetAccess;

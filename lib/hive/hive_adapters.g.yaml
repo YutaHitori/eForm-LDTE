@@ -3,7 +3,7 @@
 # Check in to version control
 nextTypeId: 6
 types:
-  MataKuliahPraktikumModel:
+  MatprakModel:
     typeId: 0
     nextIndex: 8
     fields:
@@ -67,7 +67,7 @@ types:
         index: 0
       name:
         index: 1
-      mataKuliahPraktikum:
+      matprak:
         index: 4
       fakultas:
         index: 5
