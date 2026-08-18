@@ -845,6 +845,7 @@ class AdminSuratKeteranganPraktikumService extends PDFService {
         'date': date,
         'nama': data.nama,
         'nim': data.nim,
+        'nomor_surat' : storage.cached.globalConfig.nomorSurat
       };
 
       final compiled = await _pdfWorker.compute(params);
@@ -896,13 +897,13 @@ class GlobalConfigService {
 class FakultasService {
   final QFSP = QFSPService();
 
-  Future<List<int>?> upsertData(List<Map<String, dynamic>> form) async {
+  Future<List<FakultasModel>?> upsertData(List<Map<String, dynamic>> form) async {
     try {
       final res = await auth.supabase
         .from('fakultas')
         .upsert(form, onConflict: 'id')
         .select();
-      return res.map((v) => FakultasModel.fromJson(v).id).toList();
+      return res.map(FakultasModel.fromJson).toList();
     } on PostgrestException catch (error) {
       alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
     } catch (error) {
@@ -930,13 +931,13 @@ class FakultasService {
 class ProgramStudiService {
   final QFSP = QFSPService();
 
-  Future<List<int>?> upsertData(List<Map<String, dynamic>> form) async {
+  Future<List<ProgramStudiModel>?> upsertData(List<Map<String, dynamic>> form) async {
     try {
       final res = await auth.supabase
         .from('program_studi')
         .upsert(form, onConflict: 'id')
         .select();
-      return res.map((v) => ProgramStudiModel.fromJson(v).id).toList();
+      return res.map(ProgramStudiModel.fromJson).toList();
     } on PostgrestException catch (error) {
       alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
     } catch (error) {
@@ -970,7 +971,7 @@ class MatprakService {
         .from('mata_kuliah')
         .upsert(form, onConflict: 'id')
         .select();
-      return res.map((v) => MatprakModel.fromJson(v)).toList();
+      return res.map(MatprakModel.fromJson).toList();
     } on PostgrestException catch (error) {
       alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
     } catch (error) {

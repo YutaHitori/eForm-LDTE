@@ -47,14 +47,7 @@ class Pinjam extends StatelessWidget {
                   childrenPadding: EdgeInsets.only(bottom: 8),
                   expandedAlignment: Alignment.centerLeft,
                   children: [
-                    Text(
-'''- Isi kolom yang diperlukan secara online.
-- Beberapa kolom dapat dikosongkan jika tidak ada, tidak tahu, atau akan diisi setelah formulir diprint.
-- 1 formulir dapat digunakan untuk meminjam beberapa barang sekaligus (hingga 4 barang).
-- Setelah mengisi, klik tombol "Pinjam" untuk preview dokumen dan periksa apakah semua data sudah benar.
-- Dokumen kemudian dapat didownload dan diprint untuk ditandatangani, kemudian diserahkan pada saat menerima barang.''',
-                      style: TextStyle(fontSize: 12.4),
-                    ),
+                    Text(c.cara, style: TextStyle(fontSize: 12.4)),
                   ],
                 ),
                 CustomTextField(

@@ -40,13 +40,7 @@ class PertukaranJadwalPraktikum extends StatelessWidget {
                     tilePadding: EdgeInsets.zero,
                     childrenPadding: EdgeInsets.only(bottom: 8),
                     children: [
-                      Text(
-'''- Isi semua kolom yang ada secara online.
-- Jika semua kolom telah terisi, klik tombol "Format".
-- Setelah formulir diformat, silahkan melapor kepada admin melalui link yang diberikan.
-- Tunggu konfirmasi dan arahan selanjutnya (jika ada) dari admin.''',
-                        style: TextStyle(fontSize: 12.4),
-                      ),
+                      Text(c.cara,style: TextStyle(fontSize: 12.4)),
                     ],
                   ),
                   CustomTextField(

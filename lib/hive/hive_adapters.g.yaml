@@ -31,7 +31,7 @@ types:
         index: 9
   GlobalConfigModel:
     typeId: 2
-    nextIndex: 3
+    nextIndex: 6
     fields:
       nomorSurat:
         index: 0
@@ -39,6 +39,12 @@ types:
         index: 1
       fakultas:
         index: 2
+      caraPinjam:
+        index: 3
+      caraKeterangan:
+        index: 4
+      caraPertukaran:
+        index: 5
   UserPreferenceModel:
     typeId: 3
     nextIndex: 3

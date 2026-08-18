@@ -9,7 +9,7 @@ Future<Uint8List> peminjamanPeralatanCompilePdfWorker(dynamic form) async {
   final ttf = form['ttf'];
   final ttfBold = form['ttfBold'];
   final ttfItalic = form['ttfItalic'];
-  
+
   final String? nama = form['nama'];
   final String? nim = form['nim'];
   final String fakultas = form['fakultas'] ?? "__________";
@@ -328,6 +328,8 @@ Future<Uint8List> peminjamanPeralatanCompilePdfWorker(dynamic form) async {
     final Uint8List headerBytes = params['headerBytes'];
     final Uint8List footerBytes = params['footerBytes'];
     final Uint8List buktiBytes = params['buktiBytes'];
+    
+    final String nomorSurat = params['nomor_surat'];
 
     final String today = params['today'];
     final String timeStart = params['timeStart'];
@@ -378,7 +380,7 @@ Future<Uint8List> peminjamanPeralatanCompilePdfWorker(dynamic form) async {
                       pw.Row(
                         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                         children: [
-                          pw.Text(': 2603/IT1.C12.6.11/DA.10/2026'),
+                          pw.Text(': $nomorSurat'),
                           pw.Text(today),
                         ],
                       ),

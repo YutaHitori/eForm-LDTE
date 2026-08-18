@@ -31,7 +31,7 @@ final GoRouter router = GoRouter(
           GoRoute(
             path: 'peminjaman-peralatan',
             builder: (context, state) {
-              Get.put(PeminjamanPeralatanController());
+              Get.lazyPut(() => PeminjamanPeralatanController(), fenix: true);
               return const Pinjam();
             },
             onExit: (context, state) => onExit<PeminjamanPeralatanController>(),
@@ -39,7 +39,7 @@ final GoRouter router = GoRouter(
           GoRoute(
             path: 'surat-keterangan',
             builder: (context, state) {
-              Get.put(SuratKeteranganPraktikumController());
+              Get.lazyPut(() => SuratKeteranganPraktikumController(), fenix: true);
               return const SuratKeteranganPraktikum();
             },
             onExit: (context, state) => onExit<SuratKeteranganPraktikumController>()
@@ -47,7 +47,7 @@ final GoRouter router = GoRouter(
           GoRoute(
             path: 'pertukaran-jadwal',
             builder: (context, state) {
-              Get.put(PertukaranJadwalPraktikumController());
+              Get.lazyPut(() => PertukaranJadwalPraktikumController(), fenix: true);
               return  const PertukaranJadwalPraktikum();
             },
             onExit: (context, state) => onExit<PertukaranJadwalPraktikumController>()
@@ -93,7 +93,7 @@ final GoRouter router = GoRouter(
               return redirect(state.matchedLocation);
             },
             builder: (context, state) {
-              Get.put(AdminPeminjamanPeralatanController());
+              Get.lazyPut(() => AdminPeminjamanPeralatanController(), fenix: true);
               return const AdminPeminjamanPeralatan();
             },
             onExit: (context, state) => onExit<AdminPeminjamanPeralatanController>(),
@@ -104,7 +104,7 @@ final GoRouter router = GoRouter(
                   return redirect(state.matchedLocation);
                 },
                 builder: (context, state) {
-                  Get.put(DetailPeminjamanPeralatanController(int.tryParse(state.pathParameters['id'] ?? '') ?? -1));
+                  Get.lazyPut(() => DetailPeminjamanPeralatanController(int.tryParse(state.pathParameters['id'] ?? '') ?? -1), fenix: true);
                   return DetailPeminjamanPeralatan();
                 },
                 onExit: (context, state) => onExit<DetailPeminjamanPeralatanController>(),
@@ -117,7 +117,7 @@ final GoRouter router = GoRouter(
               return redirect(state.matchedLocation);
             },
             builder: (context, state) {
-              Get.put(AdminSuratKeteranganPraktikumController());
+              Get.lazyPut(() => AdminSuratKeteranganPraktikumController(), fenix: true);
               return const AdminSuratKeteranganPraktikum();
             },
             onExit: (context, state) => onExit<AdminSuratKeteranganPraktikumController>(),
@@ -128,7 +128,7 @@ final GoRouter router = GoRouter(
                   return redirect(state.matchedLocation);
                 },
                 builder: (context, state) {
-                  Get.put(DetailSuratKeteranganPraktikumController(int.tryParse(state.pathParameters['id'] ?? '') ?? -1));
+                  Get.lazyPut(() => DetailSuratKeteranganPraktikumController(int.tryParse(state.pathParameters['id'] ?? '') ?? -1), fenix: true);
                   return DetailSuratKeteranganPraktikum();
                 },
                 onExit: (context, state) => onExit<DetailSuratKeteranganPraktikumController>(),
@@ -141,7 +141,7 @@ final GoRouter router = GoRouter(
               return redirect(state.matchedLocation);
             },
             builder: (context, state) {
-              Get.put(GlobalConfigController());
+              Get.lazyPut(() => GlobalConfigController(), fenix: true);
               return const GlobalConfig();
             },
             onExit: (context, state) =>  Get.find<GlobalConfigController>().saveAllDialog() ? onExit<GlobalConfigController>() : false,
@@ -152,7 +152,7 @@ final GoRouter router = GoRouter(
                   return redirect(state.matchedLocation);
                 },
                 builder: (context, state) {
-                  Get.put(FakultasController());
+                  Get.lazyPut(() => FakultasController(), fenix: true);
                   return const Fakultas();
                 },
                 onExit: (context, state) => onExit<FakultasController>(),
@@ -163,10 +163,13 @@ final GoRouter router = GoRouter(
                       return redirect(state.matchedLocation);
                     },
                     builder: (context, state) {
-                      Get.put(ProgramStudiController(state.pathParameters['fakultas']!));
+                      Get.lazyPut(() => ProgramStudiController(state.pathParameters['fakultas']!), fenix: true);
                       return ProgramStudi();
                     },
-                    onExit: (context, state) => onExit<ProgramStudiController>(),
+                    onExit: (context, state) {
+                      Get.find<FakultasController>().qfsped.refresh();
+                      return onExit<ProgramStudiController>();
+                    } ,
                     routes: [
                       GoRoute(
                         path: ':program_studi',
@@ -174,7 +177,7 @@ final GoRouter router = GoRouter(
                           return redirect(state.matchedLocation);
                         },
                         builder: (context, state) {
-                          Get.put(MatprakController(state.pathParameters['program_studi']!));
+                          Get.lazyPut(() => MatprakController(state.pathParameters['program_studi']!), fenix: true);
                           return Matprak();
                         },
                         onExit: (context, state) => onExit<MatprakController>(),

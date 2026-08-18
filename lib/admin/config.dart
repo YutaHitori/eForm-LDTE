@@ -105,6 +105,108 @@ class GlobalConfig extends StatelessWidget {
                   ),
                   readOnly: !c.nomorSuratCanEdit.value,
                 ),
+                CustomTextField(
+                  controller: c.caraPinjam,
+                  onChanged: (v) => c.isSavedCheck(),
+                  labelText: 'Cara Pengisian Formulir Peminjaman Peralatan',
+                  decoration: InputDecoration(
+                    fillColor: c.caraPinjamCanEdit.value ? null : Color(0xFF181818),
+                    hoverColor: c.caraPinjamCanEdit.value ? null : Colors.transparent,
+                    focusedBorder: c.caraPinjamCanEdit.value ? null : OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                      borderSide: BorderSide.none,
+                    ), 
+                    suffixIcon: Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: IconButton(
+                        onPressed: c.caraPinjamSaved.value 
+                          ? () {
+                            c.caraPinjamCanEdit.value = !c.caraPinjamCanEdit.value;
+                            if (c.caraPinjamCanEdit.value) c.caraPinjamFocus.requestFocus();
+                          }
+                          : c.saveCaraPinjam,
+                        icon: Icon(
+                          c.caraPinjamSaved.value 
+                          ? c.caraPinjamCanEdit.value
+                            ? Icons.edit_off_rounded
+                            : Icons.edit_rounded
+                          : Icons.save_rounded
+                        ),
+                      ),
+                    )
+                  ),
+                  maxLines: c.caraPinjamCanEdit.value ? null : 3,
+                  keyboardType: TextInputType.multiline,
+                  readOnly: !c.caraPinjamCanEdit.value,
+                ),
+                CustomTextField(
+                  controller: c.caraKeterangan,
+                  onChanged: (v) => c.isSavedCheck(),
+                  labelText: 'Cara Pengisian Surat Keterangan Praktikum',
+                  decoration: InputDecoration(
+                    fillColor: c.caraKeteranganCanEdit.value ? null : Color(0xFF181818),
+                    hoverColor: c.caraKeteranganCanEdit.value ? null : Colors.transparent,
+                    focusedBorder: c.caraKeteranganCanEdit.value ? null : OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                      borderSide: BorderSide.none,
+                    ), 
+                    suffixIcon: Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: IconButton(
+                        onPressed: c.caraKeteranganSaved.value 
+                          ? () {
+                            c.caraKeteranganCanEdit.value = !c.caraKeteranganCanEdit.value;
+                            if (c.caraKeteranganCanEdit.value) c.caraKeteranganFocus.requestFocus();
+                          }
+                          : c.saveCaraKeterangan,
+                        icon: Icon(
+                          c.caraKeteranganSaved.value 
+                          ? c.caraKeteranganCanEdit.value
+                            ? Icons.edit_off_rounded
+                            : Icons.edit_rounded
+                          : Icons.save_rounded
+                        ),
+                      ),
+                    )
+                  ),
+                  maxLines: c.caraKeteranganCanEdit.value ? null : 3,
+                  keyboardType: TextInputType.multiline,
+                  readOnly: !c.caraKeteranganCanEdit.value,
+                ),
+                CustomTextField(
+                  controller: c.caraPertukaran,
+                  onChanged: (v) => c.isSavedCheck(),
+                  labelText: 'Cara Pengisian Formulir Pertukaran Jadwal Praktikum',
+                  decoration: InputDecoration(
+                    fillColor: c.caraPertukaranCanEdit.value ? null : Color(0xFF181818),
+                    hoverColor: c.caraPertukaranCanEdit.value ? null : Colors.transparent,
+                    focusedBorder: c.caraPertukaranCanEdit.value ? null : OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                      borderSide: BorderSide.none,
+                    ), 
+                    suffixIcon: Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: IconButton(
+                        onPressed: c.caraPertukaranSaved.value 
+                          ? () {
+                            c.caraPertukaranCanEdit.value = !c.caraPertukaranCanEdit.value;
+                            if (c.caraPertukaranCanEdit.value) c.caraPertukaranFocus.requestFocus();
+                          }
+                          : c.saveCaraPertukaran,
+                        icon: Icon(
+                          c.caraPertukaranSaved.value 
+                          ? c.caraPertukaranCanEdit.value
+                            ? Icons.edit_off_rounded
+                            : Icons.edit_rounded
+                          : Icons.save_rounded
+                        ),
+                      ),
+                    )
+                  ),
+                  maxLines: c.caraPertukaranCanEdit.value ? null : 3,
+                  keyboardType: TextInputType.multiline,
+                  readOnly: !c.caraPertukaranCanEdit.value,
+                ),
               ],
             ),
             ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.list), child: Text('Daftar Fakultas')),

@@ -135,6 +135,7 @@ class PeminjamanPeralatanController extends GetxController {
   final service = PeminjamanPeralatanService();
   var isLoading = false.obs;
 
+  final cara = storage.cached.globalConfig.caraPinjam ?? "Didn't exist, please refresh browser or contact our Line OA";
   List<String> get fakultasList => storage.cached.formatedFakultas();
 
   Rxn<XFile> idCard = Rxn<XFile>(ImagePickerService.lastImages['default']); 
@@ -219,14 +220,7 @@ class PeminjamanPeralatanController extends GetxController {
                 child: SingleChildScrollView(
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 4.0),
-                    child: Text(
-'''- Isi kolom yang diperlukan secara online.
-- Beberapa kolom dapat dikosongkan jika tidak ada, tidak tahu, atau akan diisi setelah formulir diprint.
-- 1 formulir dapat digunakan untuk meminjam beberapa barang sekaligus (hingga 4 barang).
-- Setelah mengisi, klik tombol "Pinjam" untuk preview dokumen dan periksa apakah semua data sudah benar.
-- Dokumen kemudian dapat didownload dan diprint untuk ditandatangani, kemudian diserahkan pada saat menerima barang.''',
-                      style: TextStyle(fontSize: 12.8),
-                    ),
+                    child: Text(cara, style: TextStyle(fontSize: 12.8)),
                   )
                 )
               ),
@@ -327,6 +321,7 @@ class SuratKeteranganPraktikumController extends GetxController {
   var isLoading = false.obs;
   var message = RxnString(null);
 
+  final cara = storage.cached.globalConfig.caraPinjam ?? "Didn't exist, please refresh browser or contact our Line OA";
   final service = SuratKeteranganPraktikumService();
   List<String> get matkulList => storage.cached.formatedMataKuliah();
   List<String> get praktikumList => storage.cached.formatedPraktikum();
@@ -354,14 +349,7 @@ class SuratKeteranganPraktikumController extends GetxController {
                 child: SingleChildScrollView(
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 4.0),
-                    child: Text(
-''''- Isi semua kolom yang ada secara online.
-- 1 formulir dapat digunakan untuk beberapa orang sekaligus (hingga 4 orang).
-- Jika semua kolom telah terisi, klik tombol "Submit".
-- Setelah formulir terkirim, silahkan melapor kepada admin melalui link yang diberikan.
-- Tunggu konfirmasi dan arahan selanjutnya (jika ada) dari admin.''',
-                      style: TextStyle(fontSize: 12.8),
-                    ),
+                    child: Text(cara, style: TextStyle(fontSize: 12.8)),
                   )
                 )
               ),
@@ -575,6 +563,8 @@ class PertukaranJadwalPraktikumController extends GetxController {
   var isLoading = false.obs;
 
   final service = SuratKeteranganPraktikumService();
+  
+  final cara = storage.cached.globalConfig.caraPinjam ?? "Didn't exist, please refresh browser or contact our Line OA";
   List<String> get praktikumList => storage.cached.formatedPraktikum();
 
   void showReminderDialog() {
@@ -600,13 +590,7 @@ class PertukaranJadwalPraktikumController extends GetxController {
                 child: SingleChildScrollView(
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 4.0),
-                    child: Text(
-'''- Isi semua kolom yang ada secara online.
-- Jika semua kolom telah terisi, klik tombol "Format".
-- Setelah formulir diformat, silahkan melapor kepada admin melalui link yang diberikan.
-- Tunggu konfirmasi dan arahan selanjutnya (jika ada) dari admin.''',
-                      style: TextStyle(fontSize: 12.8),
-                    ),
+                    child: Text(cara, style: TextStyle(fontSize: 12.8)),
                   )
                 )
               ),
@@ -673,7 +657,7 @@ class PertukaranJadwalPraktikumController extends GetxController {
   var prodiList = <String>[].obs;
 
   String get message => '''Silahkan chat sesuai template dibawah ini.
-------------------------------------------
+----------------------------------------
 Pertukaran Jadwal Praktikum
 PRAKTIKAN
 Nama : ${namaC.text.trim()}
@@ -692,7 +676,7 @@ MENGIKUTI PRAKTIKUM
 Praktikum : ${praktikum.value == 'Lainnya...' ? '${kodePraktikum.text.trim()} ${namaPraktikum.text.trim()}' : praktikum.value}
 Modul : ${modul.value}
 Hari/Tanggal : ${datePC.text.toDateTime()?.toDateFormatString()}
-------------------------------------------
+----------------------------------------
 Pertukaran diperbolehkan setelah ada chat konfirmasi dari LDTE.''';
 
    bool checkEmptyFields() {
@@ -1179,10 +1163,14 @@ class GlobalConfigController extends GetxController {
       if (!lineOAFocus.hasFocus) {
         lineOA.text = lineOA.text.toLowerCase().trim();
         if (lineOA.text[0] == '@') lineOA.text.substring(1);
+        isSavedCheck();
       }
     });
     nomorSuratFocus.addListener(() {
-       if (!nomorSuratFocus.hasFocus) nomorSurat.text = nomorSurat.text.toUpperCase().trim();
+       if (!nomorSuratFocus.hasFocus) {
+        nomorSurat.text = nomorSurat.text.toUpperCase().trim();
+        isSavedCheck();
+       }
     });
   }
 
@@ -1204,13 +1192,19 @@ class GlobalConfigController extends GetxController {
   bool isSavedCheck() {
     lineOASaved.value = lineOA.text == storage.cached.globalConfig.lineOALDTE;
     nomorSuratSaved.value = nomorSurat.text == storage.cached.globalConfig.nomorSurat;
-    isSaved.value = lineOASaved.value && nomorSuratSaved.value;
+    caraPinjamSaved.value = caraPinjam.text == storage.cached.globalConfig.caraPinjam;
+    caraKeteranganSaved.value = caraKeterangan.text == storage.cached.globalConfig.caraKeterangan;
+    caraPertukaranSaved.value = caraPertukaran.text == storage.cached.globalConfig.caraPertukaran;
+    isSaved.value = lineOASaved.value && nomorSuratSaved.value && caraPinjamSaved.value;
     return isSaved.value;
   }
 
   void init() {
     lineOA.text = storage.cached.globalConfig.lineOALDTE ?? '';
     nomorSurat.text = storage.cached.globalConfig.nomorSurat ?? '';
+    caraPinjam.text = storage.cached.globalConfig.caraPinjam ?? '';
+    caraKeterangan.text = storage.cached.globalConfig.caraKeterangan ?? '';
+    caraPertukaran.text = storage.cached.globalConfig.caraPertukaran ?? '';
   }
 
   final lineOA = TextEditingController();
@@ -1223,6 +1217,21 @@ class GlobalConfigController extends GetxController {
   var nomorSuratCanEdit = false.obs;
   var nomorSuratSaved = true.obs;
 
+  final caraPinjam = TextEditingController();
+  final caraPinjamFocus = FocusNode();
+  var caraPinjamCanEdit = false.obs;
+  var caraPinjamSaved = true.obs;
+
+  final caraKeterangan = TextEditingController();
+  final caraKeteranganFocus = FocusNode();
+  var caraKeteranganCanEdit = false.obs;
+  var caraKeteranganSaved = true.obs;
+
+  final caraPertukaran = TextEditingController();
+  final caraPertukaranFocus = FocusNode();
+  var caraPertukaranCanEdit = false.obs;
+  var caraPertukaranSaved = true.obs;
+
   Map<String, dynamic> get form {
     lineOA.text = lineOA.text.toLowerCase().trim();
     if (lineOA.text[0] == '@') lineOA.text.substring(1);
@@ -1230,6 +1239,9 @@ class GlobalConfigController extends GetxController {
     return {
       if (lineOA.text != storage.cached.globalConfig.lineOALDTE) 'lineoa_ldte' : lineOA.text,
       if (nomorSurat.text != storage.cached.globalConfig.nomorSurat) 'nomor_surat' : nomorSurat.text,
+      if (caraPinjam.text != storage.cached.globalConfig.caraPinjam) 'cara_pinjam' : caraPinjam.text,
+      if (caraKeterangan.text != storage.cached.globalConfig.caraKeterangan) 'cara_keterangan' : caraKeterangan.text,
+      if (caraPertukaran.text != storage.cached.globalConfig.caraPertukaran) 'cara_pertukaran' : caraPertukaran.text,
     };
   }
 
@@ -1255,6 +1267,48 @@ class GlobalConfigController extends GetxController {
       snackbar('Success!', 'Nomor Surat updated');
       loadingMessage.value = 'Syncing new config, please wait...';
       nomorSuratCanEdit.value = false;
+      await storage.sync();
+      isSavedCheck();
+    }
+    isLoading.value = false;
+  }
+
+  void saveCaraPinjam() async {
+    isLoading.value = true;
+    loadingMessage.value = 'Saving cara pengisian formulir peminjaman peralatan, please wait...';
+    final isSuccess = await service.updateGlobalConfig({'cara_pinjam' : form['cara_pinjam']});
+    if (isSuccess) {
+      snackbar('Success!', 'Cara pengisian formulir peminjaman peralatan updated');
+      loadingMessage.value = 'Syncing new config, please wait...';
+      caraPinjamCanEdit.value = false;
+      await storage.sync();
+      isSavedCheck();
+    }
+    isLoading.value = false;
+  }
+
+  void saveCaraKeterangan() async {
+    isLoading.value = true;
+    loadingMessage.value = 'Saving cara pengisian surat keterangan, please wait...';
+    final isSuccess = await service.updateGlobalConfig({'cara_keterangan' : form['cara_keterangan']});
+    if (isSuccess) {
+      snackbar('Success!', 'Cara pengisian surat keterangan updated');
+      loadingMessage.value = 'Syncing new config, please wait...';
+      caraKeteranganCanEdit.value = false;
+      await storage.sync();
+      isSavedCheck();
+    }
+    isLoading.value = false;
+  }
+
+  void saveCaraPertukaran() async {
+    isLoading.value = true;
+    loadingMessage.value = 'Saving cara pengisian formulir pertukaran, please wait...';
+    final isSuccess = await service.updateGlobalConfig({'cara_pertukaran' : form['cara_pertukaran']});
+    if (isSuccess) {
+      snackbar('Success!', 'Cara pengisian formulir pertukaran updated');
+      loadingMessage.value = 'Syncing new config, please wait...';
+      caraPertukaranCanEdit.value = false;
       await storage.sync();
       isSavedCheck();
     }
@@ -1310,14 +1364,54 @@ class FakultasController extends GetxController {
   final admin = FakultasService();
   final config = Get.find<GlobalConfigController>();
 
-  List<FakultasModel> get fakultas => config.simulated.fakultas;
+  List<FakultasModel> get stored => storage.cached.fakultas;
+  List<FakultasModel> get sim => config.simulated.fakultas;
+  final qfsped = RxList<FakultasModel>([]);
+  
+  late Iterable<FakultasModel> selectedData = sim.where(inSelected);
+  late Iterable<FakultasModel> pagedSelectedData = qfsped.value.where(inSelected);
+  
+  Set<int> get simIds => sim.map((v) => v.id).toSet().difference(loadingQueue);
+  Set<int> get pagedIds => qfsped.value.map((v) => v.id).toSet().difference(loadingQueue);
+  Set<int> get selectedIds => isSelected.difference(loadingQueue);
+  Set<int> get pagedSelectedIds => pagedIds.intersection(isSelected);
+  
+  late Set<int> insertQueue = config.fakultasQueue.insert;
+  late Set<int> updateQueue = config.fakultasQueue.update;
+  late Set<int> deleteQueue = config.fakultasQueue.delete;
+  late Set<int> loadingQueue = config.fakultasQueue.loading;
+
+  bool inSelected(FakultasModel v) => selectedIds.contains(v.id);  
+  bool idInSelected(int id) => selectedIds.contains(id);  
+  bool inQueue(int id) => config.fakultasQueue.set.contains(id);  
+  bool inDeleteQ(int id) => deleteQueue.contains(id);  
+  bool inInsertQ(int id) => insertQueue.contains(id);  
+  bool inUpdateQ(int id) => updateQueue.contains(id);
+  bool inProdiQueue(FakultasModel f) => f.programStudi.any((pd) => config.prodiQueue.contains(pd.id) || pd.matprak.any((mp) => config.matprakQueue.contains(mp.id)));
+  
+  bool get isPagedLoading => pagedIds.isEmpty;
+  bool get isPagedAnySelected => pagedSelectedIds.isNotEmpty;
+  bool get isAnyQueued => config.isAnyQueued;
+  bool get isSimAnyQueued => config.fakultasQueue.set.isNotEmpty;
+  bool get isSimEveryLoaing => config.fakultasQueue.set.difference(loadingQueue).isNotEmpty;
+  bool get isPageAnyQueued => pagedIds.any(inQueue);
+  bool get isPageSelectedAnyQueued => pagedSelectedIds.any(inQueue);
+  bool get areDeleting => deleteQueue.isEmpty ? false : isPagedAnySelected ? selectedIds.every(inDeleteQ) : pagedIds.every(inDeleteQ);
+  bool get areInserting => insertQueue.isEmpty ? false : isPagedAnySelected ? selectedIds.every(inInsertQ) : pagedIds.every(inInsertQ);
+  bool get areUpdating => updateQueue.isEmpty ? false : isPagedAnySelected ? selectedIds.every(inUpdateQ) : pagedIds.every(inUpdateQ);
+  bool get areModified => config.prodiQueue.set.isEmpty && config.matprakQueue.set.isEmpty ? false : isPagedAnySelected ? pagedSelectedData.every(inProdiQueue) : qfsped.every(inProdiQueue);
+  bool get canPagedUndoDelete => !isPagedAnySelected && pagedIds.isNotEmpty && pagedIds.every(inDeleteQ);
+  bool get canPagedSelectedUndoDelete => isPagedAnySelected && pagedSelectedIds.every(inDeleteQ);
+  bool? get isPageSelected => 
+    pagedIds.any(idInSelected)
+      ? pagedIds.every(idInSelected)
+        ? true : null 
+      : false;
+
   var isLoading = false.obs;
   var isMassLoading = false.obs;
-  var canSelect = false.obs;
-  var loadingIndicator = <int>[];
-  var isSelected = <int>[];
-  var canEdit = <int>[];
-  var qfsped = RxList<FakultasModel>([]);
+  var isSelected = <int>{};
+  var canEdit = <int>{};
 
   @override
   void onInit() {
@@ -1325,21 +1419,20 @@ class FakultasController extends GetxController {
     qfsp.onChanged();
   }
 
-
   var pageNum = 1.obs;
   var pageC = NumberPaginatorController();
 
   late QFSPController<FakultasModel> qfsp = QFSPController(
     filter: [
       FilterController(
-        filterKey: "type",
-        filterList: ['sekolah', 'fakultas'],
-        reference: (m) => m.name.toLowerCase().split(' ').firstOrNull,
+        filterKey: "action",
+        filterList: ['insert', 'update', 'delete', 'modified'],
+        reference: (m) => inInsertQ(m.id) ? 'insert' : inUpdateQ(m.id) ? 'update' : inDeleteQ(m.id) ? 'delete' : inProdiQueue(m) ? 'modified' : '',
         multiSelect: false
       ),
     ],
     onChanged: ([String? itemKey, String? filterKey]) {
-      var queried = admin.QFSP.query(fakultas, qfsp, (v) => [v.name]);
+      var queried = admin.QFSP.query(sim, qfsp, (v) => [v.name]);
       var filtered = admin.QFSP.filter(queried, qfsp, itemKey, filterKey);
       var sorted = admin.QFSP.sort(filtered, qfsp);
       var paged = admin.QFSP.page(sorted, qfsp, pageNum);
@@ -1348,28 +1441,280 @@ class FakultasController extends GetxController {
     pageC: pageC,
     dataPerPage: 25
   );
-
+  
   void selectItem(int id, bool state) {
+    if (loadingQueue.contains(id)) return;
     state ? isSelected.add(id) : isSelected.remove(id);
     qfsped.refresh();
   }
 
   void selectPageItem(bool? state) {
-    qfsped.value.forEach((v) => state == true ? isSelected.add(v.id) : isSelected.remove(v.id));
+    for (var id in pagedIds) {
+      if (loadingQueue.contains(id)) continue;
+      state == true ? isSelected.add(id) : isSelected.remove(id);
+    }
     Future(() => qfsped.refresh());
   }
 
-  void canEditState(int id) {
-    canEdit.contains(id) ? canEdit.remove(id) : canEdit.add(id);
-    qfsped.refresh();
+  void delete(int id) {
+    if (loadingQueue.contains(id)) return;
+    deleteQueue.add(id);
+    qfsp.onChanged();
   }
 
-  void updateSubmission(List<FakultasModel> newData) {
-    for (final item in newData) {
-      final index = fakultas.indexWhere((v) => v.id == item.id);
-      if (index != -1) fakultas[index] = item;
+  void undoDelete(int id) {
+    if (loadingQueue.contains(id)) return;
+    deleteQueue.remove(id);
+    qfsp.onChanged();
+  }
+
+  void deletePageSelectedData() {
+    for (final id in pagedSelectedIds) {
+      if (loadingQueue.contains(id)) continue;
+      if (deleteQueue.contains(id)) continue;
+      deleteQueue.add(id);
     }
     qfsp.onChanged();
+  }
+
+  void undoDeletePageData() {
+    for (final id in pagedIds) {
+      if (loadingQueue.contains(id)) continue;
+      deleteQueue.remove(id);
+    }
+    qfsp.onChanged();
+  }
+
+  void undoDeletePageSelectedData() {
+    for (final id in pagedSelectedIds) {
+      if (loadingQueue.contains(id)) continue;
+      deleteQueue.remove(id);
+    }
+    qfsp.onChanged();
+  }
+
+  void undoChange(int id) {
+    final source = stored.firstWhereOrNull((v) => v.id == id)?.duplicate();
+    if (source != null) {
+      updateQueue.remove(id);
+      final ref = sim.firstWhere((v) => v.id == id);
+      ref.name = source.name;
+      for (final v in ref.programStudi) {
+        v.fakultas = source.name;
+      }
+      // sim.where((v) => v.id == id).toList().first = source;
+    }
+    qfsp.onChanged();
+  }
+
+  Map<String, dynamic> compileForm(FakultasModel model) => {
+    if (model.id > 0) 'id': model.id,
+    'name': model.name,
+  };
+  
+  void pushAction(int id) async {
+    if (loadingQueue.contains(id)) return;
+
+    final data = sim.firstWhere((v) => v.id == id);
+    final isAdding = insertQueue.contains(id);
+    final isUpdating = updateQueue.contains(id);
+    final isDeleting = deleteQueue.contains(id);
+
+    if (isDeleting && isAdding) {
+      updateDeletedQueueState([id], true);
+      qfsp.onChanged();
+      return;
+    }
+
+    loadingQueue.add(id);
+    qfsped.refresh();
+
+    if (isDeleting) {
+      final isSuccess = await admin.deleteData([id]);
+      if (isSuccess) updateDeletedQueueState([id]);
+    } else if (isUpdating) {
+      final res = await admin.upsertData([compileForm(data)]);
+      if (res != null) updateUpdatedQueueState([id]);
+    } else if (isAdding) {
+      final res = await admin.upsertData([compileForm(data)]);
+      if (res != null) updateInsertedQueueState([id], res);
+    }
+
+    await storage.sync();
+    
+    loadingQueue.remove(id);
+    qfsp.onChanged();
+  }
+
+  void pushSimAction() {
+    pushQueuedAction(simIds);
+  }
+
+  void pushPageAction() {
+    pushQueuedAction(pagedIds);
+  }
+
+  void pushPageSelectedAction() {
+    pushQueuedAction(pagedSelectedIds);
+  }
+  
+  void pushQueuedAction(Set<int> ids) async {
+    final list = sim.where((v) => ids.contains(v.id));
+      final queue = QueueActionModel(
+      insert: ids.where(inInsertQ).toSet(),
+      update: ids.where(inUpdateQ).toSet(),
+      delete: ids.where(inDeleteQ).toSet(),
+    );
+    
+    final dq = queue.delete;
+    final iq = queue.insert;
+    final uq = queue.update;
+    final insertData = list.where((v) => iq.contains(v.id));
+    final updateData = list.where((v) => uq.contains(v.id));
+
+    updateDeletedQueueState(iq.intersection(dq), true);
+
+    final set = {...uq, ...dq, ...iq};
+
+    set.forEach(loadingQueue.add);
+    qfsped.refresh();
+
+    if (dq.isNotEmpty) {
+      final isSuccess = await admin.deleteData(dq.toList());
+      if (isSuccess) {
+        updateDeletedQueueState(dq);
+      }
+    } 
+    
+    if (insertData.isNotEmpty) {
+      final data = insertData.map(compileForm).toList();
+      final res = await admin.upsertData(data);
+      if (res != null) {
+        updateInsertedQueueState(iq, res);
+      }
+    }
+
+    if (updateData.isNotEmpty) {
+      final data = updateData.map((v) => compileForm(v)).toList();
+      final res = await admin.upsertData(data);
+      if (res != null) {
+        updateUpdatedQueueState(uq);
+      }
+    }
+
+    await storage.sync();
+    
+    set.forEach(loadingQueue.remove);
+    qfsp.onChanged();
+  }
+
+  void updateUpdatedQueueState(Iterable<int> ids) {
+    for (final id in ids.toSet()) {
+      updateQueue.remove(id);
+    }
+  }
+
+  void updateInsertedQueueState(Iterable<int> ids, List<FakultasModel> newData) {
+    for (final id in ids.toSet()) {
+      insertQueue.remove(id);
+      final match = sim.firstWhere((v) => v.id == id); 
+      match.id = newData.firstWhere((v) => v.name == match.name).id;
+    }
+  }
+
+  void updateDeletedQueueState(Iterable<int> ids, [bool isUpsert = false]) {
+    for (final id in ids.toSet()) {
+      if (isUpsert) {
+        updateQueue.remove(id);
+        insertQueue.remove(id);
+      }
+      isSelected.remove(id);
+      deleteQueue.remove(id);
+      sim.removeWhere((v) => v.id == id);
+    }
+  }
+
+  void inputDialog([FakultasModel? s]) {
+    final nameC = TextEditingController(text: s?.name);
+    
+    var nameE = Rxn<String>(null);
+
+    final nameF = FocusNode();
+    
+    final id = s?.id ?? ((insertQueue.lastOrNull ?? 0) - 1);
+    FakultasModel createModel() => FakultasModel(
+      id: id, 
+      name: nameC.text.trim(),
+      programStudi: s?.programStudi ?? [],
+    );
+
+    bool checkEmptyFields() {
+      final model = createModel();
+      final list = config.simulated.formatedProgramStudi();
+      nameE.value = nameC.text.isBlank() ? '*required' : !nameC.text.contains(RegExp(r'\((.*?)\)')) ? '*invalid format' : model.name != s?.name && list.contains(model.name) ? '*already exist' : null;
+
+      if (nameE.value != null) return false;
+      
+      nameE.value = null;
+      return true;
+    }
+
+    nameF.addListener(() {
+      if (!nameF.hasFocus) {
+        final temp = nameC.text.trim().capitalize!;
+        final abv = RegExp(r'\((.*?)\)').firstMatch(temp)?.group(1);
+        if (abv != null) nameC.text = temp.replaceAll(RegExp(r'\((.*?)\)'), '(${abv.toUpperCase()})').replaceAll(' Dan ', ' dan ');
+        checkEmptyFields();
+      }
+    });
+    
+    alertDialog(
+      s == null ? 'Add new fakultas' : 'Edit fakultas', 
+      null,
+      width: 420,
+      message: Obx(() => Column(
+        children: [
+          CustomTextField(
+            controller: nameC,
+            focusNode: nameF,
+            labelText: 'Nama',
+            errorText: nameE.value,
+            decoration: InputDecoration(hintText: 'e.g. Sekolah Teknik Elektro dan Informatika (STEI)'),
+          ),
+          SizedBox(height: 16)
+        ]
+      )),
+      onPopInvokedWithResult: (didPop, result) => 
+        Future.delayed(Duration(milliseconds: 500), () {
+          nameF.dispose();
+        }),
+      confirmText: s == null ? 'add' : 'save',
+      confirmAction: () {
+        if (!checkEmptyFields()) return;
+        closeAllDialog();
+        final model = createModel();
+        if (s == null) {
+          insertQueue.add(id);
+          sim.insert(0, model);
+        } else {
+          if (s.name != model.name) {
+            for (final v in s.programStudi) {
+              v.fakultas = model.name;
+            }
+          }
+          s.name = model.name;
+          if (s.id > 0) { 
+            final isExist = stored.any((v) => v.isEqualTo(s));
+            if (isExist) {
+              updateQueue.remove(s.id);
+            } else {
+              updateQueue.add(s.id);
+            }
+          }
+        }
+        qfsp.onChanged();
+      },
+    );
   }
 }
 
@@ -1380,14 +1725,54 @@ class ProgramStudiController extends GetxController {
   final admin = ProgramStudiService();
   final config = Get.find<GlobalConfigController>();
 
+  List<ProgramStudiModel> get stored => storage.cached.getFakultas(fakultas).programStudi;
+  List<ProgramStudiModel> get sim => config.simulated.getFakultas(fakultas).programStudi;
+  final qfsped = RxList<ProgramStudiModel>([]);
+  
+  late Iterable<ProgramStudiModel> selectedData = sim.where(inSelected);
+  late Iterable<ProgramStudiModel> pagedSelectedData = qfsped.value.where(inSelected);
+  
+  Set<int> get simIds => sim.map((v) => v.id).toSet().difference(loadingQueue);
+  Set<int> get pagedIds => qfsped.value.map((v) => v.id).toSet().difference(loadingQueue);
+  Set<int> get selectedIds => isSelected.difference(loadingQueue);
+  Set<int> get pagedSelectedIds => pagedIds.intersection(isSelected);
+  
+  late Set<int> insertQueue = config.prodiQueue.insert;
+  late Set<int> updateQueue = config.prodiQueue.update;
+  late Set<int> deleteQueue = config.prodiQueue.delete;
+  late Set<int> loadingQueue = config.prodiQueue.loading;
+
+  bool inSelected(ProgramStudiModel v) => selectedIds.contains(v.id);  
+  bool idInSelected(int id) => selectedIds.contains(id);  
+  bool inQueue(int id) => config.prodiQueue.set.contains(id);  
+  bool inDeleteQ(int id) => deleteQueue.contains(id);  
+  bool inInsertQ(int id) => insertQueue.contains(id);  
+  bool inUpdateQ(int id) => updateQueue.contains(id);
+  bool inMatprakQueue(ProgramStudiModel v) => v.matprak.any((v) => config.matprakQueue.contains(v.id));
+  
+  bool get isPagedLoading => pagedIds.isEmpty;
+  bool get isPagedAnySelected => pagedSelectedIds.isNotEmpty;
+  bool get isAnyQueued => config.isAnyQueued;
+  bool get isSimAnyQueued => config.prodiQueue.set.isNotEmpty;
+  bool get isSimEveryLoaing => config.prodiQueue.set.difference(loadingQueue).isNotEmpty;
+  bool get isPageAnyQueued => pagedIds.any(inQueue);
+  bool get isPageSelectedAnyQueued => pagedSelectedIds.any(inQueue);
+  bool get areDeleting => deleteQueue.isEmpty ? false : isPagedAnySelected ? selectedIds.every(inDeleteQ) : pagedIds.every(inDeleteQ);
+  bool get areInserting => insertQueue.isEmpty ? false : isPagedAnySelected ? selectedIds.every(inInsertQ) : pagedIds.every(inInsertQ);
+  bool get areUpdating => updateQueue.isEmpty ? false : isPagedAnySelected ? selectedIds.every(inUpdateQ) : pagedIds.every(inUpdateQ);
+  bool get areModified => config.matprakQueue.set.isEmpty ? false : isPagedAnySelected ? pagedSelectedData.every(inMatprakQueue) : qfsped.every(inMatprakQueue);
+  bool get canPagedUndoDelete => !isPagedAnySelected && pagedIds.isNotEmpty && pagedIds.every(inDeleteQ);
+  bool get canPagedSelectedUndoDelete => isPagedAnySelected && pagedSelectedIds.every(inDeleteQ);
+  bool? get isPageSelected => 
+    pagedIds.any(idInSelected)
+      ? pagedIds.every(idInSelected)
+        ? true : null 
+      : false;
+
   var isLoading = false.obs;
   var isMassLoading = false.obs;
-  var canSelect = false.obs;
-  List<ProgramStudiModel> get submissions => config.simulated.getFakultas(fakultas).programStudi;
-  var loadingIndicator = <int>[];
-  var isSelected = <int>[];
-  var canEdit = <int>[];
-  var qfsped = RxList<ProgramStudiModel>([]);
+  var isSelected = <int>{};
+  var canEdit = <int>{};
 
   @override
   void onInit() {
@@ -1399,8 +1784,16 @@ class ProgramStudiController extends GetxController {
   var pageC = NumberPaginatorController();
 
   late QFSPController<ProgramStudiModel> qfsp = QFSPController(
+    filter: [
+      FilterController(
+        filterKey: "action",
+        filterList: ['insert', 'update', 'delete', 'modified'],
+        reference: (m) => inInsertQ(m.id) ? 'insert' : inUpdateQ(m.id) ? 'update' : inDeleteQ(m.id) ? 'delete' : inMatprakQueue(m) ? 'modified' : '',
+        multiSelect: false
+      ),
+    ],
     onChanged: ([String? itemKey, String? filterKey]) {
-      var queried = admin.QFSP.query(submissions, qfsp, (v) => [v.name]);
+      var queried = admin.QFSP.query(sim, qfsp, (v) => [v.name]);
       var filtered = admin.QFSP.filter(queried, qfsp, itemKey, filterKey);
       var sorted = admin.QFSP.sort(filtered, qfsp);
       var paged = admin.QFSP.page(sorted, qfsp, pageNum);
@@ -1409,28 +1802,321 @@ class ProgramStudiController extends GetxController {
     pageC: pageC,
     dataPerPage: 25
   );
+  
+  
 
   void selectItem(int id, bool state) {
+    if (loadingQueue.contains(id)) return;
     state ? isSelected.add(id) : isSelected.remove(id);
     qfsped.refresh();
   }
 
   void selectPageItem(bool? state) {
-    qfsped.value.forEach((v) => state == true ? isSelected.add(v.id) : isSelected.remove(v.id));
+    for (var id in pagedIds) {
+      if (loadingQueue.contains(id)) continue;
+      state == true ? isSelected.add(id) : isSelected.remove(id);
+    }
     Future(() => qfsped.refresh());
   }
 
-  void canEditItem(int id) {
-    canEdit.contains(id) ? canEdit.remove(id) : canEdit.add(id);
-    qfsped.refresh();
+  void delete(int id) {
+    if (loadingQueue.contains(id)) return;
+    deleteQueue.add(id);
+    qfsp.onChanged();
   }
 
-  void updateSubmission(List<ProgramStudiModel> newData) {
-    for (final item in newData) {
-      final index = submissions.indexWhere((v) => v.id == item.id);
-      if (index != -1) submissions[index] = item;
+  void undoDelete(int id) {
+    if (loadingQueue.contains(id)) return;
+    deleteQueue.remove(id);
+    qfsp.onChanged();
+  }
+
+  void deletePageSelectedData() {
+    for (final id in pagedSelectedIds) {
+      if (loadingQueue.contains(id)) continue;
+      if (deleteQueue.contains(id)) continue;
+      deleteQueue.add(id);
     }
     qfsp.onChanged();
+  }
+
+  void undoDeletePageData() {
+    for (final id in pagedIds) {
+      if (loadingQueue.contains(id)) continue;
+      deleteQueue.remove(id);
+    }
+    qfsp.onChanged();
+  }
+
+  void undoDeletePageSelectedData() {
+    for (final id in pagedSelectedIds) {
+      if (loadingQueue.contains(id)) continue;
+      deleteQueue.remove(id);
+    }
+    qfsp.onChanged();
+  }
+
+  void undoChange(int id) {
+    final source = stored.firstWhereOrNull((v) => v.id == id)?.duplicate();
+    if (source != null) {
+      updateQueue.remove(id);
+      final ref = sim.firstWhere((v) => v.id == id);
+      ref.name = source.name;
+      ref.fakultas = source.fakultas;
+      for (final v in ref.matprak) {
+        v.programStudi = source.name;
+      }
+      // sim.where((v) => v.id == id).toList().first = source;
+    }
+    qfsp.onChanged();
+  }
+
+  Map<String, dynamic> compileForm(ProgramStudiModel model) => {
+    if (model.id > 0) 'id': model.id,
+    'name': model.name,
+    'fakultas': model.fakultas,
+  };
+  
+  void pushAction(int id) async {
+    if (loadingQueue.contains(id)) return;
+
+    final data = sim.firstWhere((v) => v.id == id);
+    final isAdding = insertQueue.contains(id);
+    final isUpdating = updateQueue.contains(id);
+    final isDeleting = deleteQueue.contains(id);
+
+    if (isDeleting && isAdding) {
+      updateDeletedQueueState([id], true);
+      qfsp.onChanged();
+      return;
+    }
+
+    loadingQueue.add(id);
+    qfsped.refresh();
+
+    if (isDeleting) {
+      final isSuccess = await admin.deleteData([id]);
+      if (isSuccess) updateDeletedQueueState([id]);
+    } else if (isUpdating) {
+      final res = await admin.upsertData([compileForm(data)]);
+      if (res != null) updateUpdatedQueueState([id]);
+    } else if (isAdding) {
+      final res = await admin.upsertData([compileForm(data)]);
+      if (res != null) updateInsertedQueueState([id], res);
+    }
+
+    await storage.sync();
+    
+    loadingQueue.remove(id);
+    qfsp.onChanged();
+  }
+
+  void pushSimAction() {
+    pushQueuedAction(simIds);
+  }
+
+  void pushPageAction() {
+    pushQueuedAction(pagedIds);
+  }
+
+  void pushPageSelectedAction() {
+    pushQueuedAction(pagedSelectedIds);
+  }
+  
+  void pushQueuedAction(Set<int> ids) async {
+    final list = sim.where((v) => ids.contains(v.id));
+      final queue = QueueActionModel(
+      insert: ids.where(inInsertQ).toSet(),
+      update: ids.where(inUpdateQ).toSet(),
+      delete: ids.where(inDeleteQ).toSet(),
+    );
+    
+    final dq = queue.delete;
+    final iq = queue.insert;
+    final uq = queue.update;
+    final insertData = list.where((v) => iq.contains(v.id));
+    final updateData = list.where((v) => uq.contains(v.id));
+
+    updateDeletedQueueState(iq.intersection(dq), true);
+
+    final set = {...uq, ...dq, ...iq};
+
+    set.forEach(loadingQueue.add);
+    qfsped.refresh();
+
+    if (dq.isNotEmpty) {
+      final isSuccess = await admin.deleteData(dq.toList());
+      if (isSuccess) {
+        updateDeletedQueueState(dq);
+      }
+    } 
+    
+    if (insertData.isNotEmpty) {
+      final data = insertData.map(compileForm).toList();
+      final res = await admin.upsertData(data);
+      if (res != null) {
+        updateInsertedQueueState(iq, res);
+      }
+    }
+
+    if (updateData.isNotEmpty) {
+      final data = updateData.map((v) => compileForm(v)).toList();
+      final res = await admin.upsertData(data);
+      if (res != null) {
+        updateUpdatedQueueState(uq);
+      }
+    }
+
+    await storage.sync();
+    
+    set.forEach(loadingQueue.remove);
+    qfsp.onChanged();
+  }
+
+  void updateUpdatedQueueState(Iterable<int> ids) {
+    for (final id in ids.toSet()) {
+      updateQueue.remove(id);
+    }
+  }
+
+  void updateInsertedQueueState(Iterable<int> ids, List<ProgramStudiModel> newData) {
+    for (final id in ids.toSet()) {
+      insertQueue.remove(id);
+      final match = sim.firstWhere((v) => v.id == id); 
+      match.id = newData.firstWhere((v) => v.name == match.name).id;
+    }
+  }
+
+  void updateDeletedQueueState(Iterable<int> ids, [bool isUpsert = false]) {
+    for (final id in ids.toSet()) {
+      if (isUpsert) {
+        updateQueue.remove(id);
+        insertQueue.remove(id);
+      }
+      isSelected.remove(id);
+      deleteQueue.remove(id);
+      sim.removeWhere((v) => v.id == id);
+    }
+  }
+
+  void inputDialog([ProgramStudiModel? s]) {
+    final nameC = TextEditingController(text: s?.name);
+    final fakultasC = SingleSelectController<String>(s == null ? fakultas : s.fakultas);
+    
+    var nameE = Rxn<String>(null);
+    var fakultasE = Rxn<String>(null);
+
+    final nameF = FocusNode();
+    
+    final id = s?.id ?? ((insertQueue.lastOrNull ?? 0) - 1);
+    ProgramStudiModel createModel() => ProgramStudiModel(
+      id: id, 
+      name: nameC.text.trim(),
+      fakultas: fakultasC.value ?? fakultas,
+      matprak: s?.mataKuliah ?? [],
+    );
+
+    bool checkEmptyFields() {
+      final model = createModel();
+      final list = config.simulated.formatedProgramStudi();
+      nameE.value = nameC.text.isBlank() ? '*required' : !nameC.text.contains(RegExp(r'\((.*?)\)')) ? '*invalid format' : model.name != s?.name && list.contains(model.name) ? '*already exist' : null;
+      fakultasE.value = !fakultasC.hasValue ? '*required' : null;
+
+      if (nameE.value != null || fakultasE.value != null) return false;
+      
+      nameE.value = fakultasE.value = null;
+      return true;
+    }
+    nameF.addListener(() {
+      if (!nameF.hasFocus) {
+        final temp = nameC.text.trim().capitalize!;
+        final abv = RegExp(r'\((.*?)\)').firstMatch(temp)?.group(1);
+        if (abv != null) nameC.text = temp.replaceAll(RegExp(r'\((.*?)\)'), '(${abv.toUpperCase()})').replaceAll(' Dan ', ' dan ');
+        checkEmptyFields();
+      }
+    });
+    
+    alertDialog(
+      s == null ? 'Add new item' : 'Edit item', 
+      null,
+      width: 420,
+      message: Obx(() => Column(
+        children: [
+          CustomTextField(
+            controller: nameC,
+            focusNode: nameF,
+            labelText: 'Nama',
+            errorText: nameE.value,
+            decoration: InputDecoration(hintText: 'e.g. Matematika (MA)'),
+          ),
+          Column(
+            spacing: 4,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Fakultas', textScaleFactor: 1.02,),
+                  if (fakultasE.value != null) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
+                ],
+              ),
+              DropdownFlutter<String>.search(
+                controller: fakultasC,
+                listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
+                noResultFoundText: "Fakultas tidak ditemukan, silahkan pilih opsi yang ada",
+                decoration: CustomDropdownDecoration(
+                  searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.scaffoldBackgroundColor),
+                  closedFillColor: appTheme.inputDecorationTheme.fillColor,
+                  expandedFillColor: appTheme.inputDecorationTheme.fillColor,
+                ),
+                excludeSelected: false,
+                items: config.simulated.formatedFakultas(),
+                hintText: 'Select faklutas',
+                onChanged: (v) {},
+              ),
+            ]
+          ),
+          SizedBox(height: 16,)
+        ]
+      )),
+      onPopInvokedWithResult: (didPop, result) => 
+        Future.delayed(Duration(milliseconds: 500), () {
+          nameF.dispose();
+        }),
+      confirmText: s == null ? 'add' : 'save',
+      confirmAction: () {
+        if (!checkEmptyFields()) return;
+        closeAllDialog();
+        final model = createModel();
+        if (s != null && s.name == model.name && s.fakultas == model.fakultas) return;
+        final list = config.simulated.getFakultas(model.fakultas).programStudi;
+        if (s == null) {
+          insertQueue.add(id);
+          list.insert(0, model);
+        } else {
+          if (s.name != model.name) {
+            for (final v in s.matprak) {
+              v.programStudi = model.name;
+            }
+          }
+          s.name = model.name;
+          s.fakultas = model.fakultas;
+          if (model.fakultas != fakultas) {
+            sim.removeWhere((v) => v.id == s.id);
+            list.insert(0, model);
+          }
+          if (s.id > 0) { 
+            final isExist = stored.any((v) => v.isEqualTo(s));
+            if (isExist) {
+              updateQueue.remove(s.id);
+            } else {
+              updateQueue.add(s.id);
+            }
+          }
+        }
+        qfsp.onChanged();
+      },
+    );
   }
 }
 
@@ -1468,16 +2154,19 @@ class MatprakController extends GetxController {
   bool get isPagedLoading => pagedIds.isEmpty;
   bool get isPagedAnySelected => pagedSelectedIds.isNotEmpty;
   bool get isAnyQueued => config.isAnyQueued;
-  bool get isSimAnyQueued => config.matprakQueue.set.isNotEmpty;
+  bool get isMatprakAnyQueued => config.matprakQueue.set.difference(loadingQueue).isNotEmpty;
+  bool get isSimAnyQueued => simIds.any(config.matprakQueue.contains);
   bool get isSimEveryLoaing => config.matprakQueue.set.difference(loadingQueue).isNotEmpty;
   bool get isPageAnyQueued => pagedIds.any(inQueue);
   bool get isPageSelectedAnyQueued => pagedSelectedIds.any(inQueue);
   bool get areDeleting => deleteQueue.isEmpty ? false : isPagedAnySelected ? selectedIds.every(inDeleteQ) : pagedIds.every(inDeleteQ);
   bool get areInserting => insertQueue.isEmpty ? false : isPagedAnySelected ? selectedIds.every(inInsertQ) : pagedIds.every(inInsertQ);
   bool get areUpdating => updateQueue.isEmpty ? false : isPagedAnySelected ? selectedIds.every(inUpdateQ) : pagedIds.every(inUpdateQ);
-  // bool get canPagedSelectedDelete => isPagedAnySelected && pagedSelectedIds.intersection(loadingQueue).isEmpty;
   bool get canPagedUndoDelete => !isPagedAnySelected && pagedIds.isNotEmpty && pagedIds.every(inDeleteQ);
   bool get canPagedSelectedUndoDelete => isPagedAnySelected && pagedSelectedIds.every(inDeleteQ);
+  bool get canPagedUndoChange => !isPagedAnySelected && pagedIds.isNotEmpty && pagedIds.any(inUpdateQ);
+  bool get canPagedSelectedUndoChange => isPagedAnySelected && pagedSelectedIds.any(inUpdateQ);
+  bool get canPagedSelectedEdit => isPagedAnySelected && !pagedSelectedIds.every(inDeleteQ);
   bool? get isPageSelected => 
     pagedIds.any(idInSelected)
       ? pagedIds.every(idInSelected)
@@ -1538,14 +2227,6 @@ class MatprakController extends GetxController {
     Future(() => qfsped.refresh());
   }
 
-  // void setData(int id, String status) async {
-  //   loadingQueue.add(id);
-  //   qfsped.refresh();
-  //   final res = await admin.updateData([]);
-  //   loadingQueue.remove(id);
-  //   if (res != null) updateSubmission(res);
-  // }
-
   void delete(int id) {
     if (loadingQueue.contains(id)) return;
     deleteQueue.add(id);
@@ -1583,249 +2264,45 @@ class MatprakController extends GetxController {
     qfsp.onChanged();
   }
 
+  void reset() {
+    sim.clear();
+    sim.addAll(stored.map((v) => v.duplicate()));
+  }
+
   void undoChange(int id) {
-    final source = stored.firstWhereOrNull((v) => v.id == id);
-    final i = sim.indexWhere((v) => v.id == id);
+    final source = stored.firstWhereOrNull((v) => v.id == id)?.duplicate();
     if (source != null) {
       updateQueue.remove(id);
-      sim[i] = source.duplicate();
+      final i = sim.indexWhere((v) => v.id == id);
+      sim[i] = source;
+      qfsp.onChanged();
     }
-    qfsp.onChanged();
   }
 
-  void selectedPageInputDialog() {
-    final data = pagedSelectedData;
-    if (data.isEmpty) return;
-
-    String pd = data.first.programStudi;
-    bool allprogramStudiSame = data.every((v) => v.programStudi == pd);
-    String ip = data.first.type;
-    bool alltypeSame = data.every((v) => v.isPraktikum == data.first.isPraktikum);
-
-    final programStudiC = SingleSelectController<String>(!allprogramStudiSame ? null : pd);
-    final type = SingleSelectController<String>(!alltypeSame ? null : ip);
-
-    alertDialog(
-      'Edit ${data.length} item', 
-      null,
-      width: 420,
-      message: Obx(() => Column(
-        children: [
-          Text('Program Studi', textScaleFactor: 1.02,),
-          DropdownFlutter<String>.search(
-            controller: programStudiC,
-            listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
-            noResultFoundText: "Program Studi tidak ditemukan, silahkan pilih opsi yang ada",
-            decoration: CustomDropdownDecoration(
-              closedFillColor: appTheme.inputDecorationTheme.fillColor,
-              expandedFillColor: appTheme.inputDecorationTheme.fillColor,
-            ),
-            excludeSelected: false,
-            items: storage.cached.formatedProgramStudi(),
-            hintText: 'unchanged',
-            onChanged: (v) {},
-          ),
-          SizedBox(height: 16,),
-          Text('Type', textScaleFactor: 1.02,),
-          DropdownFlutter<String>(
-            controller: type,
-            listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
-            decoration: CustomDropdownDecoration(
-              closedFillColor: appTheme.inputDecorationTheme.fillColor,
-              expandedFillColor: appTheme.inputDecorationTheme.fillColor,
-            ),
-            excludeSelected: false,
-            items: ['mata kuliah', 'praktikum', "keduanya"],
-            hintText: 'unchanged',
-            onChanged: (v) {},
-          ),
-          SizedBox(height: 16,)
-        ]
-      )),
-      confirmText: 'save',
-      confirmAction: () {
-        closeAllDialog();
-        for (final s in data) {
-          if (programStudiC.hasValue && programStudiC.value != pd) {
-            s.programStudi = programStudiC.value!;
-          }
-          if (type.hasValue && type.value != ip) {
-            s.isPraktikum = type.value == 'keduanya' ? null : type.value == 'praktikum';
-          }
-          if ((programStudiC.hasValue && programStudiC.value != pd) || (type.hasValue || type.value != ip)) {
-            final isExist = stored.any(s.isEqualTo);
-            if (isExist) {
-              updateQueue.remove(s.id);
-            } else {
-              updateQueue.add(s.id);
-            }
-            qfsp.onChanged();
-          }
-        }
-      },
-    );
+  void undoChangePageData() {
+    for (final id in pagedIds) {
+    final source = stored.firstWhereOrNull((v) => v.id == id)?.duplicate();
+    if (source != null) {
+      updateQueue.remove(id);
+      final i = sim.indexWhere((v) => v.id == id);
+      sim[i] = source;
+      qfsp.onChanged();
+    }
+    }
   }
 
-  void inputDialog([MatprakModel? s]) {
-    final kode = TextEditingController(text: s?.kode ?? (regexp.firstMatch(programStudi)?.group(1)));
-    final nama = TextEditingController(text: s?.nama);
-    final programStudiC = SingleSelectController<String>(s == null ? programStudi : s.programStudi);
-    final type = SingleSelectController<String>(s?.type);
-    
-    var kodeE = Rxn<String>(null);
-    var namaE = Rxn<String>(null);
-    var programStudiE = Rxn<String>(null);
-    var typeE = Rxn<String>(null);
-
-    final kodeF = FocusNode();
-    kodeF.addListener(() {
-     if (!kodeF.hasFocus) kode.text = kode.text.trim().toUpperCase();
-    });
-    final namaF = FocusNode();
-    namaF.addListener(() {
-      if (!namaF.hasFocus) nama.text = nama.text.trim().capitalize!;
-    });
-    
-    final id = s?.id ?? ((insertQueue.lastOrNull ?? 0) - 1);
-    MatprakModel createModel() => MatprakModel(
-      id: id, 
-      kode: kode.text.trim().toUpperCase(),
-      nama: nama.text.trim().capitalize!,
-      programStudi: programStudiC.value!,
-      isPraktikum: type.value == 'keduanya' ? null : type.value == 'praktikum'
-    );
-
-    bool checkEmptyFields() {
-      final model = createModel();
-      final list = config.simulated.formatedMatprak();
-      kodeE.value = kode.text.isBlank() ? '*required' : s != null && model.kode != s.kode && list.any((v) => v.contains(model.kode.toUpperCase())) ? '*already exist' : null;
-      namaE.value = nama.text.isBlank() ? '*required' : s != null && model.nama != s.nama && list.any((v) => v.toLowerCase().contains(model.nama.toLowerCase())) ? '*already exist' :null;
-      programStudiE.value = !programStudiC.hasValue ? '*required' : null;
-      typeE.value = !type.hasValue ? '*required' : null;
-
-      if (kodeE.value != null || namaE.value != null || programStudiE.value != null || typeE.value != null) return false;
-      
-      kodeE.value = namaE.value = programStudiE.value = typeE.value = null;
-      return true;
-    }
-    
-    alertDialog(
-      s == null ? 'Add new item' : 'Edit item', 
-      null,
-      width: 420,
-      message: Obx(() => Column(
-        children: [
-          CustomTextField(
-            controller: kode,
-            focusNode: kodeF,
-            labelText: 'Kode',
-            errorText: kodeE.value,
-          ),
-          CustomTextField(
-            controller: nama,
-            focusNode: namaF,
-            labelText: 'Nama',
-            errorText: namaE.value,
-          ),
-          Column(
-            spacing: 4,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Program Studi', textScaleFactor: 1.02,),
-                  if (programStudiE.value != null) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
-                ],
-              ),
-              DropdownFlutter<String>.search(
-                controller: programStudiC,
-                listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
-                noResultFoundText: "Program Studi tidak ditemukan, silahkan pilih opsi yang ada",
-                decoration: CustomDropdownDecoration(
-                  searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.scaffoldBackgroundColor),
-                  closedFillColor: appTheme.inputDecorationTheme.fillColor,
-                  expandedFillColor: appTheme.inputDecorationTheme.fillColor,
-                ),
-                excludeSelected: false,
-                items: config.simulated.getFakultas(config.simulated.getProgramStudi(programStudi).fakultas).formatedProgramStudi(),
-                hintText: 'select program studi',
-                onChanged: (v) {},
-              ),
-            ]
-          ),
-          Column(
-            spacing: 4,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Type', textScaleFactor: 1.02,),
-                  if (typeE.value != null) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
-                ],
-              ),
-              DropdownFlutter<String>(
-                controller: type,
-                listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
-                decoration: CustomDropdownDecoration(
-                  closedFillColor: appTheme.inputDecorationTheme.fillColor,
-                  expandedFillColor: appTheme.inputDecorationTheme.fillColor,
-                  closedBorder: typeE.value != null ? Border.all(color: appTheme.colorScheme.error) : null
-                ),
-                excludeSelected: false,
-                items: ['mata kuliah', 'praktikum', "keduanya"],
-                hintText: 'select type',
-                onChanged: (v) {},
-              ),
-            ],
-          ),
-          SizedBox(height: 16,)
-        ]
-      )),
-      onPopInvokedWithResult: (didPop, result) => 
-        Future.delayed(Duration(milliseconds: 500), () {
-          kodeF.dispose();
-          namaF.dispose();
-        }),
-      confirmText: s == null ? 'add' : 'save',
-      confirmAction: () {
-        if (!checkEmptyFields()) return;
-        closeAllDialog();
-        final model = createModel();
-        final list = config.simulated.getProgramStudi(model.programStudi).matprak;
-        if (s == null) {
-          insertQueue.add(id);
-          list.insert(0, model);
-        } else {
-          s.kode = model.kode;
-          s.nama = model.nama;
-          s.programStudi = model.programStudi;
-          s.isPraktikum = type.value == 'keduanya' ? null : type.value == 'praktikum';
-          if (model.programStudi != programStudi) {
-            sim.removeWhere((v) => v.id == s.id);
-            list.insert(0, model);
-          }
-          if (s.id > 0) { 
-            final isExist = stored.any((v) => v.isEqualTo(s));
-            if (isExist) {
-              updateQueue.remove(s.id);
-            } else {
-              updateQueue.add(s.id);
-            }
-          }
-        }
+  void undoChangePageSelectedData() {
+    for (final id in pagedSelectedIds) {
+      final source = stored.firstWhereOrNull((v) => v.id == id)?.duplicate();
+      if (source != null) {
+        updateQueue.remove(id);
+        sim.where((v) => v.id == id).toList().first = source;
         qfsp.onChanged();
-      },
-    );
+      }
+    }
   }
 
-  void setType(int id, String type) {
-    
-  }
-
-  void setSelectedType(String type) {
-    for (final s in pagedSelectedData) {
+  void setType(MatprakModel s, String type) {
       s.isPraktikum = type == 'keduanya' ? null : type == 'praktikum';
       final isExist = stored.any(s.isEqualTo);
       if (isExist) {
@@ -1834,47 +2311,21 @@ class MatprakController extends GetxController {
         updateQueue.add(s.id);
       }
       qfsp.onChanged();
-    }
   }
 
-  // void setSelectedData() {
-  //   alertDialog(
-  //     'Confirmation', 
-  //     'You are going to update ${isSelected.length} row of data. This action cannot be undone.\n'
-  //     'Are you completely sure?',
-  //     confirmAction: () async {
-  //       closeAllDialog();
-  //       isSelected.forEach(loadingQueue.add);
-  //       qfsped.refresh();
-  //       await Future.delayed(Duration(seconds: 2));
-  //       final res = await admin.upsertData([]);
-  //       isSelected.forEach(loadingQueue.remove);
-  //       if (res != null) {
-  //         isSelected.clear();
-  //         updateSubmission(res);
-  //       }
-  //     },
-  //   );
-  // }
-
-  // void deleteData(int id) async {
-  //   alertDialog(
-  //     'Confirmation', 
-  //     'You are going to delete "${sim.firstWhere((v) => v.id == id).nama}" row. This action cannot be undone.\n'
-  //     'Are you completely sure?',
-  //     confirmAction: () async {
-  //       closeAllDialog();
-  //       loadingQueue.add(id);
-  //       final isSuccess = await admin.deleteData([id]);
-  //       if (isSuccess) {
-  //         storage.cached.fakultas.removeWhere((v) => v.id == id);
-  //         storage.save();
-  //         initialize();
-  //       }
-  //       loadingQueue.remove(id);
-  //     },
-  //   );
-  // }
+  void setSelectedType(String type) {
+    for (final s in pagedSelectedData) {
+      if (deleteQueue.contains(s.id)) continue;
+      s.isPraktikum = type == 'keduanya' ? null : type == 'praktikum';
+      final isExist = stored.any(s.isEqualTo);
+      if (isExist) {
+        updateQueue.remove(s.id);
+      } else {
+        updateQueue.add(s.id);
+      }
+    }
+    qfsp.onChanged();
+  }
   
   Map<String, dynamic> compileForm(MatprakModel model) => {
     if (model.id > 0) 'id': model.id,
@@ -2001,5 +2452,205 @@ class MatprakController extends GetxController {
       deleteQueue.remove(id);
       sim.removeWhere((v) => v.id == id);
     }
+  }
+
+  void inputDialog([MatprakModel? s, bool multi = false]) {
+    final data = multi ? pagedSelectedData : null;
+    if (multi && data!.isEmpty) return;
+
+    String? pd = data?.first.programStudi;
+    bool? allprogramStudiSame = data?.every((v) => v.programStudi == pd);
+    String? ip = data?.first.type;
+    bool? alltypeSame = data?.every((v) => v.isPraktikum == data.first.isPraktikum);
+
+    final type = SingleSelectController<String>(multi ? !alltypeSame! ? null : ip : s?.type);
+    final programStudiC = SingleSelectController<String>(multi ? !allprogramStudiSame! ? null : pd : s == null ? programStudi : s.programStudi);
+
+    var kodeE = multi ? null : Rxn<String>(null);
+    var namaE = multi ? null : Rxn<String>(null);
+    var programStudiE = Rxn<String>(null);
+    var typeE = Rxn<String>(null);
+
+    final kode = multi ? null : TextEditingController(text: s?.kode ?? (regexp.firstMatch(programStudi)?.group(1)));
+    final nama = multi ? null : TextEditingController(text: s?.nama);
+    
+    final kodeF = multi ? null : FocusNode();
+  
+    final id = s?.id ?? ((insertQueue.lastOrNull ?? 0) - 1);
+    MatprakModel createModel() => MatprakModel(
+      id: id, 
+      kode: kode!.text.trim().toUpperCase(),
+      nama: nama!.text.trim().capitalize!,
+      programStudi: programStudiC.value!,
+      isPraktikum: type.value == 'keduanya' ? null : type.value == 'praktikum'
+    );
+
+    bool checkEmptyFields() {
+      final model = createModel();
+      final kodes = config.simulated.matprak.map((v) => v.kode);
+      final namas = config.simulated.matprak.map((v) => v.nama);
+      kodeE!.value = kode!.text.isBlank() ? '*required' : model.kode != s?.kode && kodes.contains(model.kode) ? '*already exist' : null;
+      namaE!.value = nama!.text.isBlank() ? '*required' : model.nama != s?.nama && namas.contains(model.nama) ? '*already exist' :null;
+      programStudiE.value = !programStudiC.hasValue ? '*required' : null;
+      typeE.value = !type.hasValue ? '*required' : null;
+
+      if (kodeE.value != null || namaE.value != null || programStudiE.value != null || typeE.value != null) return false;
+      
+      kodeE.value = namaE.value = programStudiE.value = typeE.value = null;
+      return true;
+    }
+    
+    kodeF?.addListener(() {
+      if (!kodeF.hasFocus) {
+        kode?.text = kode.text.trim().toUpperCase();
+        checkEmptyFields();
+      }
+    });
+    final namaF = multi ? null : FocusNode();
+    namaF?.addListener(() {
+      if (!namaF.hasFocus) {
+        nama?.text = nama.text.trim().capitalize!.replaceAll(' Dan ', ' dan ');
+        checkEmptyFields();
+      }
+    });
+    
+    alertDialog(
+      multi ? 'Edit ${data!.length} items' : s == null ? 'Add new item' : 'Edit item', 
+      null,
+      width: 420,
+      message: Obx(() => Column(
+        children: [
+          if (!multi) CustomTextField(
+            controller: kode,
+            focusNode: kodeF,
+            labelText: 'Kode',
+            errorText: kodeE!.value,
+          ),
+          if (!multi) CustomTextField(
+            controller: nama,
+            focusNode: namaF,
+            labelText: 'Nama',
+            errorText: namaE!.value,
+          ),
+          Column(
+            spacing: 4,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Program Studi', textScaleFactor: 1.02,),
+                  if (programStudiE.value != null) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
+                ],
+              ),
+              DropdownFlutter<String>.search(
+                controller: programStudiC,
+                listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
+                noResultFoundText: "Program Studi tidak ditemukan, silahkan pilih opsi yang ada",
+                decoration: CustomDropdownDecoration(
+                  searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.scaffoldBackgroundColor),
+                  closedFillColor: appTheme.inputDecorationTheme.fillColor,
+                  expandedFillColor: appTheme.inputDecorationTheme.fillColor,
+                ),
+                excludeSelected: false,
+                items: config.simulated.getFakultas(config.simulated.getProgramStudi(programStudi).fakultas).formatedProgramStudi(),
+                hintText: multi ? 'unchanged' : 'select program studi',
+                onChanged: (v) {},
+              ),
+            ]
+          ),
+          Column(
+            spacing: 4,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Type', textScaleFactor: 1.02,),
+                  if (typeE.value != null) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
+                ],
+              ),
+              DropdownFlutter<String>(
+                controller: type,
+                listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
+                decoration: CustomDropdownDecoration(
+                  closedFillColor: appTheme.inputDecorationTheme.fillColor,
+                  expandedFillColor: appTheme.inputDecorationTheme.fillColor,
+                  closedBorder: typeE.value != null ? Border.all(color: appTheme.colorScheme.error) : null
+                ),
+                excludeSelected: false,
+                items: ['mata kuliah', 'praktikum', "keduanya"],
+                hintText: multi ? 'unchanged' : 'select type',
+                onChanged: (v) {},
+              ),
+            ],
+          ),
+          SizedBox(height: 16,)
+        ]
+      )),
+      onPopInvokedWithResult: (didPop, result) => 
+        Future.delayed(Duration(milliseconds: 500), () {
+          kodeF?.dispose();
+          namaF?.dispose();
+        }),
+      confirmText: s == null && !multi ? 'add' : 'save',
+      confirmAction: () {
+        if (multi) {
+          final list = programStudiC.hasValue ? config.simulated.getProgramStudi(programStudiC.value!).matprak : null;
+          for (final s in data!) {
+            if (deleteQueue.contains(s.id)) continue;
+            if (programStudiC.hasValue && programStudiC.value != pd) {
+              s.programStudi = programStudiC.value!;
+            }
+            if (type.hasValue && type.value != ip) {
+              s.isPraktikum = type.value == 'keduanya' ? null : type.value == 'praktikum';
+            }
+            if ((programStudiC.hasValue && programStudiC.value != pd) || (type.hasValue || type.value != ip)) {
+              sim.removeWhere((v) => v.id == s.id);
+              list!.insert(0, s);
+            }
+            if (s.id > 0) { 
+              final isExist = stored.any((v) => v.isEqualTo(s));
+              if (isExist) {
+                updateQueue.remove(s.id);
+              } else {
+                updateQueue.add(s.id);
+              }
+            }
+          }
+        } else {
+          if (!checkEmptyFields()) return;
+          final model = createModel();
+          final list = config.simulated.getProgramStudi(model.programStudi).matprak;
+          if (s == null) {
+            insertQueue.add(id);
+            list.insert(0, model);
+          } else {
+            s.kode = model.kode;
+            s.nama = model.nama;
+            s.programStudi = model.programStudi;
+            s.isPraktikum = type.value == 'keduanya' ? null : type.value == 'praktikum';
+            if (model.programStudi != programStudi) {
+              sim.removeWhere((v) => v.id == s.id);
+              list.insert(0, model);
+            }
+            if (s.id > 0) { 
+              final isExist = stored.any((v) => v.isEqualTo(s));
+              if (isExist) {
+                updateQueue.remove(s.id);
+              } else {
+                updateQueue.add(s.id);
+              }
+            }
+          }
+        }
+        closeAllDialog();
+        qfsp.onChanged();
+      },
+    );
+  }
+
+  void selectedPageInputDialog() {
+    inputDialog(null, true);
   }
 }

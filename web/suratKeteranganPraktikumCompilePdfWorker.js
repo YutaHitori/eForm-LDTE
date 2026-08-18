@@ -2951,20 +2951,20 @@ _.e=0
 _.f=e
 _.r=0
 _.w=!1},
-yx(a3){var s,r,q,p,o=null,n=J.a9(a3),m=n.j(a3,"fontBytes"),l=n.j(a3,"headerBytes"),k=n.j(a3,"footerBytes"),j=n.j(a3,"buktiBytes"),i=n.j(a3,"today"),h=n.j(a3,"timeStart"),g=n.j(a3,"timeEnd"),f=n.j(a3,"matkul"),e=n.j(a3,"praktikum"),d=n.j(a3,"modul"),c=n.j(a3,"date"),b=t.N,a=B.iU(n.j(a3,"nama"),b),a0=B.iU(n.j(a3,"nim"),b),a1=m.BYTES_PER_ELEMENT,a2=B.bM(0,o,A.l.aK(m.byteLength,a1))
-b=J.kQ(A.E.gB(m),m.byteOffset+0*a1,a2*a1)
+yx(a4){var s,r,q,p,o=null,n=J.a9(a4),m=n.j(a4,"fontBytes"),l=n.j(a4,"headerBytes"),k=n.j(a4,"footerBytes"),j=n.j(a4,"buktiBytes"),i=n.j(a4,"nomor_surat"),h=n.j(a4,"today"),g=n.j(a4,"timeStart"),f=n.j(a4,"timeEnd"),e=n.j(a4,"matkul"),d=n.j(a4,"praktikum"),c=n.j(a4,"modul"),b=n.j(a4,"date"),a=t.N,a0=B.iU(n.j(a4,"nama"),a),a1=B.iU(n.j(a4,"nim"),a),a2=m.BYTES_PER_ELEMENT,a3=B.bM(0,o,A.l.aK(m.byteLength,a2))
+a=J.kQ(A.E.gB(m),m.byteOffset+0*a2,a3*a2)
 s=B.mb(l)
 r=B.mb(k)
 q=B.mb(j)
 n=B.e([],t.f6)
 p=new B.la(B.vc(!0,o,A.abV,!1,A.m9),n)
-b=B.uV(new B.oX(i,f,e,d,c,h,g,a,a0,q),new B.oY(r),new B.oZ(s),new B.f0(56.69291338582677,0,56.69291338582677,14.173228346456694),A.eG,B.vz(new B.jY(b,o)))
-b.j7(p,o)
-n.push(b)
+a=B.uV(new B.oX(i,h,e,d,c,b,g,f,a0,a1,q),new B.oY(r),new B.oZ(s),new B.f0(56.69291338582677,0,56.69291338582677,14.173228346456694),A.eG,B.vz(new B.jY(a,o)))
+a.j7(p,o)
+n.push(a)
 return p.d6()},
 oZ:function oZ(a){this.a=a},
 oY:function oY(a){this.a=a},
-oX:function oX(a,b,c,d,e,f,g,h,i,j){var _=this
+oX:function oX(a,b,c,d,e,f,g,h,i,j,k){var _=this
 _.a=a
 _.b=b
 _.c=c
@@ -2974,7 +2974,8 @@ _.f=f
 _.r=g
 _.w=h
 _.x=i
-_.y=j},
+_.y=j
+_.z=k},
 l_:function l_(a,b){this.a=a
 this.b=b},
 a3:function a3(a){this.a=-1
@@ -10300,21 +10301,21 @@ $1(a){return B.pf(this.a,A.eG.gip())},
 $S:12}
 B.oX.prototype={
 $1(a0){var s,r,q,p,o,n,m,l,k,j,i,h=this,g=null,f=B.h9(g,g,g,g,g,g,g,g,g,A.bq,g,g,11,g,A.fg,g,!0,g,1,g,g),e=t.p,d=t.g5,c=B.aj([0,new B.dT(73.70078740157481),1,new B.f9()],e,d),b=t.iG,a=t.cI
-c=B.pJ(g,B.e([new B.c_(B.e([B.a8("Nomor",g,g),new B.jH(A.du,A.a9T,A.ew,A.nw,A.eY,new B.fa(),B.e([B.a8(": 2603/IT1.C12.6.11/DA.10/2026",g,g),B.a8(h.a,g,g)],b))],b)),new B.c_(B.e([B.a8("Lampiran",g,g),B.a8(": -",g,g)],b)),new B.c_(B.e([B.a8("Perihal",g,g),B.a8(": Surat Keterangan Praktikum",g,g)],b))],a),c)
+c=B.pJ(g,B.e([new B.c_(B.e([B.a8("Nomor",g,g),new B.jH(A.du,A.a9T,A.ew,A.nw,A.eY,new B.fa(),B.e([B.a8(": "+h.a,g,g),B.a8(h.b,g,g)],b))],b)),new B.c_(B.e([B.a8("Lampiran",g,g),B.a8(": -",g,g)],b)),new B.c_(B.e([B.a8("Perihal",g,g),B.a8(": Surat Keterangan Praktikum",g,g)],b))],a),c)
 s=B.a8("\n\n\n",g,g)
 r=B.pb(B.a8("SURAT KETERANGAN PRAKTIKUM",B.h9(g,g,g,g,g,g,g,g,g,A.bq,g,g,g,g,A.aB,g,!0,g,g,g,g),g))
 q=B.a8("\n\n",g,g)
-p=B.a8("Melalui surat ini, diberitahukan bahwa mahasiswa dengan nama dan NIM di bawah ini tidak dapat mengikuti mata kuliah "+h.b+" karena mengikuti "+h.c+" modul "+h.d+" yang dilaksanakan secara luring di Laboratorium Dasar Teknik Elektro pada",g,A.acc)
+p=B.a8("Melalui surat ini, diberitahukan bahwa mahasiswa dengan nama dan NIM di bawah ini tidak dapat mengikuti mata kuliah "+h.c+" karena mengikuti "+h.d+" modul "+h.e+" yang dilaksanakan secara luring di Laboratorium Dasar Teknik Elektro pada",g,A.acc)
 o=B.a8("\n",g,g)
 n=B.aj([0,A.nN,1,A.f5],e,d)
-n=B.pb(new B.bN(250.01574803149606,g,B.pJ(g,B.e([new B.c_(B.e([B.a8("Hari, Tanggal",g,g),B.a8(": "+h.e,g,g)],b)),new B.c_(B.e([B.a8("Pukul",g,g),B.a8(": "+h.f+" \u2013 "+h.r+" WIB",g,g)],b))],a),n)))
+n=B.pb(new B.bN(250.01574803149606,g,B.pJ(g,B.e([new B.c_(B.e([B.a8("Hari, Tanggal",g,g),B.a8(": "+h.f,g,g)],b)),new B.c_(B.e([B.a8("Pukul",g,g),B.a8(": "+h.r+" \u2013 "+h.w+" WIB",g,g)],b))],a),n)))
 m=B.a8("\n",g,g)
 l=new B.hN(A.m6,1,A.n5)
 d=B.aj([0,A.nO,1,A.f5],e,d)
 e=B.e([],a)
-for(k=h.w,j=h.x,i=0;i<k.length;++i)A.G.ar(e,B.e([new B.c_(B.e([B.a8(j[i],g,A.acb),B.a8("  "+k[i],g,g)],b))],a))
+for(k=h.x,j=h.y,i=0;i<k.length;++i)A.G.ar(e,B.e([new B.c_(B.e([B.a8(j[i],g,A.acb),B.a8("  "+k[i],g,g)],b))],a))
 f=B.e([new B.i0(f,B.qv(B.e([c,s,r,q,p,o,n,m,B.pb(new B.bN(250.01574803149606,g,B.pJ(new B.n1(l,l,l,l,l,l),e,d))),B.a8("\n",g,g),B.a8("Demikian surat keterangan ini dibuat agar dapat dipergunakan sebagaimana mestinya.",g,g),B.a8("\n\n",g,g),B.qw(A.mT,B.qv(B.e([B.a8("Kepala Lab. Dasar Teknik Elektro,",g,g),B.a8("\n\n\n\n\n\n",g,g),B.a8("Dr. Waskita Adijarto, ST., MT.",B.h9(g,g,g,g,g,g,g,g,g,A.bq,g,g,g,g,A.aB,g,!0,g,g,g,g),g),B.a8("NIP.: 19720403 199803 1 003",g,g)],b),A.dA),g,new B.f0(0,0,56.69291338582677,0))],b),A.dA)),new B.fG(),B.a8("Bukti Screenshot Jadwal Praktikum :",B.h9(g,g,g,g,g,g,g,g,g,A.bq,g,g,11,g,g,g,!0,g,g,g,g),g),B.a8("\n",g,g)],b)
-f.push(B.qw(g,B.pf(h.y,g),new B.az(0,425.1968503937008,0,425.1968503937008),g))
+f.push(B.qw(g,B.pf(h.z,g),new B.az(0,425.1968503937008,0,425.1968503937008),g))
 return f},
 $S:29}
 B.l_.prototype={

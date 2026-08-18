@@ -61,18 +61,23 @@ class LastUpdatedModel {
 }
 
 class GlobalConfigModel {
-  String? nomorSurat;
-  String? lineOALDTE;
+  String? nomorSurat, lineOALDTE, caraPinjam, caraKeterangan, caraPertukaran;
   late DateTime fakultas;
 
   GlobalConfigModel({
     this.nomorSurat,
     this.lineOALDTE,
+    this.caraPinjam,
+    this.caraKeterangan,
+    this.caraPertukaran,
   });
 
   GlobalConfigModel.fromJson(Map<String, dynamic> json) {
     nomorSurat = json['nomor_surat'];
-    lineOALDTE = (json['lineoa_ldte'] as String).trim().toLowerCase();
+    lineOALDTE = (json['lineoa_ldte'] as String).trim();
+    caraPinjam = (json['cara_pinjam'] as String).trim();
+    caraKeterangan = (json['cara_keterangan'] as String).trim();
+    caraPertukaran = (json['cara_pertukaran'] as String).trim();
     fakultas = DateTime.tryParse(json['fakultas']) ?? DateTime(2000);
   }
 
@@ -95,8 +100,8 @@ class FakultasModel {
 
   FakultasModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
-    name = (json['name'] as String).trim().capitalize!;
-    List.of(json['program_studi']).forEach((v) => programStudi.add(ProgramStudiModel.fromJson(v, name)));
+    name = json['name'];
+    if (json['program_studi'] != null) List.of(json['program_studi']).forEach((v) => programStudi.add(ProgramStudiModel.fromJson(v, name)));
   }
 
   FakultasModel duplicate() => FakultasModel(
@@ -106,12 +111,13 @@ class FakultasModel {
   );
 
   List<String> formatedProgramStudi() => programStudi.map((v) => v.name).toList();
+  bool isEqualTo(FakultasModel ref) => id == ref.id && name == ref.name;
 }
 
 class ProgramStudiModel {
   late int id;
   late String name, fakultas;
-  List<MatprakModel> matprak = [];
+  late List<MatprakModel> matprak = [];
 
   List<MatprakModel> get mataKuliah => matprak.where((v) => v.isPraktikum != true).toList();
   List<MatprakModel> get praktikum => matprak.where((v) => v.isPraktikum != false).toList();
@@ -125,9 +131,9 @@ class ProgramStudiModel {
 
   ProgramStudiModel.fromJson(Map<String, dynamic> json, [String? fakultasName]) {
     id = json['id'];
-    name = (json['name'] as String).trim().capitalize!;
+    name = json['name'];
     fakultas = fakultasName ?? json['fakultas'];
-    List.of(json['mata_kuliah']).forEach((v) => matprak.add(MatprakModel.fromJson(v, name)));
+    if (json['mata_kuliah'] != null) List.of(json['mata_kuliah']).forEach((v) => matprak.add(MatprakModel.fromJson(v, name)));
   }
 
   List<String> formatedMataKuliah() => mataKuliah.map((v) => '${v.kode} ${v.nama}').toList();
@@ -139,6 +145,8 @@ class ProgramStudiModel {
     fakultas: fakultas,
     matprak: matprak.map((v) => v.duplicate()).toList(),
   );
+
+  bool isEqualTo(ProgramStudiModel ref) => id == ref.id && name == ref.name && fakultas == ref.fakultas;
 }
 
 class MatprakModel {

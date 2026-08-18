@@ -47,14 +47,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                     tilePadding: EdgeInsets.zero,
                     childrenPadding: EdgeInsets.only(bottom: 8),
                     children: [
-                      Text(
-'''- Isi semua kolom yang ada secara online.
-- 1 formulir dapat digunakan untuk beberapa orang sekaligus (hingga 4 orang).
-- Jika semua kolom telah terisi, klik tombol "Submit".
-- Setelah formulir terkirim, silahkan melapor kepada admin melalui link yang diberikan.
-- Tunggu konfirmasi dan arahan selanjutnya (jika ada) dari admin.''',
-                        style: TextStyle(fontSize: 12.4),
-                      ),
+                      Text(c.cara, style: TextStyle(fontSize: 12.4)),
                     ],
                   ),
                   for (var i = 0; i < c.namaC.value.length; i++) ...[

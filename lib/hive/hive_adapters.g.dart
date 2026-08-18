@@ -6,8 +6,7 @@ part of 'hive_adapters.dart';
 // AdaptersGenerator
 // **************************************************************************
 
-class MatprakModelAdapter
-    extends TypeAdapter<MatprakModel> {
+class MatprakModelAdapter extends TypeAdapter<MatprakModel> {
   @override
   final typeId = 0;
 
@@ -109,19 +108,28 @@ class GlobalConfigModelAdapter extends TypeAdapter<GlobalConfigModel> {
     return GlobalConfigModel(
       nomorSurat: fields[0] as String?,
       lineOALDTE: fields[1] as String?,
+      caraPinjam: fields[3] as String?,
+      caraKeterangan: fields[4] as String?,
+      caraPertukaran: fields[5] as String?,
     )..fakultas = fields[2] as DateTime;
   }
 
   @override
   void write(BinaryWriter writer, GlobalConfigModel obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.nomorSurat)
       ..writeByte(1)
       ..write(obj.lineOALDTE)
       ..writeByte(2)
-      ..write(obj.fakultas);
+      ..write(obj.fakultas)
+      ..writeByte(3)
+      ..write(obj.caraPinjam)
+      ..writeByte(4)
+      ..write(obj.caraKeterangan)
+      ..writeByte(5)
+      ..write(obj.caraPertukaran);
   }
 
   @override

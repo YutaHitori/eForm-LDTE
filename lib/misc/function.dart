@@ -99,7 +99,7 @@ void snackbar(String title, String message, [IconData ? icon]) {
 Color? getColorFromSubmissionStatus(String? status) =>
   status == 'exported' || status == 'returned' || status == 'insert'
   ? Colors.green
-  : status == 'borrowed'
+  : status == 'borrowed' || status == 'modified'
     ? Colors.blue
     : status == 'update'
       ? Colors.amber

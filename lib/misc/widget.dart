@@ -74,6 +74,7 @@ ThemeData appTheme = ThemeData(
   // Buttons
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       backgroundColor: const Color(0xFF0D6EFD),
       foregroundColor: Colors.white,
       shape: RoundedRectangleBorder(
@@ -84,6 +85,7 @@ ThemeData appTheme = ThemeData(
 
   filledButtonTheme: FilledButtonThemeData(
     style: FilledButton.styleFrom(
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       backgroundColor: const Color(0xFFFFA94D),
       foregroundColor: Colors.black,
       shape: RoundedRectangleBorder(
@@ -198,6 +200,7 @@ class CustomTextField extends StatelessWidget {
           autofillHints: autofillHints,
           enabled: enabled,
           readOnly: readOnly,
+          scrollPhysics: readOnly ? NeverScrollableScrollPhysics() : null,
         ),
       ],
     );
