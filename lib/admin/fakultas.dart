@@ -20,7 +20,7 @@ class Fakultas extends StatelessWidget {
         appBar: AppBar(
           title: Text('Admin - Daftar Fakultas'),
           actions: [
-            if (c.isSimAnyQueued) IconButton(onPressed: !c.isSimEveryLoaing ? null : c.pushSimAction, icon: Icon(Icons.save_rounded), tooltip: 'Save All'),
+            if (c.isSimAnyQueued) IconButton(onPressed: !c.isSimLoading ? null : c.pushSimAction, icon: Icon(Icons.save_rounded), tooltip: 'Save All'),
           ],
         ),
         floatingActionButton: Padding(
@@ -246,7 +246,7 @@ class Fakultas extends StatelessWidget {
                                                     //   ), tooltip: isLoading ? 'Testing...' : 'Test'
                                                     // ),
                                                     if (isAdding || isUpdating || isDeleting) IconButton(
-                                                      onPressed: isLoading ? null : () => c.pushAction(entry.id),
+                                                      onPressed: isLoading ? null : () => c.pushAction(entry),
                                                       icon: Icon(
                                                         Icons.save_rounded,
                                                       ), tooltip: isLoading ? 'Saving...' : 'Save'

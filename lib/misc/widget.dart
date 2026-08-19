@@ -182,25 +182,28 @@ class CustomTextField extends StatelessWidget {
             ),
           ]
         ),
-        TextField(
-          onTapOutside: (_) => FocusScope.of(context).unfocus(),
-          inputFormatters: inputFormatters,
-          controller: controller,
-          focusNode: focusNode,
-          maxLines: maxLines,
-          decoration: (decoration ?? InputDecoration()).copyWith(
-            filled: true,
-            helperText: canError ? '' : null,
-            errorText: errorText == null ? null : ''
+        ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+          child: TextField(
+            onTapOutside: (_) => FocusScope.of(context).unfocus(),
+            inputFormatters: inputFormatters,
+            controller: controller,
+            focusNode: focusNode,
+            maxLines: maxLines,
+            decoration: (decoration ?? InputDecoration()).copyWith(
+              filled: true,
+              helperText: canError ? '' : null,
+              errorText: errorText == null ? null : ''
+            ),
+            keyboardType: keyboardType,
+            onChanged: onChanged,
+            obscureText: obscureText ?? false,
+            onSubmitted: onSubmitted,
+            autofillHints: autofillHints,
+            enabled: enabled,
+            readOnly: readOnly,
+            scrollPhysics: readOnly ? NeverScrollableScrollPhysics() : null,
           ),
-          keyboardType: keyboardType,
-          onChanged: onChanged,
-          obscureText: obscureText ?? false,
-          onSubmitted: onSubmitted,
-          autofillHints: autofillHints,
-          enabled: enabled,
-          readOnly: readOnly,
-          scrollPhysics: readOnly ? NeverScrollableScrollPhysics() : null,
         ),
       ],
     );
@@ -352,3 +355,34 @@ class SortRow extends StatelessWidget {
       ),
     );
   }
+
+class GetXRouteBinding<T extends GetxController> extends StatefulWidget {
+  final T Function() controllerBuilder;
+  final Widget child;
+
+  const GetXRouteBinding({
+    super.key, 
+    required this.controllerBuilder, 
+    required this.child,
+  });
+
+  @override
+  State<GetXRouteBinding<T>> createState() => _GetXRouteBindingState<T>();
+}
+
+class _GetXRouteBindingState<T extends GetxController> extends State<GetXRouteBinding<T>> {
+  @override
+  void initState() {
+    super.initState();
+    widget.controllerBuilder();
+  }
+
+  @override
+  void dispose() {
+    Get.delete<T>();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}

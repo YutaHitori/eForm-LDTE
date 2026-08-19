@@ -213,6 +213,18 @@ class StorageCacheModel {
     required this.lastSync,
     required this.userPreference
   });
+  
+  // List<({FakultasModel fakultas, MatprakModel matprak, ProgramStudiModel programStudi})> get _flattened => 
+  // fakultas.expand((a) {
+  //   return a.programStudi.expand((b) {
+  //     return b.matprak.map((c) => (matprak: c, programStudi: b, fakultas: a));
+  //   });
+  // }).toList();
+
+  // List<ProgramStudiModel> get programStudi => _flattened.map((v) => v.programStudi).toSet().toList();
+  // List<MatprakModel> get matprak => _flattened.map((p) => p.matprak).toSet().toList();
+  // List<MatprakModel> get mataKuliah => matprak.where((v) => v.isPraktikum != true).toList();
+  // List<MatprakModel> get praktikum => matprak.where((v) => v.isPraktikum != false).toList();
 
   List<ProgramStudiModel> get programStudi => fakultas.expand((f) => f.programStudi).toList();
   List<MatprakModel> get matprak => programStudi.expand((p) => p.matprak).toList();
@@ -229,6 +241,22 @@ class StorageCacheModel {
   ProgramStudiModel getProgramStudi(String name) => programStudi.where((v) => v.name == name).first;
   ProgramStudiModel? getProgramStudiFromMatprak(MatprakModel model) => programStudi.where((v) => v.matprak.any((v) => v.id == model.id)).firstOrNull;
 
+  void removeWhere<T>(bool Function(dynamic) test) {
+    if (T == FakultasModel) {
+      fakultas.removeWhere(test as bool Function(FakultasModel element));
+    } else {
+      for (var f in fakultas) {
+        if (T == ProgramStudiModel) {
+          f.programStudi.removeWhere(test as bool Function(ProgramStudiModel element));
+        } else {
+          for (var p in f.programStudi) {
+            p.matprak.removeWhere(test as bool Function(MatprakModel element));
+          }
+        }
+      }
+    }
+  }
+
   StorageCacheModel duplicate() => StorageCacheModel(
     globalConfig: globalConfig.duplicate(),
     fakultas: fakultas.map((v) => v.duplicate()).toList(),
@@ -242,6 +270,7 @@ class QueueActionModel {
   Set<int> update = <int>{};
   Set<int> delete = <int>{};
   Set<int> loading = <int>{};
+  Set<int> select = <int>{};
 
   QueueActionModel({
     required this.insert,

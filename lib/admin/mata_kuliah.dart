@@ -19,7 +19,7 @@ class Matprak extends StatelessWidget {
           actions: [
             // if (c.isAnyQueued) IconButton(onPressed: c.pushQueuedAction, icon: Icon(Icons.save_rounded), tooltip: 'Save All'),
             // if (isAnyMatprakQueued) IconButton(onPressed: !canPushQueue ? null : c.pushQueuedAction, icon: Icon(Icons.save_rounded), tooltip: 'Save All',),
-            if (c.isSimAnyQueued) IconButton(onPressed: !c.isSimEveryLoaing ? null : c.pushSimAction, icon: Icon(Icons.save_rounded), tooltip: 'Save Current Matkul'),
+            if (c.isSimAnyQueued) IconButton(onPressed: !c.isSimLoading ? null : c.pushSimAction, icon: Icon(Icons.save_rounded), tooltip: 'Save Current Matkul'),
           ],
         ),
         floatingActionButton: Padding(
@@ -277,7 +277,7 @@ class Matprak extends StatelessWidget {
                                                     //   ), tooltip: isLoading ? 'Testing...' : 'Test'
                                                     // ),
                                                     if (isAdding || isUpdating || isDeleting) IconButton(
-                                                      onPressed: isLoading ? null : () => c.pushAction(entry.id),
+                                                      onPressed: isLoading ? null : () => c.pushAction(entry),
                                                       icon: Icon(
                                                         Icons.save_rounded,
                                                       ), tooltip: isLoading ? 'Saving...' : 'Save'

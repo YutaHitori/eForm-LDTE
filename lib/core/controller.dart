@@ -1,3 +1,4 @@
+import 'package:eform_ldte/misc/router.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -167,7 +168,7 @@ class PeminjamanPeralatanController extends GetxController {
   var prodiList = <String>[].obs;
 
   Map<String, dynamic> get dbform => {
-    if (!namaC.text.isBlank()) 'nama' : namaC.text.trim(),
+    if (!namaC.text.isBlank()) 'nama' : namaC.text.trim().capitalize!,
     if (!nimC.text.isBlank()) 'nim' : nimC.text.trim(),
     if (mulaiC.text.toDateTime() != null) 'mulai' : mulaiC.text.trim(),
     if (akhirC.text.toDateTime() != null) 'akhir' : akhirC.text.trim(),
@@ -179,9 +180,9 @@ class PeminjamanPeralatanController extends GetxController {
     ...dbform,
     if (fakultasC.hasValue) 'fakultas' : regexp.firstMatch(fakultasC.value ?? '')?.group(1),
     if (prodiC.hasValue) 'prodi' : prodiC.value?.replaceAll(RegExp(r'\((.*?)\)'), '').trim(),
-    if (!dosenC.text.isBlank()) 'dosen' : dosenC.text.trim(),
+    if (!dosenC.text.isBlank()) 'dosen' : dosenC.text.trim().capitalize!,
     if (!nipDosenC.text.isBlank()) 'nipDosen' : nipDosenC.text.trim(),
-    if (!ketuaC.text.isBlank()) 'ketua' : ketuaC.text.trim(),
+    if (!ketuaC.text.isBlank()) 'ketua' : ketuaC.text.trim().capitalize!,
     if (!nipKetuaC.text.isBlank()) 'nipKetua' : nipKetuaC.text.trim(),
   };
 
@@ -229,8 +230,8 @@ class PeminjamanPeralatanController extends GetxController {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Remind me again'),
-                Checkbox(value: remindMe.value, onChanged: (v) {
-                  remindMe.value = v!;
+                Switch(value: remindMe.value, onChanged: (v) {
+                  remindMe.value = v;
                   storage.cached.userPreference.remindPeminjamanPeralatan = v;
                   storage.save();
                 })
@@ -358,8 +359,8 @@ class SuratKeteranganPraktikumController extends GetxController {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Remind me again'),
-                Checkbox(value: remindMe.value, onChanged: (v) {
-                  remindMe.value = v!;
+                Switch(value: remindMe.value, onChanged: (v) {
+                  remindMe.value = v;
                   storage.cached.userPreference.remindSuratKeteranganPraktikum = v;
                   storage.save();
                 })
@@ -438,10 +439,10 @@ class SuratKeteranganPraktikumController extends GetxController {
   Rxn<XFile> bukti = Rxn<XFile>(ImagePickerService.lastImages['default']); 
 
   Map<String, dynamic> get form => {
-    'nama' : namaC.value.map((e) => e.text.trim()).toList(),
+    'nama' : namaC.value.map((e) => e.text.trim().capitalize!).toList(),
     'nim' : nimC.value.map((e) => e.text.trim()).toList(),
-    'matkul' : matkul.value == 'Lainnya...' ? '${kodeMatkul.text.trim()} ${namaMatkul.text.trim()}' : matkul.value,
-    'praktikum' : praktikum.value == 'Lainnya...' ? '${kodePraktikum.text.trim()} ${namaPraktikum.text.trim()}' : praktikum.value,
+    'matkul' : matkul.value == 'Lainnya...' ? '${kodeMatkul.text.trim().toUpperCase()} ${namaMatkul.text.trim().capitalize!.replaceAll(' Dan ', ' dan ')}' : matkul.value,
+    'praktikum' : praktikum.value == 'Lainnya...' ? '${kodePraktikum.text.trim().toUpperCase()} ${namaPraktikum.text.trim().capitalize!.replaceAll(' Dan ', ' dan ')}' : praktikum.value,
     'modul' : modul.value!,
     'date' : dateC.text,
     'timeStart' : timeStartC.value!.toFormatedString(),
@@ -599,8 +600,8 @@ class PertukaranJadwalPraktikumController extends GetxController {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Remind me again'),
-                Checkbox(value: remindMe.value, onChanged: (v) {
-                  remindMe.value = v!;
+                Switch(value: remindMe.value, onChanged: (v) {
+                  remindMe.value = v;
                   storage.cached.userPreference.remindPertukaranJadwal = v;
                   storage.save();
                 })
@@ -660,11 +661,11 @@ class PertukaranJadwalPraktikumController extends GetxController {
 ----------------------------------------
 Pertukaran Jadwal Praktikum
 PRAKTIKAN
-Nama : ${namaC.text.trim()}
+Nama : ${namaC.text.trim().capitalize!}
 NIM : ${nimC.text.trim()}
 
 JADWAL SEBELUM PERTUKARAN
-Praktikum : ${praktikum.value == 'Lainnya...' ? '${kodePraktikum.text.trim()} ${namaPraktikum.text.trim()}' : praktikum.value}
+Praktikum : ${praktikum.value == 'Lainnya...' ? '${kodePraktikum.text.trim().toUpperCase()} ${namaPraktikum.text.trim().capitalize!.replaceAll(' Dan ', ' dan ')}' : praktikum.value}
 Modul : ${modul.value}
 Hari/Tanggal : ${dateC.text.toDateTime()?.toDateFormatString()}
 
@@ -673,7 +674,7 @@ Nama: ${namaPC.text.trim()}
 NIM : ${nimPC.text.trim()}
 
 MENGIKUTI PRAKTIKUM
-Praktikum : ${praktikum.value == 'Lainnya...' ? '${kodePraktikum.text.trim()} ${namaPraktikum.text.trim()}' : praktikum.value}
+Praktikum : ${praktikum.value == 'Lainnya...' ? '${kodePraktikum.text.trim().toUpperCase()} ${namaPraktikum.text.trim().capitalize!.replaceAll(' Dan ', ' dan ')}' : praktikum.value}
 Modul : ${modul.value}
 Hari/Tanggal : ${datePC.text.toDateTime()?.toDateFormatString()}
 ----------------------------------------
@@ -844,12 +845,10 @@ class AdminPeminjamanPeralatanController extends GetxController {
   Future<void> getAllSubmissions() async {
     isLoading.value = true;
     final res = await admin.getAllSubmissions();
-    print (res);
     if (res != null) {
       submissions = res;
       qfsp.onChanged();
     }
-    getFindCall<DetailPeminjamanPeralatanController>()?.setInitialValue();
     isLoading.value = false;
   }
 
@@ -906,22 +905,14 @@ class AdminPeminjamanPeralatanController extends GetxController {
 }
 
 class DetailPeminjamanPeralatanController extends PeminjamanPeralatanController {
-  final int id;
+  final int id = int.tryParse(router.state.pathParameters['id'] ?? '') ?? -1;
   final ac = Get.find<AdminPeminjamanPeralatanController>();
-  DetailPeminjamanPeralatanController(this.id);
 
   @override 
-  void init() async {
-    if (ac.submissions.isNotEmpty) setInitialValue();
-  }
-
-  @override
-  void onClose() {
-    ac.qfsp.onChanged();
-    super.onClose();
-  }
+  void init() {}
 
   void setInitialValue() {
+    if (namaC.text.isNotEmpty) return; 
     final submission = ac.submissions.firstWhereOrNull((v) => v.id == id);
     if (submission == null) return;
     namaC.text = submission.nama;
@@ -940,13 +931,13 @@ class DetailPeminjamanPeralatanController extends PeminjamanPeralatanController 
     ac.isLoading.value = true;
     final res = await ac.admin.updateFormData(id, dbform);
     if (res != null) {
-      final lId = ac.submissions.indexWhere((v) => v.id == id);
-      if (lId == -1) {
+      final i = ac.submissions.indexWhere((v) => v.id == id);
+      if (i == -1) {
         ac.getAllSubmissions();
         return;
       }
       snackbar('Success!', 'Form data updated Successfuly');
-      ac.submissions[lId] = res;
+      ac.submissions[i] = res;
     }
     ac.isLoading.value = false;
   }
@@ -1093,22 +1084,14 @@ class AdminSuratKeteranganPraktikumController extends GetxController {
 }
 
 class DetailSuratKeteranganPraktikumController extends SuratKeteranganPraktikumController {
-  final int id;
+  final int id = int.tryParse(router.state.pathParameters['id'] ?? '') ?? -1;
   final ac = Get.find<AdminSuratKeteranganPraktikumController>();
-  DetailSuratKeteranganPraktikumController(this.id);
 
   @override 
-  void init() async {
-    if (ac.submissions.isNotEmpty) setInitialValue();
-  }
-
-  @override
-  void onClose() {
-    ac.qfsp.onChanged();
-    super.onClose();
-  }
+  void init() {}
 
   void setInitialValue() {
+    if (namaC[0].text.isNotEmpty) return;
     final submission = ac.submissions.firstWhereOrNull((v) => v.id == id);
     if (submission == null) return;
 
@@ -1177,12 +1160,13 @@ class GlobalConfigController extends GetxController {
   @override
   void onClose() {
     super.onClose();
-    Future.delayed(Duration(milliseconds: 500), () {
       lineOAFocus.dispose();
       nomorSuratFocus.dispose();
-    });
+      caraPinjamFocus.dispose();
+      caraKeteranganFocus.dispose();
+      caraPertukaranFocus.dispose();
   }
-  
+
   final service = GlobalConfigService();
 
   var isSaved = true.obs;
@@ -1358,10 +1342,158 @@ class GlobalConfigController extends GetxController {
   final matprakQueue = QueueActionModel.d();
   final simulated = storage.cached.duplicate();
   bool get isAnyQueued => fakultasQueue.isAnyQueued || prodiQueue.isAnyQueued || matprakQueue.isAnyQueued;
+
+  List simFrom<T>() => T == FakultasModel ? simulated.fakultas : T == ProgramStudiModel ? simulated.programStudi : simulated.matprak;
+  Set<int> insertQueueFrom<T>() => T == FakultasModel ? fakultasQueue.insert : T == ProgramStudiModel ? prodiQueue.insert : matprakQueue.insert;
+  Set<int> updateQueueFrom<T>() => T == FakultasModel ? fakultasQueue.update : T == ProgramStudiModel ? prodiQueue.update : matprakQueue.update;
+  Set<int> deleteQueueFrom<T>() => T == FakultasModel ? fakultasQueue.delete : T == ProgramStudiModel ? prodiQueue.delete : matprakQueue.delete;
+  Set<int> loadingQueueFrom<T>() => T == FakultasModel ? fakultasQueue.loading : T == ProgramStudiModel ? prodiQueue.loading : matprakQueue.loading;
+  Set<int> isSelectedFrom<T>() => T == FakultasModel ? fakultasQueue.select : T == ProgramStudiModel ? prodiQueue.select : matprakQueue.select;
+
+  bool inDeleteQ<T>(int id) => deleteQueueFrom<T>().contains(id);  
+  bool inInsertQ<T>(int id) => insertQueueFrom<T>().contains(id);  
+  bool inUpdateQ<T>(int id) => updateQueueFrom<T>().contains(id);
+  
+  Map<String, dynamic> compileForm<T>(T model) => 
+    model is FakultasModel ? {
+      if (model.id > 0) 'id': model.id,
+      'name': model.name,
+    } : model is ProgramStudiModel ? {
+      if (model.id > 0) 'id': model.id,
+      'name': model.name,
+      'fakultas': model.fakultas,
+    } : model is MatprakModel ? {
+      if (model.id > 0) 'id': model.id,
+      'kode': model.kode,
+      'nama': model.nama,
+      'is_praktikum': model.isPraktikum,
+      'program_studi' : model.programStudi
+    } : {};
+
+  Future<void> pushAction<T>(dynamic data, [QFSPController<T>? qfsp, RxList<T>? qfsped]) async {
+    final insertQueue = insertQueueFrom<T>();
+    final updateQueue = updateQueueFrom<T>();
+    final deleteQueue = deleteQueueFrom<T>();
+    final loadingQueue = loadingQueueFrom<T>();
+    
+    if (loadingQueue.contains(data.id)) return;
+
+    final isAdding = insertQueue.contains(data.id);
+    final isUpdating = updateQueue.contains(data.id);
+    final isDeleting = deleteQueue.contains(data.id);
+
+    if (isDeleting && isAdding) {
+      updateDeletedQueueState<T>([data.id], true);
+      qfsp?.onChanged();
+      return;
+    }
+
+    loadingQueue.add(data.id);
+    qfsped?.refresh();
+
+    if (isDeleting) {
+      final isSuccess = await service.deleteData<T>([data.id]);
+      if (isSuccess) updateDeletedQueueState<T>([data.id]);
+    } else if (isUpdating) {
+      final res = await service.upsertData<T>([compileForm<T>(data)]);
+      if (res != null) updateUpdatedQueueState<T>([data.id]);
+    } else if (isAdding) {
+      final res = await service.upsertData<T>([compileForm<T>(data)]);
+      if (res != null) updateInsertedQueueState<T>([data.id], res);
+    }
+
+    await storage.sync();
+    
+    loadingQueue.remove(data.id);
+    qfsp?.onChanged();
+  }
+
+  Future<void> pushQueuedAction<T>(Set<dynamic> dataSet, [QFSPController<T>? qfsp, RxList<T>? qfsped]) async {
+    final ids = dataSet.map((v) => v.id as int).toSet();
+    
+    final queue = QueueActionModel(
+      insert: ids.where(inInsertQ<T>).toSet(),
+      update: ids.where(inUpdateQ<T>).toSet(),
+      delete: ids.where(inDeleteQ<T>).toSet(),
+    );
+
+    final loadingQueue = loadingQueueFrom<T>();
+    
+    final dq = queue.delete;
+    final iq = queue.insert;
+    final uq = queue.update;
+    final insertData = dataSet.where((v) => iq.contains(v.id));
+    final updateData = dataSet.where((v) => uq.contains(v.id));
+
+    updateDeletedQueueState(iq.intersection(dq), true);
+
+    final set = {...uq, ...dq, ...iq};
+
+    set.forEach(loadingQueue.add);
+    qfsped?.refresh();
+
+    if (dq.isNotEmpty) {
+      final isSuccess = await service.deleteData(dq.toList());
+      if (isSuccess) {
+        updateDeletedQueueState(dq);
+      }
+    } 
+    
+    if (insertData.isNotEmpty) {
+      final data = insertData.map(compileForm).toList();
+      final res = await service.upsertData<T>(data);
+      if (res != null) {
+        updateInsertedQueueState(iq, res);
+      }
+    }
+
+    if (updateData.isNotEmpty) {
+      final data = updateData.map(compileForm).toList();
+      final res = await service.upsertData<T>(data);
+      if (res != null) {
+        updateUpdatedQueueState(uq);
+      }
+    }
+
+    await storage.sync();
+    
+    set.forEach(loadingQueue.remove);
+    qfsp?.onChanged();
+  }
+
+  void updateDeletedQueueState<T>(Iterable<int> ids, [bool isUpsert = false]) {
+    for (final id in ids.toSet()) {
+      if (isUpsert) {
+        updateQueueFrom<T>().remove(id);
+        insertQueueFrom<T>().remove(id);
+      }
+      isSelectedFrom<T>().remove(id);
+      deleteQueueFrom<T>().remove(id);
+      simulated.removeWhere<T>((v) => v.id == id);
+    }
+  }
+
+  void updateUpdatedQueueState<T>(Iterable<int> ids) {
+    for (final id in ids.toSet()) {
+      updateQueueFrom<T>().remove(id);
+    }
+  }
+
+  void updateInsertedQueueState<T>(Iterable<int> ids, List<T> newData) {
+    for (final id in ids.toSet()) {
+      insertQueueFrom<T>().remove(id);
+      final match = simFrom<T>().firstWhere((v) => v.id == id);
+      match.id = T == FakultasModel 
+      ? (newData as List<FakultasModel>).firstWhere((v) => v.name == match.name).id 
+      : T == ProgramStudiModel 
+        ? (newData as List<ProgramStudiModel>).firstWhere((v) => v.name == match.name).id 
+        : (newData as List<MatprakModel>).firstWhere((v) => v.kode == match.kode).id;
+    }
+  }
 }
 
 class FakultasController extends GetxController {
-  final admin = FakultasService();
+  late final admin = config.service;
   final config = Get.find<GlobalConfigController>();
 
   List<FakultasModel> get stored => storage.cached.fakultas;
@@ -1371,35 +1503,37 @@ class FakultasController extends GetxController {
   late Iterable<FakultasModel> selectedData = sim.where(inSelected);
   late Iterable<FakultasModel> pagedSelectedData = qfsped.value.where(inSelected);
   
-  Set<int> get simIds => sim.map((v) => v.id).toSet().difference(loadingQueue);
-  Set<int> get pagedIds => qfsped.value.map((v) => v.id).toSet().difference(loadingQueue);
-  Set<int> get selectedIds => isSelected.difference(loadingQueue);
-  Set<int> get pagedSelectedIds => pagedIds.intersection(isSelected);
-  
   late Set<int> insertQueue = config.fakultasQueue.insert;
   late Set<int> updateQueue = config.fakultasQueue.update;
   late Set<int> deleteQueue = config.fakultasQueue.delete;
   late Set<int> loadingQueue = config.fakultasQueue.loading;
+  late Set<int> isSelected = config.prodiQueue.select;
+  
+  Set<int> get simIds => sim.map((v) => v.id).toSet().difference(loadingQueue);
+  Set<int> get pagedIds => qfsped.value.map((v) => v.id).toSet().difference(loadingQueue);
+  Set<int> get selectedIds => isSelected.difference(loadingQueue);
+  Set<int> get pagedSelectedIds => pagedIds.intersection(isSelected);
+  Set<int> get simQueued => config.fakultasQueue.set.intersection(simIds);
 
   bool inSelected(FakultasModel v) => selectedIds.contains(v.id);  
   bool idInSelected(int id) => selectedIds.contains(id);  
   bool inQueue(int id) => config.fakultasQueue.set.contains(id);  
-  bool inDeleteQ(int id) => deleteQueue.contains(id);  
-  bool inInsertQ(int id) => insertQueue.contains(id);  
-  bool inUpdateQ(int id) => updateQueue.contains(id);
+  bool inDeleteQ(int id) => config.inDeleteQ<FakultasModel>(id);  
+  bool inInsertQ(int id) => config.inInsertQ<FakultasModel>(id);  
+  bool inUpdateQ(int id) => config.inUpdateQ<FakultasModel>(id);
   bool inProdiQueue(FakultasModel f) => f.programStudi.any((pd) => config.prodiQueue.contains(pd.id) || pd.matprak.any((mp) => config.matprakQueue.contains(mp.id)));
   
   bool get isPagedLoading => pagedIds.isEmpty;
   bool get isPagedAnySelected => pagedSelectedIds.isNotEmpty;
   bool get isAnyQueued => config.isAnyQueued;
-  bool get isSimAnyQueued => config.fakultasQueue.set.isNotEmpty;
-  bool get isSimEveryLoaing => config.fakultasQueue.set.difference(loadingQueue).isNotEmpty;
+  bool get isSimAnyQueued => simQueued.isNotEmpty;
+  bool get isSimLoading => simQueued.difference(loadingQueue).isEmpty;
   bool get isPageAnyQueued => pagedIds.any(inQueue);
   bool get isPageSelectedAnyQueued => pagedSelectedIds.any(inQueue);
   bool get areDeleting => deleteQueue.isEmpty ? false : isPagedAnySelected ? selectedIds.every(inDeleteQ) : pagedIds.every(inDeleteQ);
   bool get areInserting => insertQueue.isEmpty ? false : isPagedAnySelected ? selectedIds.every(inInsertQ) : pagedIds.every(inInsertQ);
   bool get areUpdating => updateQueue.isEmpty ? false : isPagedAnySelected ? selectedIds.every(inUpdateQ) : pagedIds.every(inUpdateQ);
-  bool get areModified => config.prodiQueue.set.isEmpty && config.matprakQueue.set.isEmpty ? false : isPagedAnySelected ? pagedSelectedData.every(inProdiQueue) : qfsped.every(inProdiQueue);
+  bool get areModified => !isSimAnyQueued && config.matprakQueue.set.isEmpty ? false : isPagedAnySelected ? pagedSelectedData.every(inProdiQueue) : qfsped.every(inProdiQueue);
   bool get canPagedUndoDelete => !isPagedAnySelected && pagedIds.isNotEmpty && pagedIds.every(inDeleteQ);
   bool get canPagedSelectedUndoDelete => isPagedAnySelected && pagedSelectedIds.every(inDeleteQ);
   bool? get isPageSelected => 
@@ -1410,7 +1544,6 @@ class FakultasController extends GetxController {
 
   var isLoading = false.obs;
   var isMassLoading = false.obs;
-  var isSelected = <int>{};
   var canEdit = <int>{};
 
   @override
@@ -1432,10 +1565,10 @@ class FakultasController extends GetxController {
       ),
     ],
     onChanged: ([String? itemKey, String? filterKey]) {
-      var queried = admin.QFSP.query(sim, qfsp, (v) => [v.name]);
-      var filtered = admin.QFSP.filter(queried, qfsp, itemKey, filterKey);
-      var sorted = admin.QFSP.sort(filtered, qfsp);
-      var paged = admin.QFSP.page(sorted, qfsp, pageNum);
+      var queried = admin.qfsp.query(sim, qfsp, (v) => [v.name]);
+      var filtered = admin.qfsp.filter(queried, qfsp, itemKey, filterKey);
+      var sorted = admin.qfsp.sort(filtered, qfsp);
+      var paged = admin.qfsp.page(sorted, qfsp, pageNum);
       qfsped.value = paged;
     },
     pageC: pageC,
@@ -1506,132 +1639,21 @@ class FakultasController extends GetxController {
     }
     qfsp.onChanged();
   }
-
-  Map<String, dynamic> compileForm(FakultasModel model) => {
-    if (model.id > 0) 'id': model.id,
-    'name': model.name,
-  };
   
-  void pushAction(int id) async {
-    if (loadingQueue.contains(id)) return;
-
-    final data = sim.firstWhere((v) => v.id == id);
-    final isAdding = insertQueue.contains(id);
-    final isUpdating = updateQueue.contains(id);
-    final isDeleting = deleteQueue.contains(id);
-
-    if (isDeleting && isAdding) {
-      updateDeletedQueueState([id], true);
-      qfsp.onChanged();
-      return;
-    }
-
-    loadingQueue.add(id);
-    qfsped.refresh();
-
-    if (isDeleting) {
-      final isSuccess = await admin.deleteData([id]);
-      if (isSuccess) updateDeletedQueueState([id]);
-    } else if (isUpdating) {
-      final res = await admin.upsertData([compileForm(data)]);
-      if (res != null) updateUpdatedQueueState([id]);
-    } else if (isAdding) {
-      final res = await admin.upsertData([compileForm(data)]);
-      if (res != null) updateInsertedQueueState([id], res);
-    }
-
-    await storage.sync();
-    
-    loadingQueue.remove(id);
-    qfsp.onChanged();
+  void pushAction(FakultasModel data) async {
+    config.pushAction(data, qfsp, qfsped);
   }
 
   void pushSimAction() {
-    pushQueuedAction(simIds);
+    config.pushQueuedAction(simIds, qfsp, qfsped);
   }
 
   void pushPageAction() {
-    pushQueuedAction(pagedIds);
+    config.pushQueuedAction(pagedIds, qfsp, qfsped);
   }
 
   void pushPageSelectedAction() {
-    pushQueuedAction(pagedSelectedIds);
-  }
-  
-  void pushQueuedAction(Set<int> ids) async {
-    final list = sim.where((v) => ids.contains(v.id));
-      final queue = QueueActionModel(
-      insert: ids.where(inInsertQ).toSet(),
-      update: ids.where(inUpdateQ).toSet(),
-      delete: ids.where(inDeleteQ).toSet(),
-    );
-    
-    final dq = queue.delete;
-    final iq = queue.insert;
-    final uq = queue.update;
-    final insertData = list.where((v) => iq.contains(v.id));
-    final updateData = list.where((v) => uq.contains(v.id));
-
-    updateDeletedQueueState(iq.intersection(dq), true);
-
-    final set = {...uq, ...dq, ...iq};
-
-    set.forEach(loadingQueue.add);
-    qfsped.refresh();
-
-    if (dq.isNotEmpty) {
-      final isSuccess = await admin.deleteData(dq.toList());
-      if (isSuccess) {
-        updateDeletedQueueState(dq);
-      }
-    } 
-    
-    if (insertData.isNotEmpty) {
-      final data = insertData.map(compileForm).toList();
-      final res = await admin.upsertData(data);
-      if (res != null) {
-        updateInsertedQueueState(iq, res);
-      }
-    }
-
-    if (updateData.isNotEmpty) {
-      final data = updateData.map((v) => compileForm(v)).toList();
-      final res = await admin.upsertData(data);
-      if (res != null) {
-        updateUpdatedQueueState(uq);
-      }
-    }
-
-    await storage.sync();
-    
-    set.forEach(loadingQueue.remove);
-    qfsp.onChanged();
-  }
-
-  void updateUpdatedQueueState(Iterable<int> ids) {
-    for (final id in ids.toSet()) {
-      updateQueue.remove(id);
-    }
-  }
-
-  void updateInsertedQueueState(Iterable<int> ids, List<FakultasModel> newData) {
-    for (final id in ids.toSet()) {
-      insertQueue.remove(id);
-      final match = sim.firstWhere((v) => v.id == id); 
-      match.id = newData.firstWhere((v) => v.name == match.name).id;
-    }
-  }
-
-  void updateDeletedQueueState(Iterable<int> ids, [bool isUpsert = false]) {
-    for (final id in ids.toSet()) {
-      if (isUpsert) {
-        updateQueue.remove(id);
-        insertQueue.remove(id);
-      }
-      isSelected.remove(id);
-      deleteQueue.remove(id);
-      sim.removeWhere((v) => v.id == id);
-    }
+    config.pushQueuedAction(pagedSelectedIds, qfsp, qfsped);
   }
 
   void inputDialog([FakultasModel? s]) {
@@ -1664,7 +1686,6 @@ class FakultasController extends GetxController {
         final temp = nameC.text.trim().capitalize!;
         final abv = RegExp(r'\((.*?)\)').firstMatch(temp)?.group(1);
         if (abv != null) nameC.text = temp.replaceAll(RegExp(r'\((.*?)\)'), '(${abv.toUpperCase()})').replaceAll(' Dan ', ' dan ');
-        checkEmptyFields();
       }
     });
     
@@ -1719,11 +1740,10 @@ class FakultasController extends GetxController {
 }
 
 class ProgramStudiController extends GetxController {
-  final String fakultas;
-  ProgramStudiController(this.fakultas);
+  final String fakultas = router.state.pathParameters['fakultas']!;
 
-  final admin = ProgramStudiService();
   final config = Get.find<GlobalConfigController>();
+  late final admin = config.service;
 
   List<ProgramStudiModel> get stored => storage.cached.getFakultas(fakultas).programStudi;
   List<ProgramStudiModel> get sim => config.simulated.getFakultas(fakultas).programStudi;
@@ -1732,35 +1752,37 @@ class ProgramStudiController extends GetxController {
   late Iterable<ProgramStudiModel> selectedData = sim.where(inSelected);
   late Iterable<ProgramStudiModel> pagedSelectedData = qfsped.value.where(inSelected);
   
-  Set<int> get simIds => sim.map((v) => v.id).toSet().difference(loadingQueue);
-  Set<int> get pagedIds => qfsped.value.map((v) => v.id).toSet().difference(loadingQueue);
-  Set<int> get selectedIds => isSelected.difference(loadingQueue);
-  Set<int> get pagedSelectedIds => pagedIds.intersection(isSelected);
-  
   late Set<int> insertQueue = config.prodiQueue.insert;
   late Set<int> updateQueue = config.prodiQueue.update;
   late Set<int> deleteQueue = config.prodiQueue.delete;
   late Set<int> loadingQueue = config.prodiQueue.loading;
+  late Set<int> isSelected = config.prodiQueue.select;
+  
+  Set<int> get simIds => sim.map((v) => v.id).toSet().difference(loadingQueue);
+  Set<int> get pagedIds => qfsped.value.map((v) => v.id).toSet().difference(loadingQueue);
+  Set<int> get selectedIds => isSelected.difference(loadingQueue);
+  Set<int> get pagedSelectedIds => pagedIds.intersection(isSelected);
+  Set<int> get simQueued => config.prodiQueue.set.intersection(simIds);
 
   bool inSelected(ProgramStudiModel v) => selectedIds.contains(v.id);  
   bool idInSelected(int id) => selectedIds.contains(id);  
   bool inQueue(int id) => config.prodiQueue.set.contains(id);  
-  bool inDeleteQ(int id) => deleteQueue.contains(id);  
-  bool inInsertQ(int id) => insertQueue.contains(id);  
-  bool inUpdateQ(int id) => updateQueue.contains(id);
+  bool inDeleteQ(int id) => config.inDeleteQ<ProgramStudiModel>(id);  
+  bool inInsertQ(int id) => config.inInsertQ<ProgramStudiModel>(id);  
+  bool inUpdateQ(int id) => config.inUpdateQ<ProgramStudiModel>(id);
   bool inMatprakQueue(ProgramStudiModel v) => v.matprak.any((v) => config.matprakQueue.contains(v.id));
   
   bool get isPagedLoading => pagedIds.isEmpty;
   bool get isPagedAnySelected => pagedSelectedIds.isNotEmpty;
   bool get isAnyQueued => config.isAnyQueued;
-  bool get isSimAnyQueued => config.prodiQueue.set.isNotEmpty;
-  bool get isSimEveryLoaing => config.prodiQueue.set.difference(loadingQueue).isNotEmpty;
+  bool get isSimAnyQueued => simQueued.isNotEmpty;
+  bool get isSimLoading => simQueued.difference(loadingQueue).isNotEmpty;
   bool get isPageAnyQueued => pagedIds.any(inQueue);
   bool get isPageSelectedAnyQueued => pagedSelectedIds.any(inQueue);
   bool get areDeleting => deleteQueue.isEmpty ? false : isPagedAnySelected ? selectedIds.every(inDeleteQ) : pagedIds.every(inDeleteQ);
   bool get areInserting => insertQueue.isEmpty ? false : isPagedAnySelected ? selectedIds.every(inInsertQ) : pagedIds.every(inInsertQ);
   bool get areUpdating => updateQueue.isEmpty ? false : isPagedAnySelected ? selectedIds.every(inUpdateQ) : pagedIds.every(inUpdateQ);
-  bool get areModified => config.matprakQueue.set.isEmpty ? false : isPagedAnySelected ? pagedSelectedData.every(inMatprakQueue) : qfsped.every(inMatprakQueue);
+  bool get areModified => !isSimAnyQueued ? false : isPagedAnySelected ? pagedSelectedData.every(inMatprakQueue) : qfsped.every(inMatprakQueue);
   bool get canPagedUndoDelete => !isPagedAnySelected && pagedIds.isNotEmpty && pagedIds.every(inDeleteQ);
   bool get canPagedSelectedUndoDelete => isPagedAnySelected && pagedSelectedIds.every(inDeleteQ);
   bool? get isPageSelected => 
@@ -1771,7 +1793,6 @@ class ProgramStudiController extends GetxController {
 
   var isLoading = false.obs;
   var isMassLoading = false.obs;
-  var isSelected = <int>{};
   var canEdit = <int>{};
 
   @override
@@ -1793,18 +1814,16 @@ class ProgramStudiController extends GetxController {
       ),
     ],
     onChanged: ([String? itemKey, String? filterKey]) {
-      var queried = admin.QFSP.query(sim, qfsp, (v) => [v.name]);
-      var filtered = admin.QFSP.filter(queried, qfsp, itemKey, filterKey);
-      var sorted = admin.QFSP.sort(filtered, qfsp);
-      var paged = admin.QFSP.page(sorted, qfsp, pageNum);
+      var queried = admin.qfsp.query(sim, qfsp, (v) => [v.name]);
+      var filtered = admin.qfsp.filter(queried, qfsp, itemKey, filterKey);
+      var sorted = admin.qfsp.sort(filtered, qfsp);
+      var paged = admin.qfsp.page(sorted, qfsp, pageNum);
       qfsped.value = paged;
     },
     pageC: pageC,
     dataPerPage: 25
   );
   
-  
-
   void selectItem(int id, bool state) {
     if (loadingQueue.contains(id)) return;
     state ? isSelected.add(id) : isSelected.remove(id);
@@ -1870,135 +1889,25 @@ class ProgramStudiController extends GetxController {
     }
     qfsp.onChanged();
   }
-
-  Map<String, dynamic> compileForm(ProgramStudiModel model) => {
-    if (model.id > 0) 'id': model.id,
-    'name': model.name,
-    'fakultas': model.fakultas,
-  };
   
-  void pushAction(int id) async {
-    if (loadingQueue.contains(id)) return;
-
-    final data = sim.firstWhere((v) => v.id == id);
-    final isAdding = insertQueue.contains(id);
-    final isUpdating = updateQueue.contains(id);
-    final isDeleting = deleteQueue.contains(id);
-
-    if (isDeleting && isAdding) {
-      updateDeletedQueueState([id], true);
-      qfsp.onChanged();
-      return;
-    }
-
-    loadingQueue.add(id);
-    qfsped.refresh();
-
-    if (isDeleting) {
-      final isSuccess = await admin.deleteData([id]);
-      if (isSuccess) updateDeletedQueueState([id]);
-    } else if (isUpdating) {
-      final res = await admin.upsertData([compileForm(data)]);
-      if (res != null) updateUpdatedQueueState([id]);
-    } else if (isAdding) {
-      final res = await admin.upsertData([compileForm(data)]);
-      if (res != null) updateInsertedQueueState([id], res);
-    }
-
-    await storage.sync();
-    
-    loadingQueue.remove(id);
-    qfsp.onChanged();
+  void pushAction(ProgramStudiModel data) async {
+    // final dataSet = config.simulated.getProgramStudi(data.name).matprak.where((v) => config.matprakQueue.set.contains(v.id)).toSet();
+    if (config.prodiQueue.set.contains(data.id)) await config.pushAction(data, qfsp, qfsped);
+    // if (dataSet.isNotEmpty) config.pushQueuedAction(dataSet, qfsp, qfsped);
   }
 
   void pushSimAction() {
-    pushQueuedAction(simIds);
+    config.pushQueuedAction(simIds, qfsp, qfsped);
   }
 
   void pushPageAction() {
-    pushQueuedAction(pagedIds);
+    config.pushQueuedAction(pagedIds, qfsp, qfsped);
   }
 
   void pushPageSelectedAction() {
-    pushQueuedAction(pagedSelectedIds);
+    config.pushQueuedAction(pagedSelectedIds, qfsp, qfsped);
   }
   
-  void pushQueuedAction(Set<int> ids) async {
-    final list = sim.where((v) => ids.contains(v.id));
-      final queue = QueueActionModel(
-      insert: ids.where(inInsertQ).toSet(),
-      update: ids.where(inUpdateQ).toSet(),
-      delete: ids.where(inDeleteQ).toSet(),
-    );
-    
-    final dq = queue.delete;
-    final iq = queue.insert;
-    final uq = queue.update;
-    final insertData = list.where((v) => iq.contains(v.id));
-    final updateData = list.where((v) => uq.contains(v.id));
-
-    updateDeletedQueueState(iq.intersection(dq), true);
-
-    final set = {...uq, ...dq, ...iq};
-
-    set.forEach(loadingQueue.add);
-    qfsped.refresh();
-
-    if (dq.isNotEmpty) {
-      final isSuccess = await admin.deleteData(dq.toList());
-      if (isSuccess) {
-        updateDeletedQueueState(dq);
-      }
-    } 
-    
-    if (insertData.isNotEmpty) {
-      final data = insertData.map(compileForm).toList();
-      final res = await admin.upsertData(data);
-      if (res != null) {
-        updateInsertedQueueState(iq, res);
-      }
-    }
-
-    if (updateData.isNotEmpty) {
-      final data = updateData.map((v) => compileForm(v)).toList();
-      final res = await admin.upsertData(data);
-      if (res != null) {
-        updateUpdatedQueueState(uq);
-      }
-    }
-
-    await storage.sync();
-    
-    set.forEach(loadingQueue.remove);
-    qfsp.onChanged();
-  }
-
-  void updateUpdatedQueueState(Iterable<int> ids) {
-    for (final id in ids.toSet()) {
-      updateQueue.remove(id);
-    }
-  }
-
-  void updateInsertedQueueState(Iterable<int> ids, List<ProgramStudiModel> newData) {
-    for (final id in ids.toSet()) {
-      insertQueue.remove(id);
-      final match = sim.firstWhere((v) => v.id == id); 
-      match.id = newData.firstWhere((v) => v.name == match.name).id;
-    }
-  }
-
-  void updateDeletedQueueState(Iterable<int> ids, [bool isUpsert = false]) {
-    for (final id in ids.toSet()) {
-      if (isUpsert) {
-        updateQueue.remove(id);
-        insertQueue.remove(id);
-      }
-      isSelected.remove(id);
-      deleteQueue.remove(id);
-      sim.removeWhere((v) => v.id == id);
-    }
-  }
-
   void inputDialog([ProgramStudiModel? s]) {
     final nameC = TextEditingController(text: s?.name);
     final fakultasC = SingleSelectController<String>(s == null ? fakultas : s.fakultas);
@@ -2032,7 +1941,6 @@ class ProgramStudiController extends GetxController {
         final temp = nameC.text.trim().capitalize!;
         final abv = RegExp(r'\((.*?)\)').firstMatch(temp)?.group(1);
         if (abv != null) nameC.text = temp.replaceAll(RegExp(r'\((.*?)\)'), '(${abv.toUpperCase()})').replaceAll(' Dan ', ' dan ');
-        checkEmptyFields();
       }
     });
     
@@ -2080,9 +1988,9 @@ class ProgramStudiController extends GetxController {
         ]
       )),
       onPopInvokedWithResult: (didPop, result) => 
-        Future.delayed(Duration(milliseconds: 500), () {
-          nameF.dispose();
-        }),
+      Future.delayed(Duration(milliseconds: 500), () {
+        nameF.dispose();
+      }),
       confirmText: s == null ? 'add' : 'save',
       confirmAction: () {
         if (!checkEmptyFields()) return;
@@ -2121,10 +2029,9 @@ class ProgramStudiController extends GetxController {
 }
 
 class MatprakController extends GetxController {
-  final String programStudi;
-  MatprakController(this.programStudi);
+  final String programStudi = router.state.pathParameters['program_studi']!;
   
-  final admin = MatprakService();
+  late final admin = config.service;
   final config = Get.find<GlobalConfigController>();
 
   List<MatprakModel> get stored => storage.cached.getProgramStudi(programStudi).matprak;
@@ -2134,29 +2041,31 @@ class MatprakController extends GetxController {
   late Iterable<MatprakModel> selectedData = sim.where(inSelected);
   late Iterable<MatprakModel> pagedSelectedData = qfsped.value.where(inSelected);
   
-  Set<int> get simIds => sim.map((v) => v.id).toSet().difference(loadingQueue);
-  Set<int> get pagedIds => qfsped.value.map((v) => v.id).toSet().difference(loadingQueue);
-  Set<int> get selectedIds => isSelected.difference(loadingQueue);
-  Set<int> get pagedSelectedIds => pagedIds.intersection(isSelected);
-  
   late Set<int> insertQueue = config.matprakQueue.insert;
   late Set<int> updateQueue = config.matprakQueue.update;
   late Set<int> deleteQueue = config.matprakQueue.delete;
   late Set<int> loadingQueue = config.matprakQueue.loading;
+  late Set<int> isSelected = config.prodiQueue.select;
+  
+  Set<int> get simIds => sim.map((v) => v.id).toSet().difference(loadingQueue);
+  Set<int> get pagedIds => qfsped.value.map((v) => v.id).toSet().difference(loadingQueue);
+  Set<int> get selectedIds => isSelected.difference(loadingQueue);
+  Set<int> get simQueued => config.prodiQueue.set.intersection(simIds);
+  Set<int> get pagedSelectedIds => pagedIds.intersection(isSelected);
 
   bool inSelected(MatprakModel v) => selectedIds.contains(v.id);  
   bool idInSelected(int id) => selectedIds.contains(id);  
   bool inQueue(int id) => config.matprakQueue.set.contains(id);  
-  bool inDeleteQ(int id) => deleteQueue.contains(id);  
-  bool inInsertQ(int id) => insertQueue.contains(id);  
-  bool inUpdateQ(int id) => updateQueue.contains(id);
+  bool inDeleteQ(int id) => config.inDeleteQ<MatprakModel>(id);  
+  bool inInsertQ(int id) => config.inInsertQ<MatprakModel>(id);  
+  bool inUpdateQ(int id) => config.inUpdateQ<MatprakModel>(id);
   
   bool get isPagedLoading => pagedIds.isEmpty;
   bool get isPagedAnySelected => pagedSelectedIds.isNotEmpty;
   bool get isAnyQueued => config.isAnyQueued;
   bool get isMatprakAnyQueued => config.matprakQueue.set.difference(loadingQueue).isNotEmpty;
-  bool get isSimAnyQueued => simIds.any(config.matprakQueue.contains);
-  bool get isSimEveryLoaing => config.matprakQueue.set.difference(loadingQueue).isNotEmpty;
+  bool get isSimAnyQueued => simQueued.isNotEmpty;
+  bool get isSimLoading => simQueued.difference(loadingQueue).isNotEmpty;
   bool get isPageAnyQueued => pagedIds.any(inQueue);
   bool get isPageSelectedAnyQueued => pagedSelectedIds.any(inQueue);
   bool get areDeleting => deleteQueue.isEmpty ? false : isPagedAnySelected ? selectedIds.every(inDeleteQ) : pagedIds.every(inDeleteQ);
@@ -2175,7 +2084,6 @@ class MatprakController extends GetxController {
 
   var isLoading = false.obs;
   var isMassLoading = false.obs;
-  var isSelected = <int>{};
   var canEdit = <int>{};
 
   @override
@@ -2203,10 +2111,10 @@ class MatprakController extends GetxController {
       ),
     ],
     onChanged: ([String? itemKey, String? filterKey]) {
-      var queried = admin.QFSP.query(sim, qfsp, (v) => [v.nama, v.kode]);
-      var filtered = admin.QFSP.filter(queried, qfsp, itemKey, filterKey);
-      var sorted = admin.QFSP.sort(filtered, qfsp);
-      var paged = admin.QFSP.page(sorted, qfsp, pageNum);
+      var queried = admin.qfsp.query(sim, qfsp, (v) => [v.nama, v.kode]);
+      var filtered = admin.qfsp.filter(queried, qfsp, itemKey, filterKey);
+      var sorted = admin.qfsp.sort(filtered, qfsp);
+      var paged = admin.qfsp.page(sorted, qfsp, pageNum);
       qfsped.value = paged;
     },
     pageC: pageC,
@@ -2304,21 +2212,23 @@ class MatprakController extends GetxController {
 
   void setType(MatprakModel s, String type) {
       s.isPraktikum = type == 'keduanya' ? null : type == 'praktikum';
-      final isExist = stored.any(s.isEqualTo);
-      if (isExist) {
-        updateQueue.remove(s.id);
-      } else {
-        updateQueue.add(s.id);
+      if (!insertQueue.contains(s.id)) {
+        if (stored.any(s.isEqualTo)) {
+          updateQueue.remove(s.id);
+        } else {
+          updateQueue.add(s.id);
+        }
       }
       qfsp.onChanged();
   }
 
   void setSelectedType(String type) {
+    final isPraktikum = type == 'keduanya' ? null : type == 'praktikum';
     for (final s in pagedSelectedData) {
       if (deleteQueue.contains(s.id)) continue;
-      s.isPraktikum = type == 'keduanya' ? null : type == 'praktikum';
-      final isExist = stored.any(s.isEqualTo);
-      if (isExist) {
+      s.isPraktikum = isPraktikum;
+      if (insertQueue.contains(s.id)) continue;
+      if (stored.any(s.isEqualTo)) {
         updateQueue.remove(s.id);
       } else {
         updateQueue.add(s.id);
@@ -2327,131 +2237,20 @@ class MatprakController extends GetxController {
     qfsp.onChanged();
   }
   
-  Map<String, dynamic> compileForm(MatprakModel model) => {
-    if (model.id > 0) 'id': model.id,
-    'kode': model.kode,
-    'nama': model.nama,
-    'is_praktikum': model.isPraktikum,
-    'program_studi' : model.programStudi
-  };
-  
-  void pushAction(int id) async {
-    if (loadingQueue.contains(id)) return;
-
-    final data = sim.firstWhere((v) => v.id == id);
-    final isAdding = insertQueue.contains(id);
-    final isUpdating = updateQueue.contains(id);
-    final isDeleting = deleteQueue.contains(id);
-
-    if (isDeleting && isAdding) {
-      updateDeletedQueueState([id], true);
-      qfsp.onChanged();
-      return;
-    }
-
-    loadingQueue.add(id);
-    qfsped.refresh();
-
-    if (isDeleting) {
-      final isSuccess = await admin.deleteData([id]);
-      if (isSuccess) updateDeletedQueueState([id]);
-    } else if (isUpdating) {
-      final res = await admin.upsertData([compileForm(data)]);
-      if (res != null) updateUpdatedQueueState([id]);
-    } else if (isAdding) {
-      final res = await admin.upsertData([compileForm(data)]);
-      if (res != null) updateInsertedQueueState([id], res);
-    }
-
-    await storage.sync();
-    
-    loadingQueue.remove(id);
-    qfsp.onChanged();
+  void pushAction(MatprakModel data) async {
+    config.pushAction(data, qfsp, qfsped);
   }
 
   void pushSimAction() {
-    pushQueuedAction(simIds);
+    config.pushQueuedAction(simIds, qfsp, qfsped);
   }
 
   void pushPageAction() {
-    pushQueuedAction(pagedIds);
+    config.pushQueuedAction(pagedIds, qfsp, qfsped);
   }
 
   void pushPageSelectedAction() {
-    pushQueuedAction(pagedSelectedIds);
-  }
-  
-  void pushQueuedAction(Set<int> ids) async {
-    final list = sim.where((v) => ids.contains(v.id));
-      final queue = QueueActionModel(
-      insert: ids.where(inInsertQ).toSet(),
-      update: ids.where(inUpdateQ).toSet(),
-      delete: ids.where(inDeleteQ).toSet(),
-    );
-    
-    final dq = queue.delete;
-    final iq = queue.insert;
-    final uq = queue.update;
-    final insertData = list.where((v) => iq.contains(v.id));
-    final updateData = list.where((v) => uq.contains(v.id));
-
-    updateDeletedQueueState(iq.intersection(dq), true);
-
-    final set = {...uq, ...dq, ...iq};
-
-    set.forEach(loadingQueue.add);
-    qfsped.refresh();
-
-    if (dq.isNotEmpty) {
-      final isSuccess = await admin.deleteData(dq.toList());
-      if (isSuccess) {
-        updateDeletedQueueState(dq);
-      }
-    } 
-    
-    if (insertData.isNotEmpty) {
-      final data = insertData.map(compileForm).toList();
-      final res = await admin.upsertData(data);
-      if (res != null) {
-        updateInsertedQueueState(iq, res);
-      }
-    }
-
-    if (updateData.isNotEmpty) {
-      final data = updateData.map((v) => compileForm(v)).toList();
-      final res = await admin.upsertData(data);
-      if (res != null) {
-        updateUpdatedQueueState(uq);
-      }
-    }
-
-    await storage.sync();
-    
-    set.forEach(loadingQueue.remove);
-    qfsp.onChanged();
-  }
-
-  void updateUpdatedQueueState(Iterable<int> ids) {
-    for (final id in ids.toSet()) {
-      updateQueue.remove(id);
-    }
-  }
-
-  void updateInsertedQueueState(Iterable<int> ids, List<MatprakModel> newData) {
-    for (final id in ids.toSet()) {
-      insertQueue.remove(id);
-      final match = sim.firstWhere((v) => v.id == id); 
-      match.id = newData.firstWhere((v) => v.kode == match.kode).id;
-    }
-  }
-
-  void updateDeletedQueueState(Iterable<int> ids, [bool isInsert = false]) {
-    for (final id in ids.toSet()) {
-      if (true) insertQueue.remove(id);
-      isSelected.remove(id);
-      deleteQueue.remove(id);
-      sim.removeWhere((v) => v.id == id);
-    }
+    config.pushQueuedAction(pagedSelectedIds, qfsp, qfsped);
   }
 
   void inputDialog([MatprakModel? s, bool multi = false]) {
@@ -2503,14 +2302,12 @@ class MatprakController extends GetxController {
     kodeF?.addListener(() {
       if (!kodeF.hasFocus) {
         kode?.text = kode.text.trim().toUpperCase();
-        checkEmptyFields();
       }
     });
     final namaF = multi ? null : FocusNode();
     namaF?.addListener(() {
       if (!namaF.hasFocus) {
         nama?.text = nama.text.trim().capitalize!.replaceAll(' Dan ', ' dan ');
-        checkEmptyFields();
       }
     });
     

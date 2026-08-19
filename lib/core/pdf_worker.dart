@@ -456,17 +456,17 @@ Future<Uint8List> peminjamanPeralatanCompilePdfWorker(dynamic form) async {
 
               pw.Center(
                 child: pw.SizedBox(
-                  width: 8.82.wcm,
+                  width: 10.wcm,
                   child: pw.Table(
                     border: pw.TableBorder.all(),
                     columnWidths: {
-                      0: const pw.FixedColumnWidth(60),
+                      0: const pw.FixedColumnWidth(80),
                       1: const pw.FlexColumnWidth(),
                     },
                     children: [
                       for (var i = 0; i < nama.length; i++) ...[
                         pw.TableRow(children: [
-                          pw.Text('${nim[i]}', textAlign: pw.TextAlign.center),
+                          pw.Text(nim[i], textAlign: pw.TextAlign.center),
                           pw.Text('  ${nama[i]}'),
                         ]),
                       ],

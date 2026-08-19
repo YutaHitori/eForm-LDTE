@@ -20,7 +20,7 @@ class ProgramStudi extends StatelessWidget {
         appBar: AppBar(
           title: Text(c.fakultas),
           actions: [
-            if (c.isSimAnyQueued) IconButton(onPressed: !c.isSimEveryLoaing ? null : c.pushSimAction, icon: Icon(Icons.save_rounded), tooltip: 'Save Current Program Studi'),
+            if (c.isSimAnyQueued) IconButton(onPressed: c.isSimLoading ? null : c.pushSimAction, icon: Icon(Icons.save_rounded), tooltip: 'Save Current Program Studi'),
           ],
         ),
         floatingActionButton: Padding(
@@ -245,8 +245,8 @@ class ProgramStudi extends StatelessWidget {
                                                     //     isLoading ? Icons.remove : Icons.add,
                                                     //   ), tooltip: isLoading ? 'Testing...' : 'Test'
                                                     // ),
-                                                    if (isAdding || isUpdating || isDeleting) IconButton(
-                                                      onPressed: isLoading ? null : () => c.pushAction(entry.id),
+                                                    if (isAdding || isUpdating || isDeleting/* || isMatprakUpdating*/) IconButton(
+                                                      onPressed: isLoading ? null : () => c.pushAction(entry),
                                                       icon: Icon(
                                                         Icons.save_rounded,
                                                       ), tooltip: isLoading ? 'Saving...' : 'Save'

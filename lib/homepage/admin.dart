@@ -1,6 +1,5 @@
 import 'package:eform_ldte/misc/global.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:eform_ldte/core/controller.dart';
 import 'package:eform_ldte/misc/function.dart';
@@ -10,7 +9,7 @@ class Admin extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AdminController c = Get.put(AdminController());
+    final c = getFindPut(AdminController());
     return c.isLoading.value
       ? Center(child: CircularProgressIndicator())
       : Padding(

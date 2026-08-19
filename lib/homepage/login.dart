@@ -1,3 +1,4 @@
+import 'package:eform_ldte/misc/function.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:eform_ldte/core/controller.dart';
@@ -8,7 +9,7 @@ class Login extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final LoginController c = Get.put(LoginController());
+    final c = getFindPut(LoginController());
     return Obx(() => c.isLoading.value
       ? Center(child: CircularProgressIndicator()) 
       : Column(
