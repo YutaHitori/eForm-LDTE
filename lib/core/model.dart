@@ -167,7 +167,7 @@ class MatprakModel {
   MatprakModel.fromJson(Map<String, dynamic> json, [String? programStudiName]) {
     id = json['id']; 
     kode = (json['kode'] as String).trim().toUpperCase(); 
-    nama = (json['nama'] as String).trim().capitalize!; 
+    nama = (json['nama'] as String).trim(); 
     programStudi = programStudiName ?? json['program_studi']; 
     isPraktikum = json['is_praktikum']; 
   }
@@ -237,9 +237,9 @@ class StorageCacheModel {
   List<String> formatedPraktikum() => praktikum.map((v) => '${v.kode} ${v.nama}').toList();
   List<String> formatedMatprak() => matprak.map((v) => '${v.kode} ${v.nama}').toList();
 
-  FakultasModel getFakultas(String name) => fakultas.where((v) => v.name == name).first;
-  ProgramStudiModel getProgramStudi(String name) => programStudi.where((v) => v.name == name).first;
-  ProgramStudiModel? getProgramStudiFromMatprak(MatprakModel model) => programStudi.where((v) => v.matprak.any((v) => v.id == model.id)).firstOrNull;
+  FakultasModel? getFakultas(String name) => fakultas.firstWhereOrNull((v) => v.name == name);
+  ProgramStudiModel? getProgramStudi(String name) => programStudi.firstWhereOrNull((v) => v.name == name);
+  ProgramStudiModel? getProgramStudiFromMatprak(MatprakModel model) => programStudi.firstWhereOrNull((v) => v.matprak.any((v) => v.id == model.id));
 
   void removeWhere<T>(bool Function(dynamic) test) {
     if (T == FakultasModel) {
@@ -282,5 +282,5 @@ class QueueActionModel {
 
   Set<int> get set => {...insert, ...update, ...delete};
   bool get isAnyQueued => set.isNotEmpty;
-  bool contains(int id) => set.contains(id);
+  bool contains(int id, [bool isLoading = false]) => set.difference(isLoading ? loading : {}).contains(id);
 }

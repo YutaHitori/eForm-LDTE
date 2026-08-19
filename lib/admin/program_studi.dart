@@ -18,16 +18,28 @@ class ProgramStudi extends StatelessWidget {
       c.qfsped.value;
       return Scaffold(
         appBar: AppBar(
-          title: Text(c.fakultas),
+          title: Text(c.name),
           actions: [
-            if (c.isSimAnyQueued) IconButton(onPressed: c.isSimLoading ? null : c.pushSimAction, icon: Icon(Icons.save_rounded), tooltip: 'Save Current Program Studi'),
+            if (c.isSimAnyQueued) IconButton(onPressed: c.pushSimAction, icon: Icon(Icons.save_rounded), tooltip: 'Save ${c.name}'),
+            if (c.isAnyQueued) TextButton(onPressed: c.config.saveQueuedAction, child: Text('Save All')),
           ],
         ),
-        floatingActionButton: Padding(
+        floatingActionButton: c.fakultas == null ? null : Padding(
           padding: const EdgeInsets.only(bottom: 52),
           child: FloatingActionButton(onPressed: c.inputDialog, child: Icon(Icons.add_rounded)),
         ),
-        body: Column(
+        body: c.fakultas == null
+        ? Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 24,
+            children: [
+              Text("${c.name} didn't exist, please check the inputed url"),
+              TextButton(onPressed: currentContext?.pop, child: Text('Go back'))
+            ],
+          ),
+        )
+        : Column(
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
@@ -93,7 +105,7 @@ class ProgramStudi extends StatelessWidget {
                                         ? Colors.green 
                                         : c.areUpdating
                                           ? Colors.amber  
-                                          : c.areModified
+                                          : c.areModifying
                                             ? Colors.blue
                                             : Colors.white).withAlpha(c.isPagedLoading ? 128 : 255), 
                                     width: 8
@@ -134,11 +146,19 @@ class ProgramStudi extends StatelessWidget {
                                               tooltip: 'Save Page'
                                             ),
                                             IconButton(
-                                              onPressed: c.isPageSelectedAnyQueued ? c.pushPageAction : null,
+                                              onPressed: c.isPageSelectedAnyQueued ? c.pushPageSelectedAction : null,
                                               icon: Icon(Icons.save_rounded),
                                               tooltip: 'Save Selected'
                                             ),
-                                            if (c.canPagedSelectedUndoDelete) IconButton(
+                                            if (c.canPagedSelectedUndoChange) IconButton(
+                                              onPressed: c.undoChangePageSelectedData,
+                                              icon: Icon(Icons.undo_outlined, color: Colors.amber),
+                                              tooltip: 'Undo Selected Changes',
+                                            ) else if (c.canPagedUndoChange) IconButton(
+                                              onPressed: !c.canPagedUndoChange ? null : c.undoChangePageData,
+                                              icon: Icon(Icons.undo_rounded, color: !c.canPagedUndoChange ? null : Colors.amber),
+                                              tooltip: 'Undo Changes',
+                                            ) else if (c.canPagedSelectedUndoDelete) IconButton(
                                               onPressed: c.undoDeletePageSelectedData,
                                               icon: Icon(Icons.restore_from_trash_rounded, color: Colors.red),
                                               tooltip: 'Undo Delete',
@@ -170,7 +190,7 @@ class ProgramStudi extends StatelessWidget {
                                       final entry = c.qfsped.value[i];
                                       final isLoading = c.loadingQueue.contains(entry.id);
                                       final isAdding = c.insertQueue.contains(entry.id);
-                                      final isMatprakUpdating = entry.matprak.any((v) => c.config.matprakQueue.contains(v.id));
+                                      final isModifying = entry.matprak.any((v) => c.config.matprakQueue.contains(v.id));
                                       final isUpdating = c.updateQueue.contains(entry.id);
                                       final isDeleting = c.deleteQueue.contains(entry.id);
                                       return Card(
@@ -184,7 +204,7 @@ class ProgramStudi extends StatelessWidget {
                                                 ? Colors.green 
                                                 : isUpdating
                                                   ? Colors.amber
-                                                  : isMatprakUpdating
+                                                  : isModifying
                                                     ? Colors.blue
                                                     : Colors.white).withAlpha(isLoading ? 128 : 255), 
                                             width: 8
@@ -197,11 +217,11 @@ class ProgramStudi extends StatelessWidget {
                                             ? appTheme.scaffoldBackgroundColor.withGreen(isLoading ? 36 : 42) 
                                             : isUpdating
                                               ? appTheme.scaffoldBackgroundColor.withRed(isLoading ? 36 : 42).withGreen(isLoading ? 36 : 42) 
-                                              : isMatprakUpdating
+                                              : isModifying
                                                 ? appTheme.scaffoldBackgroundColor.withBlue(isLoading ? 36 : 42)
                                                 : null,
                                           contentPadding: EdgeInsets.only(right: 12, left: 8),
-                                          onTap: () => currentContext?.push('${NamedRoute.list}/${c.fakultas}/${entry.name}'),
+                                          onTap: () => currentContext?.push('${NamedRoute.list}/${c.fakultas!.name}/${entry.name}'),
                                           leading: Transform.translate(
                                             offset: Offset(8, 0),
                                             child: Row(
@@ -236,23 +256,23 @@ class ProgramStudi extends StatelessWidget {
                                                 child: Row(
                                                   mainAxisAlignment: MainAxisAlignment.end,
                                                   children: [
-                                                    // IconButton(
-                                                    //   onPressed: () {
-                                                    //     isLoading ? c.loadingQueue.remove(entry.id) : c.loadingQueue.add(entry.id);
-                                                    //     c.qfsped.refresh();
-                                                    //   },
-                                                    //   icon: Icon(
-                                                    //     isLoading ? Icons.remove : Icons.add,
-                                                    //   ), tooltip: isLoading ? 'Testing...' : 'Test'
-                                                    // ),
-                                                    if (isAdding || isUpdating || isDeleting/* || isMatprakUpdating*/) IconButton(
+                                                    IconButton(
+                                                      onPressed: () {
+                                                        isLoading ? c.loadingQueue.remove(entry.id) : c.loadingQueue.add(entry.id);
+                                                        c.qfsped.refresh();
+                                                      },
+                                                      icon: Icon(
+                                                        isLoading ? Icons.remove : Icons.add,
+                                                      ), tooltip: isLoading ? 'Testing...' : 'Test'
+                                                    ),
+                                                    if (isAdding || isUpdating || isDeleting || isModifying) IconButton(
                                                       onPressed: isLoading ? null : () => c.pushAction(entry),
                                                       icon: Icon(
                                                         Icons.save_rounded,
                                                       ), tooltip: isLoading ? 'Saving...' : 'Save'
                                                     ),
                                                     if (isUpdating) IconButton(
-                                                      onPressed: isLoading ? null : () => c.undoChange(entry.id),
+                                                      onPressed: isLoading ? null : () => c.undoChange({entry.id}),
                                                       icon: Icon(Icons.undo_rounded, color: isLoading ? null : Colors.amber),
                                                       tooltip: 'Undo Changes',
                                                     ) else if (isDeleting) IconButton(

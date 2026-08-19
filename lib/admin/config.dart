@@ -213,7 +213,7 @@ class GlobalConfig extends StatelessWidget {
               spacing: 8,
               children: [
                 Expanded(child: ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.list), child: Text('Daftar Fakultas'))),
-                if (c.isAnyQueued) ElevatedButton(onPressed: () {}, child: Text('Save'))
+                if (c.isAnyQueued) ElevatedButton(onPressed: c.saveQueuedAction, child: Text('Save'))
               ],
             ),
           ],

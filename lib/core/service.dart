@@ -197,7 +197,7 @@ class StorageService {
             global = await getLatestGlobalConfig();
             getAll = global?.fakultas.isAfter(cached.globalConfig.fakultas) ?? true;
           }
-          if (outdated.isNotEmpty) latest = await getLatestFieldData(outdated, getAll);
+          if (outdated.isNotEmpty || getAll) latest = await getLatestFieldData(outdated, getAll);
         }
         final list = getAll ? latest?.map((v) => v.name).toList() : null;
         removeUnregisteredField(lastUpdated, list);
@@ -241,7 +241,9 @@ class StorageService {
       if (fakultas?.contains(f.name) == false) {
         print("remove fakultas ${f.name}");
         storage.cached.fakultas.removeAt(i);
-      } else storage.cached.fakultas[i] = f;
+      } else {
+        storage.cached.fakultas[i] = f;
+      }
     }
   }
 
@@ -268,7 +270,7 @@ class StorageService {
           )
         ''');
 
-      if (outdated != null) {
+      if (outdated != null && outdated.isNotEmpty) {
         String filter = '';
         outdated.forEach((v) => filter = '$filter,name.eq."${v.field?.replaceAll('"', '""')}"');
         filter = filter.substring(1);
@@ -279,7 +281,7 @@ class StorageService {
       final data = await query;
       print('outdated field data : $data');
 
-      return data.map((v) => FakultasModel.fromJson(v)).toList();
+      return data.map(FakultasModel.fromJson).toList();
     } on PostgrestException catch (error) {
       alertDialog('PostgrestException', '(getLatestFieldData) PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');
     } catch (error) {
@@ -909,12 +911,18 @@ class GlobalConfigService {
     return null;
   }
 
-  Future<bool> deleteData<T>(List<int> ids) async {
+  Future<bool> deleteData<T>(List<T> model) async {
     try {
+      // if (T == ProgramStudiModel) {
+      //   await auth.supabase
+      //     .from('last_updated')
+      //     .delete()
+      //     .inFilter('field', model.map((dynamic v) => v.name).toList());
+      // }
       await auth.supabase
         .from(T == FakultasModel ? 'fakultas' : T == ProgramStudiModel ? 'program_studi' : 'mata_kuliah')
         .delete()
-        .inFilter('id', ids);
+        .inFilter('id', model.map((dynamic v) => v.id).toList());
       return true;
     } on PostgrestException catch (error) {
       alertDialog('PostgrestException', 'PostgreSQL Error Code: ${error.code}\nError Message: ${error.message}\nHint from DB: ${error.hint}');

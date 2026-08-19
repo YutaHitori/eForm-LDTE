@@ -1,8 +1,10 @@
+import 'package:eform_ldte/misc/function.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:eform_ldte/core/controller.dart';
 import 'package:eform_ldte/misc/widget.dart';
+import 'package:go_router/go_router.dart';
 import 'package:number_paginator/number_paginator.dart';
 
 class Matprak extends StatelessWidget {
@@ -15,18 +17,28 @@ class Matprak extends StatelessWidget {
       c.qfsped.value;
       return Scaffold(
         appBar: AppBar(
-          title: Text(c.programStudi),
+          title: Text(c.name),
           actions: [
-            // if (c.isAnyQueued) IconButton(onPressed: c.pushQueuedAction, icon: Icon(Icons.save_rounded), tooltip: 'Save All'),
-            // if (isAnyMatprakQueued) IconButton(onPressed: !canPushQueue ? null : c.pushQueuedAction, icon: Icon(Icons.save_rounded), tooltip: 'Save All',),
-            if (c.isSimAnyQueued) IconButton(onPressed: !c.isSimLoading ? null : c.pushSimAction, icon: Icon(Icons.save_rounded), tooltip: 'Save Current Matkul'),
+            if (c.isSimAnyQueued) IconButton(onPressed: c.pushSimAction, icon: Icon(Icons.save_rounded), tooltip: 'Save ${c.name}'),
+            if (c.isAnyQueued) TextButton(onPressed: c.config.saveQueuedAction, child: Text('Save All')),
           ],
         ),
-        floatingActionButton: Padding(
+        floatingActionButton: c.programStudi == null ? null : Padding(
           padding: const EdgeInsets.only(bottom: 52),
           child: FloatingActionButton(onPressed: c.inputDialog, child: Icon(Icons.add_rounded)),
         ),
-        body: Column(
+        body: c.programStudi == null
+        ? Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 24,
+            children: [
+              Text("Program Studi ${c.name} didn't exist, please check the inputed url"),
+              TextButton(onPressed: currentContext?.pop, child: Text('Go back'))
+            ],
+          ),
+        ) 
+        : Column(
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
@@ -141,25 +153,27 @@ class Matprak extends StatelessWidget {
                                               tooltip: 'Save Page'
                                             ),
                                             IconButton(
-                                              onPressed: c.isPageSelectedAnyQueued ? c.pushPageAction : null,
+                                              onPressed: c.isPageSelectedAnyQueued ? c.pushPageSelectedAction : null,
                                               icon: Icon(Icons.save_rounded),
                                               tooltip: 'Save Selected'
                                             ),
+                                            VerticalDivider(color: appTheme.colorScheme.surface),
                                             IconButton(
-                                              onPressed: !c.canPagedSelectedEdit ? null : () => c.setSelectedType('mata kuliah'),
+                                              onPressed: !c.canPagedSelectedEdit ? null : () => c.setPagedSelectedType(false),
                                               icon: Icon(Icons.assignment_rounded),
                                               tooltip: 'Set Selected to mata kuliah',
                                             ),
                                             IconButton(
-                                              onPressed: !c.canPagedSelectedEdit ? null : () => c.setSelectedType('praktikum'),
+                                              onPressed: !c.canPagedSelectedEdit ? null : () => c.setPagedSelectedType(true),
                                               icon: Icon(Icons.assignment_ind_rounded),
                                               tooltip: 'Set Selected to praktikum',
                                             ),
                                             IconButton(
-                                              onPressed: !c.canPagedSelectedEdit ? null : () => c.setSelectedType('keduanya'),
+                                              onPressed: !c.canPagedSelectedEdit ? null : () => c.setPagedSelectedType(null),
                                               icon: Icon(Icons.assignment_returned_rounded),
                                               tooltip: 'Set Selected to keduanya',
                                             ),
+                                            VerticalDivider(color: appTheme.colorScheme.surface),
                                             if (c.canPagedSelectedUndoChange) IconButton(
                                               onPressed: c.undoChangePageSelectedData,
                                               icon: Icon(Icons.undo_outlined, color: Colors.amber),
@@ -168,7 +182,7 @@ class Matprak extends StatelessWidget {
                                               onPressed: !c.canPagedUndoChange ? null : c.undoChangePageData,
                                               icon: Icon(Icons.undo_rounded, color: !c.canPagedUndoChange ? null : Colors.amber),
                                               tooltip: 'Undo Changes',
-                                            )else if (c.canPagedSelectedUndoDelete) IconButton(
+                                            ) else if (c.canPagedSelectedUndoDelete) IconButton(
                                               onPressed: c.undoDeletePageSelectedData,
                                               icon: Icon(Icons.restore_from_trash_rounded, color: Colors.red),
                                               tooltip: 'Undo Selected Delete',
@@ -275,30 +289,32 @@ class Matprak extends StatelessWidget {
                                                     //   icon: Icon(
                                                     //     isLoading ? Icons.remove : Icons.add,
                                                     //   ), tooltip: isLoading ? 'Testing...' : 'Test'
-                                                    // ),
+                                                    // ), 
                                                     if (isAdding || isUpdating || isDeleting) IconButton(
                                                       onPressed: isLoading ? null : () => c.pushAction(entry),
                                                       icon: Icon(
                                                         Icons.save_rounded,
                                                       ), tooltip: isLoading ? 'Saving...' : 'Save'
                                                     ),
+                                                    VerticalDivider(color: appTheme.colorScheme.surface),
                                                     IconButton(
-                                                      onPressed: isLoading || isDeleting || isPraktikum == false ? null : () => c.setType(entry, 'mata kuliah'),
+                                                      onPressed: isLoading || isDeleting || isPraktikum == false ? null : () => c.setType(entry, false),
                                                       icon: Icon(Icons.assignment_rounded),
                                                       tooltip: 'Set to mata kuliah',
                                                     ),
                                                     IconButton(
-                                                      onPressed: isLoading || isDeleting || isPraktikum == true ? null : () => c.setType(entry, 'praktikum'),
+                                                      onPressed: isLoading || isDeleting || isPraktikum == true ? null : () => c.setType(entry, true),
                                                       icon: Icon(Icons.assignment_ind_rounded),
                                                       tooltip: 'Set to praktikum',
                                                     ),
                                                     IconButton(
-                                                      onPressed: isLoading || isDeleting || isPraktikum == null ? null : () => c.setType(entry, 'keduanya'),
+                                                      onPressed: isLoading || isDeleting || isPraktikum == null ? null : () => c.setType(entry, null),
                                                       icon: Icon(Icons.assignment_returned_rounded),
                                                       tooltip: 'Set to keduanya',
                                                     ),
+                                                    VerticalDivider(color: appTheme.colorScheme.surface),
                                                     if (isUpdating) IconButton(
-                                                      onPressed: isLoading ? null : () => c.undoChange(entry.id),
+                                                      onPressed: isLoading ? null : () => c.undoChange({entry.id}),
                                                       icon: Icon(Icons.restore_outlined, color: isLoading ? null : Colors.amber),
                                                       tooltip: 'Undo Changes',
                                                     ) else if (isDeleting) IconButton(
