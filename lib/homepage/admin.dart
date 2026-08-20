@@ -1,4 +1,5 @@
 import 'package:eform_ldte/misc/global.dart';
+import 'package:eform_ldte/misc/widget.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:eform_ldte/core/controller.dart';
@@ -23,6 +24,7 @@ class Admin extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.config), child: Text('Global Config')),
+                Divider(color: appTheme.colorScheme.surface),
                 ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.pinjamAdmin), child: Text('Peminjaman Peralatan')),
                 ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.keteranganAdmin), child: Text('Surat Keterangan Praktikum')),
               ],

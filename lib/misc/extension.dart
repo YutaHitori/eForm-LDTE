@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 
-extension StringExtensions on String? {
+extension StringNExtensions on String? {
   bool isBlank() {
     return this == null || this!.trim().isEmpty;
   }
@@ -16,6 +16,16 @@ extension StringExtensions on String? {
   DateTime? toDateTime() {
     return DateTime.tryParse((this?.trim() ?? '').replaceAll('/', '-'));
   }
+
+  String capitalCase([bool retain = true]) => this?.capitalCase() ?? '';
+}
+
+extension StringExtensions on String {
+  String capitalCase([bool retain = true]) => split(' ').map((w) {
+    if (w.isEmpty) return '';
+    if (!retain) w = w.toLowerCase();
+    return w[0].toUpperCase() + w.substring(1);
+  }).join(' ').replaceAll(' Dan ', ' dan ');
 }
 
 extension DateTimeExtension on DateTime {
@@ -58,12 +68,6 @@ extension IntExtension on int {
 extension TimeOfDayExtension on TimeOfDay {
   String toFormatedString() {
     return '${hour < 10 ? '0$hour' : hour}:${minute < 10 ? '0$minute' : minute}';
-  }
-}
-
-extension ListExtension on List {
-  String toFormatedString() {
-    return '$this'.substring(1, '$this'.length - 1);
   }
 }
 

@@ -2951,20 +2951,20 @@ _.e=0
 _.f=e
 _.r=0
 _.w=!1},
-yx(a4){var s,r,q,p,o=null,n=J.a9(a4),m=n.j(a4,"fontBytes"),l=n.j(a4,"headerBytes"),k=n.j(a4,"footerBytes"),j=n.j(a4,"buktiBytes"),i=n.j(a4,"nomor_surat"),h=n.j(a4,"today"),g=n.j(a4,"timeStart"),f=n.j(a4,"timeEnd"),e=n.j(a4,"matkul"),d=n.j(a4,"praktikum"),c=n.j(a4,"modul"),b=n.j(a4,"date"),a=t.N,a0=B.iU(n.j(a4,"nama"),a),a1=B.iU(n.j(a4,"nim"),a),a2=m.BYTES_PER_ELEMENT,a3=B.bM(0,o,A.l.aK(m.byteLength,a2))
-a=J.kQ(A.E.gB(m),m.byteOffset+0*a2,a3*a2)
+yx(a6){var s,r,q,p,o=null,n=J.a9(a6),m=n.j(a6,"fontBytes"),l=n.j(a6,"headerBytes"),k=n.j(a6,"footerBytes"),j=n.j(a6,"buktiBytes"),i=n.j(a6,"nomor_surat"),h=n.j(a6,"nama_kepala_ldte"),g=n.j(a6,"nip_kepala_ldte"),f=n.j(a6,"today"),e=n.j(a6,"timeStart"),d=n.j(a6,"timeEnd"),c=n.j(a6,"matkul"),b=n.j(a6,"praktikum"),a=n.j(a6,"modul"),a0=n.j(a6,"date"),a1=t.N,a2=B.iU(n.j(a6,"nama"),a1),a3=B.iU(n.j(a6,"nim"),a1),a4=m.BYTES_PER_ELEMENT,a5=B.bM(0,o,A.l.aK(m.byteLength,a4))
+a1=J.kQ(A.E.gB(m),m.byteOffset+0*a4,a5*a4)
 s=B.mb(l)
 r=B.mb(k)
 q=B.mb(j)
 n=B.e([],t.f6)
 p=new B.la(B.vc(!0,o,A.abV,!1,A.m9),n)
-a=B.uV(new B.oX(i,h,e,d,c,b,g,f,a0,a1,q),new B.oY(r),new B.oZ(s),new B.f0(56.69291338582677,0,56.69291338582677,14.173228346456694),A.eG,B.vz(new B.jY(a,o)))
-a.j7(p,o)
-n.push(a)
+a1=B.uV(new B.oX(i,f,c,b,a,a0,e,d,a2,a3,h,g,q),new B.oY(r),new B.oZ(s),new B.f0(56.69291338582677,0,56.69291338582677,14.173228346456694),A.eG,B.vz(new B.jY(a1,o)))
+a1.j7(p,o)
+n.push(a1)
 return p.d6()},
 oZ:function oZ(a){this.a=a},
 oY:function oY(a){this.a=a},
-oX:function oX(a,b,c,d,e,f,g,h,i,j,k){var _=this
+oX:function oX(a,b,c,d,e,f,g,h,i,j,k,l,m){var _=this
 _.a=a
 _.b=b
 _.c=c
@@ -2975,7 +2975,9 @@ _.r=g
 _.w=h
 _.x=i
 _.y=j
-_.z=k},
+_.z=k
+_.Q=l
+_.as=m},
 l_:function l_(a,b){this.a=a
 this.b=b},
 a3:function a3(a){this.a=-1
@@ -10314,8 +10316,8 @@ l=new B.hN(A.m6,1,A.n5)
 d=B.aj([0,A.nO,1,A.f5],e,d)
 e=B.e([],a)
 for(k=h.x,j=h.y,i=0;i<k.length;++i)A.G.ar(e,B.e([new B.c_(B.e([B.a8(j[i],g,A.acb),B.a8("  "+k[i],g,g)],b))],a))
-f=B.e([new B.i0(f,B.qv(B.e([c,s,r,q,p,o,n,m,B.pb(new B.bN(283.46456692913387,g,B.pJ(new B.n1(l,l,l,l,l,l),e,d))),B.a8("\n",g,g),B.a8("Demikian surat keterangan ini dibuat agar dapat dipergunakan sebagaimana mestinya.",g,g),B.a8("\n\n",g,g),B.qw(A.mT,B.qv(B.e([B.a8("Kepala Lab. Dasar Teknik Elektro,",g,g),B.a8("\n\n\n\n\n\n",g,g),B.a8("Dr. Waskita Adijarto, ST., MT.",B.h9(g,g,g,g,g,g,g,g,g,A.bq,g,g,g,g,A.aB,g,!0,g,g,g,g),g),B.a8("NIP.: 19720403 199803 1 003",g,g)],b),A.dA),g,new B.f0(0,0,56.69291338582677,0))],b),A.dA)),new B.fG(),B.a8("Bukti Screenshot Jadwal Praktikum :",B.h9(g,g,g,g,g,g,g,g,g,A.bq,g,g,11,g,g,g,!0,g,g,g,g),g),B.a8("\n",g,g)],b)
-f.push(B.qw(g,B.pf(h.z,g),new B.az(0,425.1968503937008,0,425.1968503937008),g))
+f=B.e([new B.i0(f,B.qv(B.e([c,s,r,q,p,o,n,m,B.pb(new B.bN(283.46456692913387,g,B.pJ(new B.n1(l,l,l,l,l,l),e,d))),B.a8("\n",g,g),B.a8("Demikian surat keterangan ini dibuat agar dapat dipergunakan sebagaimana mestinya.",g,g),B.a8("\n\n",g,g),B.qw(A.mT,B.qv(B.e([B.a8("Kepala Lab. Dasar Teknik Elektro,",g,g),B.a8("\n\n\n\n\n\n",g,g),B.a8(h.z,B.h9(g,g,g,g,g,g,g,g,g,A.bq,g,g,g,g,A.aB,g,!0,g,g,g,g),g),B.a8("NIP.: "+h.Q,g,g)],b),A.dA),g,new B.f0(0,0,56.69291338582677,0))],b),A.dA)),new B.fG(),B.a8("Bukti Screenshot Jadwal Praktikum :",B.h9(g,g,g,g,g,g,g,g,g,A.bq,g,g,11,g,g,g,!0,g,g,g,g),g),B.a8("\n",g,g)],b)
+f.push(B.qw(g,B.pf(h.as,g),new B.az(0,425.1968503937008,0,425.1968503937008),g))
 return f},
 $S:29}
 B.l_.prototype={

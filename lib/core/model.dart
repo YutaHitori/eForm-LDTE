@@ -61,20 +61,25 @@ class LastUpdatedModel {
 }
 
 class GlobalConfigModel {
-  String? nomorSurat, lineOALDTE, caraPinjam, caraKeterangan, caraPertukaran;
-  late DateTime fakultas;
+  String? nomorSurat, lineOALDTE, namaKepalaLDTE, nipKepalaLDTE, caraPinjam, caraKeterangan, caraPertukaran;
+  DateTime fakultas = DateTime(2000);
 
   GlobalConfigModel({
     this.nomorSurat,
     this.lineOALDTE,
+    this.namaKepalaLDTE,
+    this.nipKepalaLDTE,
     this.caraPinjam,
     this.caraKeterangan,
     this.caraPertukaran,
-  });
+    DateTime? fakultas
+  }) : fakultas = fakultas ?? DateTime(2000);
 
   GlobalConfigModel.fromJson(Map<String, dynamic> json) {
     nomorSurat = json['nomor_surat'];
     lineOALDTE = (json['lineoa_ldte'] as String).trim();
+    namaKepalaLDTE = (json['nama_kepala_ldte'] as String).trim();
+    nipKepalaLDTE = (json['nip_kepala_ldte'] as String).trim();
     caraPinjam = (json['cara_pinjam'] as String).trim();
     caraKeterangan = (json['cara_keterangan'] as String).trim();
     caraPertukaran = (json['cara_pertukaran'] as String).trim();
@@ -84,6 +89,12 @@ class GlobalConfigModel {
   GlobalConfigModel duplicate() => GlobalConfigModel(
     nomorSurat: nomorSurat,
     lineOALDTE: lineOALDTE,
+    namaKepalaLDTE: namaKepalaLDTE,
+    nipKepalaLDTE: nipKepalaLDTE,
+    caraPinjam: caraPinjam,
+    caraKeterangan: caraKeterangan,
+    caraPertukaran: caraPertukaran,
+    fakultas: fakultas
   );
 }
 
@@ -231,7 +242,7 @@ class StorageCacheModel {
   List<MatprakModel> get mataKuliah => programStudi.expand((p) => p.mataKuliah).toList();
   List<MatprakModel> get praktikum => programStudi.expand((p) => p.praktikum).toList();
 
-  List<String> formatedFakultas() => fakultas.map((v) => v.name).toList().toList();
+  List<String> formatedFakultas() => fakultas.map((v) => v.name).toList();
   List<String> formatedProgramStudi() => programStudi.map((v) => v.name).toList();
   List<String> formatedMataKuliah() => mataKuliah.map((v) => '${v.kode} ${v.nama}').toList();
   List<String> formatedPraktikum() => praktikum.map((v) => '${v.kode} ${v.nama}').toList();
@@ -273,12 +284,14 @@ class QueueActionModel {
   Set<int> select = <int>{};
 
   QueueActionModel({
-    required this.insert,
-    required this.update,
-    required this.delete,
-  });
-
-  QueueActionModel.d();
+    Set<int>? insert,
+    Set<int>? update,
+    Set<int>? delete,
+  }) {
+    this.insert = insert ?? <int>{};
+    this.update = update ?? <int>{};
+    this.delete = delete ?? <int>{};
+  }
 
   Set<int> get set => {...insert, ...update, ...delete};
   bool get isAnyQueued => set.isNotEmpty;

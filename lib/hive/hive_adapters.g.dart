@@ -108,16 +108,19 @@ class GlobalConfigModelAdapter extends TypeAdapter<GlobalConfigModel> {
     return GlobalConfigModel(
       nomorSurat: fields[0] as String?,
       lineOALDTE: fields[1] as String?,
+      namaKepalaLDTE: fields[6] as String?,
+      nipKepalaLDTE: fields[7] as String?,
       caraPinjam: fields[3] as String?,
       caraKeterangan: fields[4] as String?,
       caraPertukaran: fields[5] as String?,
-    )..fakultas = fields[2] as DateTime;
+      fakultas: fields[2] as DateTime?,
+    );
   }
 
   @override
   void write(BinaryWriter writer, GlobalConfigModel obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.nomorSurat)
       ..writeByte(1)
@@ -129,7 +132,11 @@ class GlobalConfigModelAdapter extends TypeAdapter<GlobalConfigModel> {
       ..writeByte(4)
       ..write(obj.caraKeterangan)
       ..writeByte(5)
-      ..write(obj.caraPertukaran);
+      ..write(obj.caraPertukaran)
+      ..writeByte(6)
+      ..write(obj.namaKepalaLDTE)
+      ..writeByte(7)
+      ..write(obj.nipKepalaLDTE);
   }
 
   @override

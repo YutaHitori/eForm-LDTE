@@ -330,6 +330,8 @@ Future<Uint8List> peminjamanPeralatanCompilePdfWorker(dynamic form) async {
     final Uint8List buktiBytes = params['buktiBytes'];
     
     final String nomorSurat = params['nomor_surat'];
+    final String namaKepalaLDTE = params['nama_kepala_ldte'];
+    final String nipKepalaLDTE = params['nip_kepala_ldte'];
 
     final String today = params['today'];
     final String timeStart = params['timeStart'];
@@ -492,13 +494,13 @@ Future<Uint8List> peminjamanPeralatanCompilePdfWorker(dynamic form) async {
                     pw.Text('\n\n\n\n\n\n'),
 
                     pw.Text(
-                      'Dr. Waskita Adijarto, ST., MT.',
+                      namaKepalaLDTE,
                       style: pw.TextStyle(
                         fontWeight: pw.FontWeight.bold,
                       ),
                     ),
 
-                    pw.Text('NIP.: 19720403 199803 1 003'),
+                    pw.Text('NIP.: $nipKepalaLDTE'),
                   ],
                 ),
               ),

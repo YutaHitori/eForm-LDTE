@@ -17,8 +17,8 @@ void main() async {
   initializeDateFormatting('id_ID');
 
   await Supabase.initialize(
-    url: "https://xulfjcgekimkkijjswqm.supabase.co",
-    publishableKey: "sb_publishable_2FRbSQMkCHktF4c8jKqEuA_eDMrZZkp",
+    url: const String.fromEnvironment('SUPABASE_URL'),
+    publishableKey: const String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY'),
   );
   auth.listenAuthChange();
 

@@ -83,6 +83,7 @@ class AdminSuratKeteranganPraktikum extends StatelessWidget {
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constrains) {
+                  final scale = constrains.maxWidth > 1280.0 ? (constrains.maxWidth / 1280.0) * 1.1 : 1.0;
                   return c.isLoading.value
                   ? Center(child: CircularProgressIndicator())
                   : RefreshIndicator(
@@ -108,11 +109,11 @@ class AdminSuratKeteranganPraktikum extends StatelessWidget {
                       : SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: SizedBox(
-                          width: constrains.maxWidth > 860 ? constrains.maxWidth : 860,
+                          width: constrains.maxWidth > 1280 ? constrains.maxWidth : 1280,
                           child: Column(
                             children: [
                               ListTile(
-                                contentPadding: EdgeInsets.only(right: 12),
+                                contentPadding: EdgeInsets.symmetric(horizontal: 12),
                                 leading: Transform.translate(
                                   offset: Offset(8, 0),
                                   child: Row(
@@ -138,10 +139,25 @@ class AdminSuratKeteranganPraktikum extends StatelessWidget {
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
+                                    SizedBox(width: 24),
                                     SizedBox(
-                                      width: 152,
+                                      width: 320 * scale * 1.25,
+                                      child: Column(
+                                        spacing: 4,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Text('Berhalangan Hadir', textScaleFactor: 1.2),
+                                          Text('Menghadiri', textScaleFactor: 1.2),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(width: 24),
+                                    SizedBox(
+                                      width: 144 * scale,
                                       child: Text('Tanggal Dibuat', textScaleFactor: 1.2),
                                     ),
+                                    SizedBox(width: 12),
                                     IconButton(
                                       onPressed: !canMassUpdate ? null : () => c.setSelectedStatus('pending'),
                                         icon: Icon(Icons.pending_rounded, color: !canMassUpdate ? null : Colors.orange), tooltip: 'mark as pending'
@@ -175,69 +191,92 @@ class AdminSuratKeteranganPraktikum extends StatelessWidget {
                                       final isPending = isLoading || entry.status == 'pending';
                                       final isExported = isLoading || entry.status == 'exported';
                                       final isSpam = isLoading || entry.status == 'spam';
-                                      return ListTile(
-                                        contentPadding: EdgeInsets.only(right: 12),
-                                        // onLongPress: entry.nama.isBlank() ? null : () {
-                                        //   Clipboard.setData(
-                                        //     ClipboardData(text: entry.phone!),
-                                        //   );
-                                        //   ScaffoldMessenger.of(context).showSnackBar(
-                                        //     SnackBar(content: Text('Phone number copied to clipboard!')),
-                                        //   );
-                                        // },
-                                        onTap: () => c.detail(entry.id),
-                                        leading: Transform.translate(
-                                          offset: Offset(8, 0),
-                                          child: Row(
+                                      return Card(
+                                        color: appTheme.appBarTheme.backgroundColor,
+                                        margin: EdgeInsets.zero,
+                                        shape: BorderDirectional(
+                                          start: BorderSide(
+                                            color: (getColorFromSubmissionStatus(entry.status) ?? Colors.white).withAlpha(isLoading ? 128 : 255), 
+                                            width: 8
+                                          ),
+                                        ),
+                                        child: ListTile(
+                                          contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                                          // onLongPress: entry.nama.isBlank() ? null : () {
+                                          //   Clipboard.setData(
+                                          //     ClipboardData(text: entry.phone!),
+                                          //   );
+                                          //   ScaffoldMessenger.of(context).showSnackBar(
+                                          //     SnackBar(content: Text('Phone number copied to clipboard!')),
+                                          //   );
+                                          // },
+                                          onTap: () => c.detail(entry.id),
+                                          leading: Transform.translate(
+                                            offset: Offset(8, 0),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Checkbox(
+                                                  value: c.isSelected.contains(entry.id), 
+                                                  onChanged: isMassLoading || isLoading ? null : (v) => c.selectItem(entry.id, v!)
+                                                ),
+                                                SizedBox(
+                                                  width: 40,
+                                                  child: Text(
+                                                    '${entry.id}',
+                                                    style: TextStyle(
+                                                      fontSize: 15,
+                                                      color: getColorFromSubmissionStatus(entry.status)
+                                                    ),
+                                                    maxLines: 1, 
+                                                    textAlign: TextAlign.center
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          title: Text(entry.nama.join(', '), overflow: TextOverflow.ellipsis,),
+                                          subtitle: Text(entry.nim.join(', ')),
+                                          trailing: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              Checkbox(
-                                                value: c.isSelected.contains(entry.id), 
-                                                onChanged: isMassLoading || isLoading ? null : (v) => c.selectItem(entry.id, v!)
-                                              ),
+                                              SizedBox(width: 24),
                                               SizedBox(
-                                                width: 40,
-                                                child: Text(
-                                                  '${entry.id}',
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    color: getColorFromSubmissionStatus(entry.status)
-                                                  ),
-                                                  maxLines: 1, 
-                                                  textAlign: TextAlign.center
+                                                width: 320 * scale * 1.25,
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: [
+                                                    Text('${entry.matkul}', textScaleFactor: 1.2, maxLines: 1, overflow: TextOverflow.ellipsis),
+                                                    Text('${entry.praktikum} [${entry.modul}]', textScaleFactor: 1.2, maxLines: 1, overflow: TextOverflow.ellipsis),
+                                                  ],
                                                 ),
+                                              ),
+                                              SizedBox(width: 24),
+                                              SizedBox(
+                                                width: 144 * scale,
+                                                child: Text(entry.createdAt.toDateTimeFormatedString(), textScaleFactor: 1.2),
+                                              ),
+                                              SizedBox(width: 12),
+                                              IconButton(
+                                                onPressed: isPending ? null : () => c.setStatus(entry.id, 'pending'),
+                                                  icon: Icon(Icons.pending_rounded, color: isPending ? null : Colors.orange), tooltip: 'mark as pending'
+                                              ),
+                                              IconButton(
+                                                onPressed: isExported ? null : () => c.setStatus(entry.id, 'exported'),
+                                                icon: Icon(Icons.unarchive_rounded, color: isExported ? null : Colors.green), tooltip: 'mark as exported'
+                                              ),
+                                              IconButton(
+                                                onPressed: isSpam ? null : () => c.setStatus(entry.id, 'spam'),
+                                                icon: Icon(Icons.report_rounded, color: isSpam ? null : Colors.red), tooltip: 'mark as spam'
+                                              ),
+                                              VerticalDivider(color: appTheme.colorScheme.surface),
+                                              IconButton(
+                                                onPressed: c.isExporting.value ? null : () => c.preview(entry),
+                                                icon: Icon(c.isExporting.value ? Icons.hourglass_top_rounded : Icons.print_rounded), tooltip: c.isExporting.value ? 'Export in progress, please wait' : 'preview and export'
                                               ),
                                             ],
                                           ),
-                                        ),
-                                        title: Text(entry.nama.toFormatedString(), overflow: TextOverflow.ellipsis,),
-                                        subtitle: Text(entry.nim.toFormatedString()),
-                                        trailing: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            SizedBox(width: 12),
-                                            SizedBox(
-                                              width: 152,
-                                              child: Text(entry.createdAt.toDateTimeFormatedString(), textScaleFactor: 1.2),
-                                            ),
-                                            IconButton(
-                                              onPressed: isPending ? null : () => c.setStatus(entry.id, 'pending'),
-                                                icon: Icon(Icons.pending_rounded, color: isPending ? null : Colors.orange), tooltip: 'mark as pending'
-                                            ),
-                                            IconButton(
-                                              onPressed: isExported ? null : () => c.setStatus(entry.id, 'exported'),
-                                              icon: Icon(Icons.unarchive_rounded, color: isExported ? null : Colors.green), tooltip: 'mark as exported'
-                                            ),
-                                            IconButton(
-                                              onPressed: isSpam ? null : () => c.setStatus(entry.id, 'spam'),
-                                              icon: Icon(Icons.report_rounded, color: isSpam ? null : Colors.red), tooltip: 'mark as spam'
-                                            ),
-                                            VerticalDivider(color: appTheme.colorScheme.surface),
-                                            IconButton(
-                                              onPressed: c.isExporting.value ? null : () => c.preview(entry),
-                                              icon: Icon(c.isExporting.value ? Icons.hourglass_top_rounded : Icons.print_rounded), tooltip: c.isExporting.value ? 'Export in progress, please wait' : 'preview and export'
-                                            ),
-                                          ],
                                         ),
                                       );
                                     },

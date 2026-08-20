@@ -83,6 +83,7 @@ class AdminPeminjamanPeralatan extends StatelessWidget {
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constrains) {
+                  final scale = constrains.maxWidth > 1280.0 ? (constrains.maxWidth / 1280.0) * 1.1 : 1.0;
                   return c.isLoading.value
                   ? Center(child: CircularProgressIndicator())
                   : RefreshIndicator(
@@ -108,11 +109,11 @@ class AdminPeminjamanPeralatan extends StatelessWidget {
                       : SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: SizedBox(
-                          width: constrains.maxWidth > 920 ? constrains.maxWidth : 920,
+                          width: constrains.maxWidth > 1280 ? constrains.maxWidth : 1280,
                           child: Column(
                             children: [
                               ListTile(
-                                contentPadding: EdgeInsets.only(right: 12),
+                                contentPadding: EdgeInsets.symmetric(horizontal: 12),
                                 leading: Transform.translate(
                                   offset: Offset(8, 0),
                                   child: Row(
@@ -138,16 +139,30 @@ class AdminPeminjamanPeralatan extends StatelessWidget {
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    SizedBox(width: 12),
+                                    SizedBox(width: 24),
                                     SizedBox(
-                                      width: 192,
+                                      width: 224 * scale * 1.25,
                                       child: Text('Barang yang dipinjam', textScaleFactor: 1.2),
                                     ),
-                                    SizedBox(width: 12),
+                                    SizedBox(width: 24),
                                     SizedBox(
-                                      width: 152,
+                                      width: 192 * scale,
+                                      child: Column(
+                                        spacing: 4,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Text('Tanggal Peminjaman', textScaleFactor: 1.2),
+                                          Text('Tanggal Pengembalian', textScaleFactor: 1.2),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(width: 24),
+                                    SizedBox(
+                                      width: 144 * scale,
                                       child: Text('Tanggal Dibuat', textScaleFactor: 1.2),
                                     ),
+                                    SizedBox(width: 12),
                                     IconButton(
                                       onPressed: !canMassUpdate ? null : () => c.setSelectedStatus('borrowed'),
                                         icon: Icon(Icons.outbox_rounded, color: !canMassUpdate ? null : Colors.blue), tooltip: 'mark as borrowed'
@@ -191,81 +206,109 @@ class AdminPeminjamanPeralatan extends StatelessWidget {
                                       final isDamaged = isLoading || entry.status == 'damaged';
                                       final isLost = isLoading || entry.status == 'lost';
                                       final isSpam = isLoading || entry.status == 'spam';
-                                      return ListTile(
-                                        contentPadding: EdgeInsets.only(right: 12),
-                                        // onLongPress: entry.nama.isBlank() ? null : () {
-                                        //   Clipboard.setData(
-                                        //     ClipboardData(text: entry.phone!),
-                                        //   );
-                                        //   ScaffoldMessenger.of(context).showSnackBar(
-                                        //     SnackBar(content: Text('Phone number copied to clipboard!')),
-                                        //   );
-                                        // },
-                                        onTap: () => c.detail(entry.id),
-                                        leading: Transform.translate(
-                                          offset: Offset(8, 0),
-                                          child: Row(
+                                      return Card(
+                                        color: appTheme.appBarTheme.backgroundColor,
+                                        margin: EdgeInsets.zero,
+                                        shape: BorderDirectional(
+                                          start: BorderSide(
+                                            color: (getColorFromSubmissionStatus(entry.status) ?? Colors.white).withAlpha(isLoading ? 128 : 255), 
+                                            width: 8
+                                          ),
+                                        ),
+                                        child: ListTile(
+                                          contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                                          // onLongPress: entry.nama.isBlank() ? null : () {
+                                          //   Clipboard.setData(
+                                          //     ClipboardData(text: entry.phone!),
+                                          //   );
+                                          //   ScaffoldMessenger.of(context).showSnackBar(
+                                          //     SnackBar(content: Text('Phone number copied to clipboard!')),
+                                          //   );
+                                          // },
+                                          onTap: () => c.detail(entry.id),
+                                          leading: Transform.translate(
+                                            offset: Offset(8, 0),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Checkbox(
+                                                  value: c.isSelected.contains(entry.id), 
+                                                  onChanged: isMassLoading || isLoading ? null : (v) => c.selectItem(entry.id, v!)
+                                                ),
+                                                SizedBox(
+                                                  width: 40,
+                                                  child: Text(
+                                                    '${entry.id}',
+                                                    style: TextStyle(
+                                                      fontSize: 15,
+                                                      color: getColorFromSubmissionStatus(entry.status)
+                                                    ),
+                                                    maxLines: 1, 
+                                                    textAlign: TextAlign.center
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          title: Text(entry.nama, overflow: TextOverflow.ellipsis,),
+                                          subtitle: Text(entry.nim),
+                                          trailing: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              Checkbox(
-                                                value: c.isSelected.contains(entry.id), 
-                                                onChanged: isMassLoading || isLoading ? null : (v) => c.selectItem(entry.id, v!)
-                                              ),
+                                              SizedBox(width: 24),
                                               SizedBox(
-                                                width: 40,
-                                                child: Text(
-                                                  '${entry.id}',
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    color: getColorFromSubmissionStatus(entry.status)
-                                                  ),
-                                                  maxLines: 1, 
-                                                  textAlign: TextAlign.center
+                                                width: 224 * scale * 1.25,
+                                                child: Text(entry.banyakBarang().join(', '), textScaleFactor: 1.2),
+                                              ),
+                                              SizedBox(width: 24),
+                                              SizedBox(
+                                                width: 192 * scale,
+                                                child: Column(
+                                                  spacing: 4,
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(entry.mulai.toDateFormatString(), textScaleFactor: 1.2),
+                                                    Text(entry.akhir.toDateFormatString(), textScaleFactor: 1.2),
+                                                  ],
                                                 ),
+                                              ),
+                                              SizedBox(width: 24),
+                                              SizedBox(
+                                                width: 144 * scale,
+                                                child: Text(entry.createdAt.toDateTimeFormatedString(), textScaleFactor: 1.2),
+                                              ),
+                                              SizedBox(width: 12),
+                                              Row(
+                                                children: [
+                                                  IconButton(
+                                                    onPressed: isBorrowed ? null : () => c.setStatus(entry.id, 'borrowed'),
+                                                      icon: Icon(Icons.outbox_rounded, color: isBorrowed ? null : Colors.blue), tooltip: 'mark as borrowed'
+                                                  ),
+                                                  IconButton(
+                                                    onPressed: isReturned ? null : () => c.setStatus(entry.id, 'returned'),
+                                                    icon: Icon(Icons.assignment_turned_in_rounded, color: isReturned ? null : Colors.green), tooltip: 'mark as returned'
+                                                  ),
+                                                  IconButton(
+                                                    onPressed: isOverdue ? null : () => c.setStatus(entry.id, 'overdue'),
+                                                    icon: Icon(Icons.running_with_errors_rounded, color: isOverdue ? null : Colors.orange), tooltip: 'mark as overdue'
+                                                  ),
+                                                  IconButton(
+                                                    onPressed: isDamaged ? null : () => c.setStatus(entry.id, 'damaged'),
+                                                    icon: Icon(Icons.heart_broken_rounded, color: isDamaged ? null : Colors.deepOrange), tooltip: 'mark as damaged'
+                                                  ),
+                                                  IconButton(
+                                                    onPressed: isLost ? null : () => c.setStatus(entry.id, 'lost'),
+                                                    icon: Icon(Icons.question_mark_rounded, color: isLost ? null : Colors.purpleAccent), tooltip: 'mark as lost'
+                                                  ),
+                                                  IconButton(
+                                                    onPressed: isSpam ? null : () => c.setStatus(entry.id, 'spam'),
+                                                    icon: Icon(Icons.report_rounded, color: isSpam ? null : Colors.red), tooltip: 'mark as spam'
+                                                  ),
+                                                ],
                                               ),
                                             ],
                                           ),
-                                        ),
-                                        title: Text(entry.nama, overflow: TextOverflow.ellipsis,),
-                                        subtitle: Text(entry.nim),
-                                        trailing: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            SizedBox(width: 12),
-                                            SizedBox(
-                                              width: 192,
-                                              child: Text(entry.banyakBarang().toFormatedString(), textScaleFactor: 1.2),
-                                            ),
-                                            SizedBox(width: 12),
-                                            SizedBox(
-                                              width: 152,
-                                              child: Text(entry.createdAt.toDateTimeFormatedString(), textScaleFactor: 1.2),
-                                            ),
-                                            IconButton(
-                                              onPressed: isBorrowed ? null : () => c.setStatus(entry.id, 'borrowed'),
-                                                icon: Icon(Icons.outbox_rounded, color: isBorrowed ? null : Colors.blue), tooltip: 'mark as borrowed'
-                                            ),
-                                            IconButton(
-                                              onPressed: isReturned ? null : () => c.setStatus(entry.id, 'returned'),
-                                              icon: Icon(Icons.assignment_turned_in_rounded, color: isReturned ? null : Colors.green), tooltip: 'mark as returned'
-                                            ),
-                                            IconButton(
-                                              onPressed: isOverdue ? null : () => c.setStatus(entry.id, 'overdue'),
-                                              icon: Icon(Icons.running_with_errors_rounded, color: isOverdue ? null : Colors.orange), tooltip: 'mark as overdue'
-                                            ),
-                                            IconButton(
-                                              onPressed: isDamaged ? null : () => c.setStatus(entry.id, 'damaged'),
-                                              icon: Icon(Icons.heart_broken_rounded, color: isDamaged ? null : Colors.deepOrange), tooltip: 'mark as damaged'
-                                            ),
-                                            IconButton(
-                                              onPressed: isLost ? null : () => c.setStatus(entry.id, 'lost'),
-                                              icon: Icon(Icons.question_mark_rounded, color: isLost ? null : Colors.purpleAccent), tooltip: 'mark as lost'
-                                            ),
-                                            IconButton(
-                                              onPressed: isSpam ? null : () => c.setStatus(entry.id, 'spam'),
-                                              icon: Icon(Icons.report_rounded, color: isSpam ? null : Colors.red), tooltip: 'mark as spam'
-                                            ),
-                                          ],
                                         ),
                                       );
                                     },

@@ -94,6 +94,15 @@ ThemeData appTheme = ThemeData(
     ),
   ),
 
+  textButtonTheme: TextButtonThemeData(
+    style: FilledButton.styleFrom(
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    ),
+  ),
+
   // Input fields
   inputDecorationTheme: InputDecorationTheme(
     fillColor: const Color(0xFF202020),
@@ -358,12 +367,14 @@ class SortRow extends StatelessWidget {
 
 class GetXRouteBinding<T extends GetxController> extends StatefulWidget {
   final T Function() controllerBuilder;
+  void Function()? initCallback;
   final Widget child;
 
-  const GetXRouteBinding({
+  GetXRouteBinding({
     super.key, 
     required this.controllerBuilder, 
     required this.child,
+    this.initCallback
   });
 
   @override
@@ -375,6 +386,7 @@ class _GetXRouteBindingState<T extends GetxController> extends State<GetXRouteBi
   void initState() {
     super.initState();
     widget.controllerBuilder();
+    widget.initCallback?.call();
   }
 
   @override

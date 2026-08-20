@@ -197,7 +197,7 @@ class StorageService {
             global = await getLatestGlobalConfig();
             getAll = global?.fakultas.isAfter(cached.globalConfig.fakultas) ?? true;
           }
-          if (outdated.isNotEmpty || getAll) latest = await getLatestFieldData(outdated, getAll);
+          if (outdated.isNotEmpty || getAll) latest = await getLatestFieldData(outdated, getAll ? storage.cached.formatedFakultas() : null);
         }
         final list = getAll ? latest?.map((v) => v.name).toList() : null;
         removeUnregisteredField(lastUpdated, list);
@@ -258,23 +258,27 @@ class StorageService {
     );
   }
 
-  Future<List<FakultasModel>?> getLatestFieldData([List<LastUpdatedModel>? outdated, bool getAll = false]) async {
+  Future<List<FakultasModel>?> getLatestFieldData([List<LastUpdatedModel>? outdated, List<String>? fakultas]) async {
     try {
       var query = auth.supabase
         .from('fakultas')
         .select('''
           *, 
-          program_studi ${getAll ? '' : '!inner'} (
+          program_studi ${fakultas != null ? '' : '!inner'} (
             id, created_at, name,
             mata_kuliah (*)
           )
         ''');
 
-      if (outdated != null && outdated.isNotEmpty) {
-        String filter = '';
-        outdated.forEach((v) => filter = '$filter,name.eq."${v.field?.replaceAll('"', '""')}"');
-        filter = filter.substring(1);
-        query = query.or(filter, referencedTable: 'program_studi');
+      if (fakultas != null && fakultas.isNotEmpty) {
+        final filter = fakultas.map((v) => 'name.neq."${v.replaceAll('"', '""')}"').join(',');
+        query = query.or(filter);
+        print('fakultas filter : $filter');
+      }
+
+      if (outdated != null) {
+        final filter = outdated.map((v) => 'name.eq."${v.field?.replaceAll('"', '""')}"').join(',');
+        query = query.or(outdated.isEmpty ? 'id.eq.0' : filter, referencedTable: 'program_studi');
         print('query filter : $filter');
       }
 
@@ -842,7 +846,9 @@ class AdminSuratKeteranganPraktikumService extends PDFService {
         'date': date,
         'nama': data.nama,
         'nim': data.nim,
-        'nomor_surat' : storage.cached.globalConfig.nomorSurat
+        'nomor_surat' : storage.cached.globalConfig.nomorSurat,
+        'nama_kepala_ldte' : storage.cached.globalConfig.namaKepalaLDTE,
+        'nip_kepala_ldte' : storage.cached.globalConfig.nipKepalaLDTE,
       };
 
       final compiled = await _pdfWorker.compute(params);
@@ -889,10 +895,6 @@ class GlobalConfigService {
     }
     return false;
   }
-
-  final fakultasQueue = QueueActionModel.d();
-  final prodiQueue = QueueActionModel.d();
-  final matprakQueue = QueueActionModel.d();
   
   final qfsp = QFSPService();
 

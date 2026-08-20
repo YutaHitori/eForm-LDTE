@@ -5,6 +5,7 @@ import 'package:eform_ldte/form/peminjaman_peralatan/detail.dart';
 import 'package:eform_ldte/form/surat_keterangan_praktikum/detail.dart';
 import 'package:eform_ldte/admin/config.dart';
 import 'package:eform_ldte/misc/widget.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:eform_ldte/core/controller.dart';
@@ -16,6 +17,7 @@ import 'package:eform_ldte/homepage/layout.dart';
 import 'package:eform_ldte/misc/function.dart';
 import 'package:eform_ldte/misc/global.dart';
 import 'package:eform_ldte/pertukaran_jadwal_praktikum/form.dart';
+import "package:universal_html/universal_html.dart" as html;
 
 String prev = '';
 
@@ -58,11 +60,6 @@ final GoRouter router = GoRouter(
             );
           },
         ),
-        // GoRoute(
-        //   path: 'settings',
-        //   builder: (context, state) => const Settings(),
-        //   onExit: (context, state) => onExit<SettingsController>(),
-        // ),
       ]
     ),
     GoRoute(
@@ -114,10 +111,6 @@ final GoRouter router = GoRouter(
                   child: DetailPeminjamanPeralatan(),
                 );
               },
-              onExit: (context, state) {
-                getFindCall<AdminPeminjamanPeralatanController>()?.qfsp.onChanged();
-                return true;
-              },
             ),
           ]
         ),
@@ -144,10 +137,6 @@ final GoRouter router = GoRouter(
                   child: DetailSuratKeteranganPraktikum(),
                 );
               },
-              onExit: (context, state) {
-                getFindCall<AdminSuratKeteranganPraktikumController>()?.qfsp.onChanged();
-                return true;
-              },
             ),
           ]
         ),
@@ -162,7 +151,13 @@ final GoRouter router = GoRouter(
               child: GlobalConfig(),
             );
           },
-          onExit: (context, state) => Get.find<GlobalConfigController>().saveAllDialog(),
+          onExit: (context, state) {
+            if (kIsWeb) {
+              final String targetLocation = html.window.location.pathname ?? '';
+              if (targetLocation != '/admin') return true; 
+            }
+            return Get.find<GlobalConfigController>().saveAllDialog();
+          },
           routes: [
             GoRoute(
               path: 'list',
@@ -185,10 +180,6 @@ final GoRouter router = GoRouter(
                     controllerBuilder: () => Get.put(ProgramStudiController()),
                     child: ProgramStudi(),
                   ),
-                  onExit: (context, state) {
-                    getFindCall<FakultasController>()?.qfsped.refresh();
-                    return true;
-                  },
                   routes: [
                     GoRoute(
                       path: ':program_studi',
@@ -199,10 +190,6 @@ final GoRouter router = GoRouter(
                         controllerBuilder: () => Get.put(MatprakController()),
                         child: Matprak(),
                       ),
-                      onExit: (context, state) {
-                        getFindCall<ProgramStudiController>()?.qfsped.refresh();
-                        return true;
-                      },
                     ),
                   ]
                 ),
