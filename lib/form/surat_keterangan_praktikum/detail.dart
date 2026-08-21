@@ -64,7 +64,7 @@ class DetailSuratKeteranganPraktikum extends StatelessWidget {
                           minTileHeight: 0,
                           title: Text(
                             "Cara Pengisisan Formulir Surat Keterangan Praktikum:",
-                            style: TextStyle(fontSize: 13.2),
+                            style: TextStyle(fontSize: 14.8),
                           ),
                           expandedAlignment: Alignment.centerLeft,
                           tilePadding: EdgeInsets.zero,
@@ -73,7 +73,6 @@ class DetailSuratKeteranganPraktikum extends StatelessWidget {
                             Text(c.cara, style: TextStyle(fontSize: 12.4)),
                           ],
                         ),
-                        Divider(),
                         for (var i = 0; i < c.namaC.value.length; i++) ...[
                           CustomTextField(
                             controller: c.namaC.value[i],
@@ -105,14 +104,14 @@ class DetailSuratKeteranganPraktikum extends StatelessWidget {
                               ),
                             ],
                           ),
-                          if (i + 1 < c.namaC.value.length) Divider(height: 0,)
+                          if (i + 1 < c.namaC.value.length) Divider()
                         ],
                         ElevatedButton.icon(onPressed: c.namaC.length >= 4 ? null : () {
                           c.namaC.add(TextEditingController());
                           c.nimC.add(TextEditingController());
                           c.namaE.add(null);
                           c.nimE.add(null);
-                        }, icon: Icon(Icons.person_add_alt_1_rounded), label: Text('Add'), style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.secondary)),
+                        }, icon: Icon(Icons.person_add_alt_1_rounded), label: Text('Tambah Pemohon'), style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.secondary)),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -136,7 +135,7 @@ class DetailSuratKeteranganPraktikum extends StatelessWidget {
                           ),
                           excludeSelected: false,
                           items: ['Lainnya...'] + (NC.isSyncing.value ? [] : c.matkulList),
-                          hintText: NC.isSyncing.value ? 'Syncing in progress, please wait...' : 'select',
+                          hintText: NC.isSyncing.value ? 'Syncing in progress, please wait...' : 'pilih mata kuliah',
                           onChanged: (v) => c.isMatkulLainnya.value = v == 'Lainnya...',
                         ),
                         if (c.isMatkulLainnya.value) Row(
@@ -196,7 +195,7 @@ class DetailSuratKeteranganPraktikum extends StatelessWidget {
                                     ),
                                     excludeSelected: false,
                                     items: ['Lainnya...'] + (NC.isSyncing.value ? [] : c.praktikumList),
-                                    hintText: NC.isSyncing.value ? 'Syncing in progress, please wait...' : 'select',
+                                    hintText: NC.isSyncing.value ? 'Syncing in progress, please wait...' : 'pilih praktikum',
                                     onChanged: (v) => c.isPraktikumLainnya.value = v == 'Lainnya...',
                                   ),
                                 ],
@@ -280,7 +279,7 @@ class DetailSuratKeteranganPraktikum extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text('Waktu Praktikum', textScaleFactor: 1.02,),
-                            if (c.timeStartE.value != null || c.timeEndE.value != null) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
+                            if (c.timeStartE.value != null || c.timeEndE.value != null) Text(c.timeStartE.value ?? c.timeEndE.value!, style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
                           ],
                         ),
                         SizedBox(
@@ -321,9 +320,10 @@ class DetailSuratKeteranganPraktikum extends StatelessWidget {
                             ],
                           ),
                         ),
-                        ElevatedButton(onPressed: c.updateForm, child: Text('Update')),
+                        SizedBox(height: 24),
+                        ElevatedButton(onPressed: c.submit, child: Text('Update')),
                       ],
-                    ),
+                    )
                   ),
                 ),
               );

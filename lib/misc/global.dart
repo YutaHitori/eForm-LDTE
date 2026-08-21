@@ -11,8 +11,6 @@ final storage = StorageService();
 
 final NC = Get.put(NavigationController());
 
-final items = ['custom', 'Oscilloscope', 'Multimeter', 'Signal Generator'];
-
 pw.TextStyle textStyle({double? fontSize, double? lineSpacing}) {
   return pw.TextStyle(
     fontWeight: pw.FontWeight.normal,
@@ -38,6 +36,7 @@ class NamedRoute {
   static const admin = '/admin';
   static const config = '/admin/config';
   static const list = '/admin/config/list';
+  static const barang = '/admin/config/barang';
   static const pinjamAdmin = '/admin/peminjaman-peralatan';
   static const keteranganAdmin = '/admin/surat-keterangan';
 }

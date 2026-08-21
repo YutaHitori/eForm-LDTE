@@ -1,3 +1,4 @@
+import 'package:eform_ldte/admin/daftar_barang.dart';
 import 'package:eform_ldte/admin/fakultas.dart';
 import 'package:eform_ldte/admin/mata_kuliah.dart';
 import 'package:eform_ldte/admin/program_studi.dart';
@@ -154,11 +155,23 @@ final GoRouter router = GoRouter(
           onExit: (context, state) {
             if (kIsWeb) {
               final String targetLocation = html.window.location.pathname ?? '';
-              if (targetLocation != '/admin') return true; 
+              if (targetLocation.startsWith('/admin/config')) return true; 
             }
             return Get.find<GlobalConfigController>().saveAllDialog();
           },
           routes: [
+            GoRoute(
+              path: 'barang',
+              redirect: (context, state) {
+                return redirect();
+              },
+              builder: (context, state) {
+                return GetXRouteBinding(
+                  controllerBuilder: () => Get.put(DaftarBarangController()),
+                  child: DaftarBarang(),
+                );
+              },
+            ),
             GoRoute(
               path: 'list',
               redirect: (context, state) {

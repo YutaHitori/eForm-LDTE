@@ -20,7 +20,7 @@ class AdminSuratKeteranganPraktikum extends StatelessWidget {
       final canMassUpdate = isAnySelected && !isMassLoading && c.loadingIndicator.isEmpty;      
       return Scaffold(
         appBar: AppBar(
-          title: Text('Kiriman - Surat Keterangan Praktikum'),
+          title: Text('Admin - Surat Keterangan Praktikum'),
           actions: [
             IconButton(onPressed: c.isLoading.value ? null : c.getAllSubmissions, icon: Icon(Icons.refresh_rounded))
           ],

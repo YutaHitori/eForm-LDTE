@@ -273,7 +273,6 @@ class Matprak extends StatelessWidget {
                                             child: Text(entry.type, textScaleFactor: 1.2),
                                           ),
                                           SizedBox(
-                                            width: 368,
                                             child: Row(
                                               mainAxisAlignment: MainAxisAlignment.end,
                                               children: [

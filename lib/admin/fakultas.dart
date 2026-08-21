@@ -207,7 +207,7 @@ class Fakultas extends StatelessWidget {
                                             ? appTheme.scaffoldBackgroundColor.withBlue(isLoading ? 36 : 42)
                                             : null,
                                       contentPadding: EdgeInsets.only(right: 12, left: 8),
-                                      onTap: () => currentContext?.push('${NamedRoute.list}/${entry.name}'),
+                                      onTap: isDeleting || isLoading ? null : () => currentContext?.push('${NamedRoute.list}/${entry.name}'),
                                       leading: Transform.translate(
                                         offset: Offset(8, 0),
                                         child: Row(
@@ -238,7 +238,6 @@ class Fakultas extends StatelessWidget {
                                         children: [
                                           SizedBox(width: 12),
                                           SizedBox(
-                                            width: 160,
                                             child: Row(
                                               mainAxisAlignment: MainAxisAlignment.end,
                                               children: [

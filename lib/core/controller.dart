@@ -133,13 +133,57 @@ class LoginController extends GetxController {
 }
 
 class PeminjamanPeralatanController extends GetxController {
+  @override
+  void onInit() async {
+    super.onInit();
+    namaF.addListener(() {
+      if (!namaF.hasFocus) namaC.text = namaC.text.trim().capitalCase(false);
+    });
+    nimF.addListener(() {
+      if (!nimF.hasFocus) nimC.text = nimC.text.trim();
+    });
+    dosenF.addListener(() {
+      if (!dosenF.hasFocus) dosenC.text = dosenC.text.trim().capitalCase();
+    });
+    nipDosenF.addListener(() {
+      if (!nipDosenF.hasFocus) nipDosenC.text = nipDosenC.text.trim();
+    });
+    ketuaF.addListener(() {
+      if (!ketuaF.hasFocus) ketuaC.text = ketuaC.text.trim().capitalCase();
+    });
+    nipKetuaF.addListener(() {
+      if (!nipKetuaF.hasFocus) nipKetuaC.text = nipKetuaC.text.trim();
+    });
+    init();
+  }
+
+  void init() async {
+    service.initWorker();
+    await service.imagePicker.retrieveLostData(idCard, key: 'idCard');
+    showReminderDialog();
+  }
+
+  @override
+  void onClose() {
+    service.closeWorker();
+    super.onClose();
+    namaF.dispose();
+    nimF.dispose();
+    dosenF.dispose();
+    nipDosenF.dispose();
+    ketuaF.dispose();
+    nipKetuaF.dispose();
+  }
+
+  List<String> get items => storage.cached.formatedItem();
+
   final service = PeminjamanPeralatanService();
   var isLoading = false.obs;
 
   final cara = storage.cached.globalConfig.caraPinjam ?? "Didn't exist, please refresh browser or contact our Line OA";
   List<String> get fakultasList => storage.cached.formatedFakultas();
 
-  Rxn<XFile> idCard = Rxn<XFile>(ImagePickerService.lastImages['default']); 
+  Rxn<XFile> idCard = Rxn<XFile>(ImagePickerService.lastImages['idCard']); 
 
   final namaC = TextEditingController();
   final nimC = TextEditingController();
@@ -155,24 +199,31 @@ class PeminjamanPeralatanController extends GetxController {
   final mulaiC = TextEditingController();
   final akhirC = TextEditingController();
 
+  final namaF = FocusNode();
+  final nimF = FocusNode();
+  final dosenF = FocusNode();
+  final nipDosenF = FocusNode();
+  final ketuaF = FocusNode();
+  final nipKetuaF = FocusNode();
+
   Future<void> selectDateStart() async {
-    final picked = await DateTimePickerService().selectDate(initial: mulaiC.text.toDateTime(), helpText: "Tanggal Peminjaman");
+    final picked = await DateTimePickerService.selectDate(initial: mulaiC.text.toDateTime() ?? today, helpText: "Tanggal Peminjaman");
     if (picked != null) mulaiC.text = picked.toDateString();
   }
 
   Future<void> selectDateEnd() async {
-    final picked = await DateTimePickerService().selectDate(initial: akhirC.text.toDateTime(), helpText: "Tanggal Pengembalian");
+    final picked = await DateTimePickerService.selectDate(initial: akhirC.text.toDateTime() ?? today, helpText: "Tanggal Pengembalian");
     if (picked != null) akhirC.text = picked.toDateString();
   }
 
   var prodiList = <String>[].obs;
 
   Map<String, dynamic> get dbform => {
-    if (!namaC.text.isBlank()) 'nama' : namaC.text.trim().capitalCase(),
+    if (!namaC.text.isBlank()) 'nama' : namaC.text.trim().capitalCase(false),
     if (!nimC.text.isBlank()) 'nim' : nimC.text.trim(),
     if (mulaiC.text.toDateTime() != null) 'mulai' : mulaiC.text.trim(),
     if (akhirC.text.toDateTime() != null) 'akhir' : akhirC.text.trim(),
-    'barang' : barangC.value.map((e) => e.text.trim()).toList(),
+    'barang' : barangC.value.map((e) => e.text.trim().capitalCase()).toList(),
     'banyak' : banyakC.value.map((e) => e.value).toList(),
   };
 
@@ -187,7 +238,7 @@ class PeminjamanPeralatanController extends GetxController {
   };
 
   void selectImage() async {
-    service.imagePicker.selectImage(idCard);
+    service.imagePicker.selectImage(idCard, key: 'idCard');
   }
 
   void previewImage() {
@@ -195,7 +246,7 @@ class PeminjamanPeralatanController extends GetxController {
   }
 
   void resetImage() {
-    service.imagePicker.resetImage(idCard);
+    service.imagePicker.resetImage(idCard, key: 'idCard');
   }
 
   void showReminderDialog() {
@@ -214,13 +265,13 @@ class PeminjamanPeralatanController extends GetxController {
                 color: appTheme.colorScheme.background,
                 borderRadius: BorderRadius.circular(8)
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
+              padding: const EdgeInsets.all(8),
               child: Scrollbar(
                 thumbVisibility: true,
                 radius: Radius.circular(4),
                 child: SingleChildScrollView(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4.0),
+                    padding: EdgeInsets.only(right: 8.0),
                     child: Text(cara, style: TextStyle(fontSize: 12.8)),
                   )
                 )
@@ -243,24 +294,6 @@ class PeminjamanPeralatanController extends GetxController {
       );
     }
   }
-
-  @override
-  void onInit() async {
-    super.onInit();
-    init();
-  }
-
-  void init() async {
-    service.initWorker();
-    await service.imagePicker.retrieveLostData(idCard);
-    showReminderDialog();
-  }
-
-  @override
-  void onClose() {
-    service.closeWorker();
-    super.onClose();
-  }
   
   void setProdi() {
     if (!fakultasC.hasValue) return;
@@ -277,24 +310,18 @@ class PeminjamanPeralatanController extends GetxController {
   var idCardE = Rxn<String>(null); 
 
   bool checkEmptyFields([bool reqId = true]) {
-    if (
-      barangC.any((e) => e.text.isBlank()) || 
-      banyakC.any((e) => !e.hasValue) || 
-      namaC.text.isBlank() ||
-      nimC.text.isBlank() ||
-      mulaiC.text.isBlank() ||
-      akhirC.text.isBlank()||
-      (idCard.value == null && reqId)
-    ) {
-      barangE.value = barangC.map((e) => e.text.isBlank() ? '*required' : null).toList();
-      banyakE.value = banyakC.map((e) => !e.hasValue ? '*required' : null).toList();
-      namaE.value = namaC.text.isBlank () ? '*required' : null;
-      nimE.value = nimC.text.isBlank () ? '*required' : null;
-      mulaiE.value = mulaiC.text.isBlank() ? '*required' : mulaiC.text.toDateTime() == null ? '*invalid' : null;
-      akhirE.value = akhirC.text.isBlank() ? '*required' : akhirC.text.toDateTime() == null ? '*invalid' : null;
-      if (reqId) idCardE.value = idCard.value == null ? '*required' : null;
-      return false;
-    }
+    barangE.value = barangC.map((e) => e.text.isBlank() ? '*required' : null).toList();
+    banyakE.value = banyakC.map((e) => !e.hasValue ? '*required' : null).toList();
+    namaE.value = namaC.text.isBlank () ? '*required' : null;
+    nimE.value = nimC.text.isBlank () ? '*required' : null;
+    final mulai = mulaiC.text.toDateTime();
+    final akhir = akhirC.text.toDateTime();
+    mulaiE.value = mulaiC.text.isBlank() ? '*required' : mulai == null ? '*invalid' : akhir != null && mulai.isAfter(akhir) ? '*melebihi tgl pengembalian' : null;
+    akhirE.value = akhirC.text.isBlank() ? '*required' : akhir == null ? '*invalid' : mulai != null && akhir.isBefore(mulai) ? '*kurang dari tgl pinjam' : null;
+    if (reqId) idCardE.value = idCard.value == null ? '*required' : null;
+    
+    if (barangE.any((v) => v != null) || banyakE.any((v) => v != null) || namaE.value != null || nimE.value != null || mulaiE.value != null || akhirE.value != null || (idCardE.value != null && reqId)) return false;
+   
     barangE.value.fillRange(0, barangE.value.length, null);
     banyakE.value.fillRange(0, banyakE.value.length, null);
     namaE.value = nimE.value = mulaiE.value = akhirE.value = idCardE.value = null;
@@ -302,7 +329,7 @@ class PeminjamanPeralatanController extends GetxController {
   }
   
   var lastForm = <String, dynamic>{};
-  void pinjam() async {
+  void submit() async {
   if (!checkEmptyFields()) return;
     isLoading.value = true;
     final savedFile = await service.compilePDF(form, await idCard.value?.readAsBytes());
@@ -327,10 +354,42 @@ class PeminjamanPeralatanController extends GetxController {
 } 
 
 class SuratKeteranganPraktikumController extends GetxController {
+  @override
+  void onInit() async {
+    super.onInit();
+      namaMatkulF.addListener(() {
+        if (!namaMatkulF.hasFocus) namaMatkul.text = namaMatkul.text.trim().capitalCase();
+      });
+      kodeMatkulF.addListener(() {
+        if (!kodeMatkulF.hasFocus) kodeMatkul.text = kodeMatkul.text.trim().toUpperCase();
+      });
+      namaPraktikumF.addListener(() {
+        if (!namaPraktikumF.hasFocus) namaPraktikum.text = namaPraktikum.text.trim().capitalCase();
+      });
+      kodePraktikumF.addListener(() {
+        if (!kodePraktikumF.hasFocus) kodePraktikum.text = kodePraktikum.text.trim().toUpperCase();
+      });
+    init();
+  }
+
+  void init() async {
+    await service.imagePicker.retrieveLostData(bukti, key: 'bukti');
+    showReminderDialog();
+  }
+
+  @override
+  void onClose() {
+    super.onClose();
+    namaMatkulF.dispose();
+    kodeMatkulF.dispose();
+    namaPraktikumF.dispose();
+    kodePraktikumF.dispose();
+  }
+
   var isLoading = false.obs;
   var message = RxnString(null);
 
-  final cara = storage.cached.globalConfig.caraPinjam ?? "Didn't exist, please refresh browser or contact our Line OA";
+  final cara = storage.cached.globalConfig.caraKeterangan ?? "Didn't exist, please refresh browser or contact our Line OA";
   final service = SuratKeteranganPraktikumService();
   List<String> get matkulList => storage.cached.formatedMataKuliah();
   List<String> get praktikumList => storage.cached.formatedPraktikum();
@@ -351,13 +410,13 @@ class SuratKeteranganPraktikumController extends GetxController {
                 color: appTheme.colorScheme.background,
                 borderRadius: BorderRadius.circular(8)
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
+              padding: const EdgeInsets.all(8),
               child: Scrollbar(
                 thumbVisibility: true,
                 radius: Radius.circular(4),
                 child: SingleChildScrollView(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4.0),
+                    padding: EdgeInsets.only(right: 8.0),
                     child: Text(cara, style: TextStyle(fontSize: 12.8)),
                   )
                 )
@@ -381,34 +440,21 @@ class SuratKeteranganPraktikumController extends GetxController {
     }
   }
 
-  @override
-  void onInit() async {
-    super.onInit();
-    init();
-  }
-
-  void init() async {
-    await service.imagePicker.retrieveLostData(bukti);
-    showReminderDialog();
-  }
-
   Future<void> selectDate() async {
-    final picked = await DateTimePickerService().selectDate(initial: dateC.text.toDateTime(), helpText: "Tanggal Praktikum");
+    final picked = await DateTimePickerService.selectDate(initial: dateC.text.toDateTime() ?? today, helpText: "Tanggal Praktikum");
     if (picked != null) dateC.text = picked.toDateString();
   }
 
   Future<void> selectTimeStart() async {
-    final picked = await DateTimePickerService().selectTime(initial: timeStartC.value, helpText: "Waktu Mulai Praktikum");
+    final picked = await DateTimePickerService.selectTime(initial: timeStartC.value, helpText: "Waktu Mulai Praktikum");
     if (picked != null) {
-      if (timeEndC.value != null && picked.isAfter(timeEndC.value!)) return snackbar('Error', 'Waktu Mulai Tidak Bisa Lebih Dari Waktu Selesai');
       timeStartC.value = picked;
     }
   }
 
   Future<void> selectTimeEnd() async {
-    final picked = await DateTimePickerService().selectTime(initial: timeEndC.value, helpText: "Waktu Selesai Praktikum");
+    final picked = await DateTimePickerService.selectTime(initial: timeEndC.value, helpText: "Waktu Selesai Praktikum");
     if (picked != null) {
-      if (timeStartC.value != null && picked.isBefore(timeStartC.value!)) return snackbar('Error', 'Waktu Selesai Tidak Bisa Kurang Dari Waktu Mulai');
       timeEndC.value = picked;
     }
   }
@@ -442,15 +488,21 @@ class SuratKeteranganPraktikumController extends GetxController {
   var timeEndE = Rxn<String>(null); 
   var buktiE = Rxn<String>(null); 
 
+  final namaF = FocusNode();
+  final namaMatkulF = FocusNode();
+  final kodeMatkulF = FocusNode();
+  final namaPraktikumF = FocusNode();
+  final kodePraktikumF = FocusNode();
+
   var prodiList = <String>[].obs;
 
-  Rxn<XFile> bukti = Rxn<XFile>(ImagePickerService.lastImages['default']); 
+  Rxn<XFile> bukti = Rxn<XFile>(ImagePickerService.lastImages['bukti']); 
 
   Map<String, dynamic> get form => {
     'nama' : namaC.value.map((e) => e.text.trim().capitalCase()).toList(),
     'nim' : nimC.value.map((e) => e.text.trim()).toList(),
-    'matkul' : matkul.value == 'Lainnya...' ? '${kodeMatkul.text.trim().toUpperCase()} ${namaMatkul.text.trim().capitalCase(false)}' : matkul.value,
-    'praktikum' : praktikum.value == 'Lainnya...' ? '${kodePraktikum.text.trim().toUpperCase()} ${namaPraktikum.text.trim().capitalCase(false)}' : praktikum.value,
+    'matkul' : matkul.value == 'Lainnya...' ? '${kodeMatkul.text.trim().toUpperCase()} ${namaMatkul.text.trim().capitalCase()}' : matkul.value,
+    'praktikum' : praktikum.value == 'Lainnya...' ? '${kodePraktikum.text.trim().toUpperCase()} ${namaPraktikum.text.trim().capitalCase()}' : praktikum.value,
     'modul' : modul.value!,
     'date' : dateC.text,
     'timeStart' : timeStartC.value!.toFormatedString(),
@@ -458,7 +510,7 @@ class SuratKeteranganPraktikumController extends GetxController {
   };
 
   void selectImage() async {
-    service.imagePicker.selectImage(bukti);
+    service.imagePicker.selectImage(bukti, key: 'bukti');
   }
 
   void previewImage() {
@@ -466,38 +518,31 @@ class SuratKeteranganPraktikumController extends GetxController {
   }
 
   void resetImage() {
-    service.imagePicker.resetImage(bukti);
+    service.imagePicker.resetImage(bukti, key: 'bukti');
   }
 
    bool checkEmptyFields([bool reqImage = true]) {
-    if (
-      namaC.any((e) => e.text.isBlank()) || 
-      nimC.any((e) => e.text.isBlank()) || 
-      !matkul.hasValue || 
-      (matkul.value == 'Lainnya...' && (namaMatkul.text.isBlank() || kodeMatkul.text.isBlank())) || 
-      !praktikum.hasValue || 
-      (praktikum.value == 'Lainnya...' && (namaPraktikum.text.isBlank() || kodePraktikum.text.isBlank())) || 
-      !modul.hasValue || 
-      (dateC.text.isBlank() || dateC.text.toDateTime() == null)||
-      timeStartC.value == null ||
-      timeEndC.value == null ||
-      (bukti.value == null && reqImage)
-    ) {
-      namaE.value = namaC.map((e) => e.text.isBlank() ? '*required' : null).toList();
-      nimE.value = nimC.map((e) => e.text.isBlank() ? '*required' : null).toList();
-      matkulE.value = !matkul.hasValue ? '*required' : null;
-      namaMatkulE.value = matkul.value == 'Lainnya...' && namaMatkul.text.isBlank () ? '': null;
-      kodeMatkulE.value = matkul.value == 'Lainnya...' && kodeMatkul.text.isBlank () ? '': null;
-      praktikumE.value = !praktikum.hasValue ? '*required' : null;
-      namaPraktikumE.value = praktikum.value == 'Lainnya...' && namaPraktikum.text.isBlank () ? '': null;
-      kodePraktikumE.value = praktikum.value == 'Lainnya...' && kodePraktikum.text.isBlank () ? '': null;
-      modulE.value = !modul.hasValue ? '' : null ;
-      dateE.value = dateC.text.isBlank() ? '*required' : dateC.text.toDateTime() == null ? '*invalid' : null;
-      timeStartE.value = timeStartC.value == null ? '*required' : null;
-      timeEndE.value = timeEndC.value == null ? '*required' : null;
-      if (reqImage) buktiE.value = bukti.value == null ? '*required' : null;
-      return false;
-    }
+    namaE.value = namaC.map((e) => e.text.isBlank() ? '*required' : null).toList();
+    nimE.value = nimC.map((e) => e.text.isBlank() ? '*required' : null).toList();
+    matkulE.value = !matkul.hasValue ? '*required' : null;
+    namaMatkulE.value = matkul.value == 'Lainnya...' && namaMatkul.text.isBlank () ? '': null;
+    kodeMatkulE.value = matkul.value == 'Lainnya...' && kodeMatkul.text.isBlank () ? '': null;
+    praktikumE.value = !praktikum.hasValue ? '*required' : null;
+    namaPraktikumE.value = praktikum.value == 'Lainnya...' && namaPraktikum.text.isBlank () ? '': null;
+    kodePraktikumE.value = praktikum.value == 'Lainnya...' && kodePraktikum.text.isBlank () ? '': null;
+    modulE.value = !modul.hasValue ? '' : null ;
+    dateE.value = dateC.text.isBlank() ? '*required' : dateC.text.toDateTime() == null ? '*invalid' : null;
+    final isInvalid = timeStartC.value != null && timeEndC.value != null && timeStartC.value!.isAfter(timeEndC.value!);
+    timeStartE.value = timeStartC.value == null ? '*required' : isInvalid ? '*waktu mulai melebihi waktu selesai' : null;
+    timeEndE.value = timeEndC.value == null ? '*required' : isInvalid ? '*waktu mulai melebihi waktu selesai' : null;
+    if (reqImage) buktiE.value = bukti.value == null ? '*required' : null;
+
+    if (namaE.value.any((v) => v != null) || nimE.value.any((v) => v != null) || 
+      matkulE.value != null || namaMatkulE.value != null || kodeMatkulE.value != null || 
+      praktikumE.value != null || namaPraktikumE.value != null || kodePraktikumE.value != null || 
+      modulE.value != null || dateE.value != null || timeStartE.value != null || 
+      timeEndE.value != null || (reqImage && buktiE.value != null)) return false;
+
     namaE.value.fillRange(0, namaE.value.length, null);
     nimE.value.fillRange(0, nimE.value.length, null);
     matkulE.value = namaMatkulE.value = kodeMatkulE.value = praktikumE.value = namaPraktikumE.value = kodePraktikumE.value = modulE.value = dateE.value = timeStartE.value = timeEndE.value = buktiE.value = null;
@@ -579,7 +624,7 @@ class PertukaranJadwalPraktikumController extends GetxController {
 
   final service = SuratKeteranganPraktikumService();
   
-  final cara = storage.cached.globalConfig.caraPinjam ?? "Didn't exist, please refresh browser or contact our Line OA";
+  final cara = storage.cached.globalConfig.caraPertukaran ?? "Didn't exist, please refresh browser or contact our Line OA";
   List<String> get praktikumList => storage.cached.formatedPraktikum();
 
   void showReminderDialog() {
@@ -598,13 +643,13 @@ class PertukaranJadwalPraktikumController extends GetxController {
                 color: appTheme.colorScheme.background,
                 borderRadius: BorderRadius.circular(8)
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
+              padding: const EdgeInsets.all(8),
               child: Scrollbar(
                 thumbVisibility: true,
                 radius: Radius.circular(4),
                 child: SingleChildScrollView(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4.0),
+                    padding: EdgeInsets.only(right: 8.0),
                     child: Text(cara, style: TextStyle(fontSize: 12.8)),
                   )
                 )
@@ -632,15 +677,44 @@ class PertukaranJadwalPraktikumController extends GetxController {
   void onInit() {
     super.onInit();
     showReminderDialog();
+    namaF.addListener(() {
+      if (!namaF.hasFocus) namaC.text = namaC.text.trim().capitalCase(false);
+    });
+    nimF.addListener(() {
+      if (!nimF.hasFocus) nimC.text = nimC.text.trim();
+    });
+    namaPF.addListener(() {
+      if (!namaPF.hasFocus) namaPC.text = namaPC.text.trim().capitalCase(false);
+    });
+    nimPF.addListener(() {
+      if (!nimPF.hasFocus) nimPC.text = nimPC.text.trim();
+    });
+    namaPraktikumF.addListener(() {
+      if (!namaPraktikumF.hasFocus) namaPraktikum.text = namaPraktikum.text.trim().capitalCase();
+    });
+    kodePraktikumF.addListener(() {
+      if (!kodePraktikumF.hasFocus) kodePraktikum.text = kodePraktikum.text.trim().toUpperCase();
+    });
+  }
+
+  @override 
+  void onClose() {
+    namaF.dispose();
+    nimF.dispose();
+    namaPF.dispose();
+    nimPF.dispose();
+    namaPraktikumF.dispose();
+    kodePraktikumF.dispose();
+    super.onClose();
   }
 
   Future<void> selectDate() async {
-    final picked = await DateTimePickerService().selectDate(initial: dateC.text.toDateTime(), helpText: "Jadwal Sebelum Pertukaran");
+    final picked = await DateTimePickerService.selectDate(initial: dateC.text.toDateTime() ?? today, helpText: "Jadwal Sebelum Pertukaran");
     if (picked != null) dateC.text = picked.toDateString();
   }
 
   Future<void> selectDateP() async {
-    final picked = await DateTimePickerService().selectDate(initial: datePC.text.toDateTime(), helpText: "Jadwal Pengganti");
+    final picked = await DateTimePickerService.selectDate(initial: datePC.text.toDateTime() ?? today, helpText: "Jadwal Pengganti");
     if (picked != null) datePC.text = picked.toDateString();
   }
 
@@ -671,24 +745,31 @@ class PertukaranJadwalPraktikumController extends GetxController {
 
   var prodiList = <String>[].obs;
 
+  final namaF = FocusNode();
+  final namaPF = FocusNode();
+  final nimF = FocusNode();
+  final nimPF = FocusNode();
+  final namaPraktikumF = FocusNode();
+  final kodePraktikumF = FocusNode();
+
   String get message => '''Silahkan chat sesuai template dibawah ini.
 ----------------------------------------
 Pertukaran Jadwal Praktikum
 PRAKTIKAN
-Nama : ${namaC.text.trim().capitalCase()}
+Nama : ${namaC.text.trim().capitalCase(false)}
 NIM : ${nimC.text.trim()}
 
 JADWAL SEBELUM PERTUKARAN
-Praktikum : ${praktikum.value == 'Lainnya...' ? '${kodePraktikum.text.trim().toUpperCase()} ${namaPraktikum.text.trim().capitalCase(false)}' : praktikum.value}
+Praktikum : ${praktikum.value == 'Lainnya...' ? '${kodePraktikum.text.trim().toUpperCase()} ${namaPraktikum.text.trim().capitalCase()}' : praktikum.value}
 Modul : ${modul.value}
 Hari/Tanggal : ${dateC.text.toDateTime()?.toDateFormatString()}
 
 MENGGANTIKAN PRAKΤΙΚΑΝ
-Nama: ${namaPC.text.trim()}
+Nama: ${namaPC.text.trim().capitalCase(false)}
 NIM : ${nimPC.text.trim()}
 
 MENGIKUTI PRAKTIKUM
-Praktikum : ${praktikum.value == 'Lainnya...' ? '${kodePraktikum.text.trim().toUpperCase()} ${namaPraktikum.text.trim().capitalCase(false)}' : praktikum.value}
+Praktikum : ${praktikum.value == 'Lainnya...' ? '${kodePraktikum.text.trim().toUpperCase()} ${namaPraktikum.text.trim().capitalCase()}' : praktikum.value}
 Modul : ${modul.value}
 Hari/Tanggal : ${datePC.text.toDateTime()?.toDateFormatString()}
 ----------------------------------------
@@ -825,7 +906,7 @@ class AdminPeminjamanPeralatanController extends GetxController {
   List<DateTime> get dateTimeList => [startDateC.text.toDateTime() ?? today, endDateC.text.toDateTime()?.add(Duration(days: 1)).subtract(Duration(seconds: 1)) ?? today];
 
   Future<void> selectDateFilterStart() async {
-    final picked = await DateTimePickerService().selectDate(initial: startDateC.text.toDateTime(), helpText: "Select start date");
+    final picked = await DateTimePickerService.selectDate(initial: startDateC.text.toDateTime(), helpText: "Select start date");
     if (picked != null) {
       startDateC.text = picked.toDateString();
       qfsp.onChanged();
@@ -833,7 +914,7 @@ class AdminPeminjamanPeralatanController extends GetxController {
   }
 
   Future<void> selectDateFilterEnd() async {
-    final picked = await DateTimePickerService().selectDate(initial: endDateC.text.toDateTime(), helpText: "Select end date");
+    final picked = await DateTimePickerService.selectDate(initial: endDateC.text.toDateTime(), helpText: "Select end date");
     if (picked != null) {
       endDateC.text = picked.toDateString();
       qfsp.onChanged();
@@ -948,7 +1029,8 @@ class DetailPeminjamanPeralatanController extends PeminjamanPeralatanController 
     akhirC.text = submission.akhir.toDateString();
   }
 
-  void updateForm() async {
+  @override
+  void submit() async {
     if (!checkEmptyFields(false)) return;
     ac.isLoading.value = true;
     final res = await ac.admin.updateFormData(id, dbform);
@@ -997,7 +1079,7 @@ class AdminSuratKeteranganPraktikumController extends GetxController {
   List<DateTime> get dateTimeList => [startDateC.text.toDateTime() ?? today, endDateC.text.toDateTime()?.add(Duration(days: 1)).subtract(Duration(seconds: 1)) ?? today];
 
   Future<void> selectDateFilterStart() async {
-    final picked = await DateTimePickerService().selectDate(initial: startDateC.text.toDateTime(), helpText: "Select start date");
+    final picked = await DateTimePickerService.selectDate(initial: startDateC.text.toDateTime(), helpText: "Select start date");
     if (picked != null) {
       startDateC.text = picked.toDateString();
       qfsp.onChanged();
@@ -1005,7 +1087,7 @@ class AdminSuratKeteranganPraktikumController extends GetxController {
   }
 
   Future<void> selectDateFilterEnd() async {
-    final picked = await DateTimePickerService().selectDate(initial: endDateC.text.toDateTime(), helpText: "Select end date");
+    final picked = await DateTimePickerService.selectDate(initial: endDateC.text.toDateTime(), helpText: "Select end date");
     if (picked != null) {
       endDateC.text = picked.toDateString();
       qfsp.onChanged();
@@ -1148,7 +1230,8 @@ class DetailSuratKeteranganPraktikumController extends SuratKeteranganPraktikumC
     timeEndC.value = submission.timeEnd;
   }
 
-  void updateForm() async {
+  @override
+  void submit() async {
     if (!checkEmptyFields(false)) return;
     ac.isLoading.value = true;
     final res = await ac.admin.updateFormData(id, form);
@@ -1224,7 +1307,7 @@ class GlobalConfigController extends GetxController {
     caraKeteranganSaved.value = caraKeterangan.text == storage.cached.globalConfig.caraKeterangan;
     caraPertukaranSaved.value = caraPertukaran.text == storage.cached.globalConfig.caraPertukaran;
     isSaved.value = lineOASaved.value && nomorSuratSaved.value && namaKepalaLDTESaved.value && nipKepalaLDTESaved.value && caraPinjamSaved.value;
-    return isSaved.value && !isAnyQueued;
+    return isSaved.value && !isAnyQueued && !itemQueue.isAnyQueued;
   }
 
   void init() {
@@ -1320,36 +1403,24 @@ class GlobalConfigController extends GetxController {
     save('lineoa_ldte', lineOACanEdit);
   }
 
-  void saveNomorSurat() {
-    save('nomor_surat', nomorSuratCanEdit);
-  }
+  void saveNomorSurat() => save('nomor_surat', nomorSuratCanEdit);
 
-  void saveNamaKepalaLDTE() {
-    save('nama_kepala_ldte', namaKepalaLDTECanEdit);
-  }
+  void saveNamaKepalaLDTE() => save('nama_kepala_ldte', namaKepalaLDTECanEdit);
 
-  void saveNipKepalaLDTE() {
-    save('nip_kepala_ldte', nipKepalaLDTECanEdit);
-  }
+  void saveNipKepalaLDTE() => save('nip_kepala_ldte', nipKepalaLDTECanEdit);
 
-  void saveCaraPinjam() {
-    save('cara_pinjam', caraPinjamCanEdit);
-  }
+  void saveCaraPinjam() => save('cara_pinjam', caraPinjamCanEdit);
 
-  void saveCaraKeterangan() {
-    save('cara_keterangan', caraKeteranganCanEdit);
-  }
+  void saveCaraKeterangan() => save('cara_keterangan', caraKeteranganCanEdit);
 
-  void saveCaraPertukaran() {
-    save('cara_pertukaran', caraPertukaranCanEdit);
-  }
+  void saveCaraPertukaran() => save('cara_pertukaran', caraPertukaranCanEdit);
 
   Future<void> saveQueuedAction() async {
     isLoading.value = true;
-    loadingMessage.value = 'Saving updated config, please wait...';
+    loadingMessage.value = 'Saving updated list, please wait...';
     final isSuccess = await pushQueuedAction(simulated.fakultas);
     if (isSuccess) {
-      snackbar('Success!', 'Cara pengisian formulir pertukaran updated');
+      snackbar('Success!', 'list updated');
       loadingMessage.value = 'Syncing new config, please wait...';
       await storage.sync();
       isSavedCheck();
@@ -1357,7 +1428,20 @@ class GlobalConfigController extends GetxController {
     isLoading.value = false;
   }
 
-  void saveAll() async {
+  Future<void> saveItemAction() async {
+    isLoading.value = true;
+    loadingMessage.value = 'Saving updated item, please wait...';
+    final isSuccess = await pushQueuedAction(simulated.item);
+    if (isSuccess) {
+      snackbar('Success!', 'list updated');
+      loadingMessage.value = 'Syncing new config, please wait...';
+      await storage.sync();
+      isSavedCheck();
+    }
+    isLoading.value = false;
+  }
+
+  Future<void> saveAll() async {
     isLoading.value = true;
     loadingMessage.value = 'Saving updated config, please wait...';
     if (!isSaved.value) {
@@ -1369,8 +1453,15 @@ class GlobalConfigController extends GetxController {
     }
     if (isAnyQueued) {
       loadingMessage.value = 'Saving list, please wait...';
-      final isSuccess1 = await pushQueuedAction(simulated.fakultas);
-      if (isSuccess1) {
+      final isSuccess = await pushQueuedAction(simulated.fakultas);
+      if (isSuccess) {
+        snackbar('Success!', 'List updated');
+      }
+    }
+    if (itemQueue.isAnyQueued) {
+      loadingMessage.value = 'Saving item, please wait...';
+      final isSuccess = await pushQueuedAction(simulated.item);
+      if (isSuccess) {
         snackbar('Success!', 'List updated');
       }
     }
@@ -1387,14 +1478,14 @@ class GlobalConfigController extends GetxController {
         'Leave this page?',
         'You have some unsaved changes, are you sure you want to leave without saving?',
         cancelAction: () {
-          init();
           closeAllDialog();
+          init();
           currentContext?.pop();
         },
         cancelText: 'Leave',
-        confirmAction: () {
-          saveAll(); 
+        confirmAction: () async {
           closeAllDialog();
+          await saveAll(); 
           currentContext?.pop();
         },
         confirmText: 'Save',
@@ -1407,11 +1498,12 @@ class GlobalConfigController extends GetxController {
   var fakultasQueue = QueueActionModel();
   var prodiQueue = QueueActionModel();
   var matprakQueue = QueueActionModel();
+  var itemQueue = QueueActionModel();
   final simulated = storage.cached.duplicate();
   bool get isAnyQueued => fakultasQueue.isAnyQueued || prodiQueue.isAnyQueued || matprakQueue.isAnyQueued;
 
-  List simFrom<T>() => T == FakultasModel ? simulated.fakultas : T == ProgramStudiModel ? simulated.programStudi : simulated.matprak;
-  QueueActionModel queueFrom<T>() => T == FakultasModel ? fakultasQueue : T == ProgramStudiModel ? prodiQueue : matprakQueue;
+  List simFrom<T>() => T == FakultasModel ? simulated.fakultas : T == ProgramStudiModel ? simulated.programStudi : T == MatprakModel ? simulated.matprak : simulated.item;
+  QueueActionModel queueFrom<T>() => T == FakultasModel ? fakultasQueue : T == ProgramStudiModel ? prodiQueue : T == MatprakModel ? matprakQueue : itemQueue;
 
   bool inDeleteQ<T>(int id) => queueFrom<T>().delete.contains(id);  
   bool inInsertQ<T>(int id) => queueFrom<T>().insert.contains(id);  
@@ -1431,6 +1523,9 @@ class GlobalConfigController extends GetxController {
       'nama': model.nama,
       'is_praktikum': model.isPraktikum,
       'program_studi' : model.programStudi
+    } : model is ItemModel ? {
+      if (model.id > 0) 'id': model.id,
+      'name': model.name,
     } : {};
 
   Future<bool> pushAction<T>(T qdata, [bool single = false]) async {
@@ -1440,8 +1535,8 @@ class GlobalConfigController extends GetxController {
     final data = qdata as dynamic;
     if (queue.loading.contains(data.id)) return false;
 
-    final qfsped = T == FakultasModel ? getFindCall<FakultasController>()?.qfsped : T == ProgramStudiModel ? getFindCall<ProgramStudiController>()?.qfsped : getFindCall<MatprakController>()?.qfsped;
-    final qfsp = T == FakultasModel ? getFindCall<FakultasController>()?.qfsp : T == ProgramStudiModel ? getFindCall<ProgramStudiController>()?.qfsp : getFindCall<MatprakController>()?.qfsp;
+    final qfsped = T == FakultasModel ? getFindCall<FakultasController>()?.qfsped : T == ProgramStudiModel ? getFindCall<ProgramStudiController>()?.qfsped : T == MatprakModel ? getFindCall<MatprakController>()?.qfsped : getFindCall<DaftarBarangController>()?.qfsped;
+    final qfsp = T == FakultasModel ? getFindCall<FakultasController>()?.qfsp : T == ProgramStudiModel ? getFindCall<ProgramStudiController>()?.qfsp : T == MatprakModel ? getFindCall<MatprakController>()?.qfsp : getFindCall<DaftarBarangController>()?.qfsp;
     final int id = data.id;
 
     queue.loading.add(id);
@@ -1527,8 +1622,8 @@ class GlobalConfigController extends GetxController {
 
     final ids = dataSet.map((dynamic v) => v.id as int).toSet().difference(q.loading);
 
-    final qfsped = T == FakultasModel ? getFindCall<FakultasController>()?.qfsped : T == ProgramStudiModel ? getFindCall<ProgramStudiController>()?.qfsped : getFindCall<MatprakController>()?.qfsped;
-    final qfsp = T == FakultasModel ? getFindCall<FakultasController>()?.qfsp : T == ProgramStudiModel ? getFindCall<ProgramStudiController>()?.qfsp : getFindCall<MatprakController>()?.qfsp;
+    final qfsped = T == FakultasModel ? getFindCall<FakultasController>()?.qfsped : T == ProgramStudiModel ? getFindCall<ProgramStudiController>()?.qfsped : T == MatprakModel ? getFindCall<MatprakController>()?.qfsped : getFindCall<DaftarBarangController>()?.qfsped;
+    final qfsp = T == FakultasModel ? getFindCall<FakultasController>()?.qfsp : T == ProgramStudiModel ? getFindCall<ProgramStudiController>()?.qfsp : T == MatprakModel ? getFindCall<MatprakController>()?.qfsp : getFindCall<DaftarBarangController>()?.qfsp;
     
     final queue = QueueActionModel(
       insert: ids.intersection(q.insert),
@@ -1659,8 +1754,241 @@ class GlobalConfigController extends GetxController {
       ? (newData as List<FakultasModel>).firstWhere((v) => v.name == match.name).id 
       : T == ProgramStudiModel 
         ? (newData as List<ProgramStudiModel>).firstWhere((v) => v.name == match.name).id 
-        : (newData as List<MatprakModel>).firstWhere((v) => v.kode == match.kode).id;
+        : T == MatprakModel 
+          ? (newData as List<MatprakModel>).firstWhere((v) => v.kode == match.kode).id
+          : (newData as List<ItemModel>).firstWhere((v) => v.name == match.name).id;
     }
+  }
+}
+
+class DaftarBarangController extends GetxController {
+  final config = Get.find<GlobalConfigController>();
+  late final admin = config.service;
+  List<ItemModel> get stored => storage.cached.item;
+  List<ItemModel> get sim => config.simulated.item;
+  final qfsped = RxList<ItemModel>([]);
+  
+  late Iterable<ItemModel> selectedData = sim.where(inSelected);
+  late Iterable<ItemModel> pagedSelectedData = sim.where(inPageSelected);
+  
+  late Set<int> insertQueue = config.itemQueue.insert;
+  late Set<int> updateQueue = config.itemQueue.update;
+  late Set<int> deleteQueue = config.itemQueue.delete;
+  late Set<int> loadingQueue = config.itemQueue.loading;
+  late Set<int> isSelected = config.prodiQueue.select;
+  
+  Set<int> get simIds => sim.map((v) => v.id).toSet().difference(loadingQueue);
+  Set<int> get pagedIds => qfsped.value.map((v) => v.id).toSet().difference(loadingQueue);
+  Set<int> get selectedIds => isSelected.difference(loadingQueue);
+  Set<int> get pagedSelectedIds => pagedIds.intersection(isSelected);
+  Set<int> get simQueued => config.itemQueue.set.intersection(simIds);
+
+  bool inSelected(ItemModel v) => selectedIds.contains(v.id);  
+  bool inPageSelected(ItemModel v) => pagedSelectedIds.contains(v.id);  
+  bool idInSelected(int id) => selectedIds.contains(id);  
+  bool inQueue(int id) => config.itemQueue.set.contains(id);  
+  bool inDeleteQ(int id) => config.inDeleteQ<ItemModel>(id);  
+  bool inInsertQ(int id) => config.inInsertQ<ItemModel>(id);  
+  bool inUpdateQ(int id) => config.inUpdateQ<ItemModel>(id);
+  
+  bool get isPagedLoading => pagedIds.isEmpty;
+  bool get isPagedAnySelected => pagedSelectedIds.isNotEmpty;
+  bool get isSimAnyQueued => simQueued.isNotEmpty;
+  bool get isSimLoading => simQueued.difference(loadingQueue).isEmpty;
+  bool get isPageAnyQueued => pagedIds.any(inQueue);
+  bool get isPageSelectedAnyQueued => pagedSelectedIds.any(inQueue);
+  bool get areDeleting => deleteQueue.isEmpty ? false : isPagedAnySelected ? selectedIds.every(inDeleteQ) : pagedIds.every(inDeleteQ);
+  bool get areInserting => insertQueue.isEmpty ? false : isPagedAnySelected ? selectedIds.every(inInsertQ) : pagedIds.every(inInsertQ);
+  bool get areUpdating => updateQueue.isEmpty ? false : isPagedAnySelected ? selectedIds.every(inUpdateQ) : pagedIds.every(inUpdateQ);
+  bool get canPagedUndoDelete => !isPagedAnySelected && pagedIds.isNotEmpty && pagedIds.every(inDeleteQ);
+  bool get canPagedSelectedUndoDelete => isPagedAnySelected && pagedSelectedIds.every(inDeleteQ);
+  bool get canPagedUndoChange => !isPagedAnySelected && pagedIds.isNotEmpty && pagedIds.any(inUpdateQ);
+  bool get canPagedSelectedUndoChange => isPagedAnySelected && pagedSelectedIds.any(inUpdateQ);
+  bool? get isPageSelected => 
+    pagedIds.any(idInSelected)
+      ? pagedIds.every(idInSelected)
+        ? true : null 
+      : false;
+
+  var isLoading = false.obs;
+  var isMassLoading = false.obs;
+  var canEdit = <int>{};
+
+  @override
+  void onInit() {
+    super.onInit();
+    qfsp.onChanged();
+  }
+
+  var pageNum = 1.obs;
+  var pageC = NumberPaginatorController();
+
+  late QFSPController<ItemModel> qfsp = QFSPController(
+    filter: [
+      FilterController(
+        filterKey: "action",
+        filterList: ['insert', 'update', 'delete'],
+        reference: (m) => inInsertQ(m.id) ? 'insert' : inUpdateQ(m.id) ? 'update' : inDeleteQ(m.id) ? 'delete' : '',
+        multiSelect: false
+      ),
+    ],
+    onChanged: ([String? itemKey, String? filterKey]) {
+      var queried = admin.qfsp.query(sim, qfsp, (v) => [v.name]);
+      var filtered = admin.qfsp.filter(queried, qfsp, itemKey, filterKey);
+      var sorted = admin.qfsp.sort(filtered, qfsp);
+      var paged = admin.qfsp.page(sorted, qfsp, pageNum);
+      qfsped.value = paged;
+    },
+    pageC: pageC,
+    dataPerPage: 25
+  );
+  
+  void selectItem(int id, bool state) {
+    if (loadingQueue.contains(id)) return;
+    state ? isSelected.add(id) : isSelected.remove(id);
+    qfsped.refresh();
+  }
+
+  void selectPageItem(bool? state) {
+    for (var id in pagedIds) {
+      if (loadingQueue.contains(id)) continue;
+      state == true ? isSelected.add(id) : isSelected.remove(id);
+    }
+    Future(() => qfsped.refresh());
+  }
+
+  void delete(int id) {
+    if (loadingQueue.contains(id)) return;
+    deleteQueue.add(id);
+    qfsped.refresh();
+  }
+
+  void undoDelete(int id) {
+    if (loadingQueue.contains(id)) return;
+    deleteQueue.remove(id);
+    qfsped.refresh();
+  }
+
+  void deletePageSelectedData() {
+    for (final id in pagedSelectedIds) {
+      if (loadingQueue.contains(id)) continue;
+      if (deleteQueue.contains(id)) continue;
+      deleteQueue.add(id);
+    }
+    qfsped.refresh();
+  }
+
+  void undoDeletePageData() {
+    for (final id in pagedIds) {
+      if (loadingQueue.contains(id)) continue;
+      deleteQueue.remove(id);
+    }
+    qfsped.refresh();
+  }
+
+  void undoDeletePageSelectedData() {
+    for (final id in pagedSelectedIds) {
+      if (loadingQueue.contains(id)) continue;
+      deleteQueue.remove(id);
+    }
+    qfsped.refresh();
+  }
+
+  void undoChange(Set<int> ids) {
+    for (final id in ids) {
+      final source = stored.firstWhereOrNull((v) => v.id == id)?.duplicate();
+      if (source != null) {
+        updateQueue.remove(id);
+        final ref = sim.firstWhere((v) => v.id == id);
+        final old = ref.duplicate();
+
+        ref.name = source.name;
+        // sim.where((v) => v.id == id).toList().first = source;
+      }
+    }
+    qfsped.refresh();
+  }
+
+  void undoChangePageData() => undoChange(pagedIds);
+
+  void undoChangePageSelectedData() => undoChange(pagedSelectedIds);
+  
+  void pushAction(ItemModel data) async => config.pushAction(data);
+
+  void pushSimAction() => config.pushQueuedAction(sim);
+
+  void pushPageAction() => config.pushQueuedAction(qfsped.value);
+
+  void pushPageSelectedAction() => config.pushQueuedAction(pagedSelectedData);
+
+  void inputDialog([ItemModel? s]) {
+    final nameC = TextEditingController(text: s?.name);
+    var nameE = Rxn<String>(null);
+    final nameF = FocusNode();
+    
+    final id = s?.id ?? ((insertQueue.lastOrNull ?? 0) - 1);
+    ItemModel createModel() => ItemModel(
+      id: id, 
+      name: nameC.text.trim().capitalCase(),
+    );
+
+    bool checkEmptyFields() {
+      final model = createModel();
+      final list = config.simulated.formatedItem();
+      nameE.value = nameC.text.isBlank() ? '*required' : model.name != s?.name && list.contains(model.name) ? '*already exist' : null;
+
+      if (nameE.value != null) return false;
+      
+      nameE.value = null;
+      return true;
+    }
+
+    nameF.addListener(() {
+      if (!nameF.hasFocus) nameC.text = nameC.text.trim().capitalCase(false);
+    });
+    
+    alertDialog(
+      s == null ? 'Add new item' : 'Edit item', 
+      null,
+      width: 420,
+      message: Obx(() => Column(
+        children: [
+          CustomTextField(
+            controller: nameC,
+            focusNode: nameF,
+            labelText: 'Nama',
+            errorText: nameE.value,
+            decoration: InputDecoration(hintText: 'e.g. Kabel Jumper'),
+          ),
+          SizedBox(height: 16)
+        ]
+      )),
+      onPopInvokedWithResult: (didPop, result) => 
+        Future.delayed(Duration(milliseconds: 500), () {
+          nameF.dispose();
+        }),
+      confirmText: s == null ? 'add' : 'save',
+      confirmAction: () {
+        if (!checkEmptyFields()) return;
+        closeAllDialog();
+        final model = createModel();
+        if (s == null) {
+          insertQueue.add(id);
+          sim.insert(0, model);
+        } else {
+          s.name = model.name;
+          if (s.id > 0) { 
+            final isExist = stored.any((v) => v.isEqualTo(s));
+            if (isExist) {
+              updateQueue.remove(s.id);
+            } else {
+              updateQueue.add(s.id);
+            }
+          }
+        }
+        qfsp.onChanged();
+      },
+    );
   }
 }
 
@@ -1768,13 +2096,13 @@ class FakultasController extends GetxController {
   void delete(int id) {
     if (loadingQueue.contains(id)) return;
     deleteQueue.add(id);
-    qfsp.onChanged();
+    qfsped.refresh();
   }
 
   void undoDelete(int id) {
     if (loadingQueue.contains(id)) return;
     deleteQueue.remove(id);
-    qfsp.onChanged();
+    qfsped.refresh();
   }
 
   void deletePageSelectedData() {
@@ -1783,7 +2111,7 @@ class FakultasController extends GetxController {
       if (deleteQueue.contains(id)) continue;
       deleteQueue.add(id);
     }
-    qfsp.onChanged();
+    qfsped.refresh();
   }
 
   void undoDeletePageData() {
@@ -1791,7 +2119,7 @@ class FakultasController extends GetxController {
       if (loadingQueue.contains(id)) continue;
       deleteQueue.remove(id);
     }
-    qfsp.onChanged();
+    qfsped.refresh();
   }
 
   void undoDeletePageSelectedData() {
@@ -1799,7 +2127,7 @@ class FakultasController extends GetxController {
       if (loadingQueue.contains(id)) continue;
       deleteQueue.remove(id);
     }
-    qfsp.onChanged();
+    qfsped.refresh();
   }
 
   void undoChange(Set<int> ids) {
@@ -1823,29 +2151,17 @@ class FakultasController extends GetxController {
     qfsp.onChanged();
   }
 
-  void undoChangePageData() {
-    undoChange(pagedIds);
-  }
+  void undoChangePageData() => undoChange(pagedIds);
 
-  void undoChangePageSelectedData() {
-    undoChange(pagedSelectedIds);
-  }
+  void undoChangePageSelectedData() => undoChange(pagedSelectedIds);
   
-  void pushAction(FakultasModel data) async {
-    config.pushAction(data);
-  }
+  void pushAction(FakultasModel data) async => config.pushAction(data);
 
-  void pushSimAction() {
-    config.pushQueuedAction(sim);
-  }
+  void pushSimAction() => config.pushQueuedAction(sim);
 
-  void pushPageAction() {
-    config.pushQueuedAction(qfsped.value);
-  }
+  void pushPageAction() => config.pushQueuedAction(qfsped.value);
 
-  void pushPageSelectedAction() {
-    config.pushQueuedAction(pagedSelectedData);
-  }
+  void pushPageSelectedAction() => config.pushQueuedAction(pagedSelectedData);
 
   void inputDialog([FakultasModel? s]) {
     final nameC = TextEditingController(text: s?.name);
@@ -1857,13 +2173,13 @@ class FakultasController extends GetxController {
     final id = s?.id ?? ((insertQueue.lastOrNull ?? 0) - 1);
     FakultasModel createModel() => FakultasModel(
       id: id, 
-      name: nameC.text.trim(),
+      name: nameC.text.trim().capitalCase(),
       programStudi: s?.programStudi ?? [],
     );
 
     bool checkEmptyFields() {
       final model = createModel();
-      final list = config.simulated.formatedProgramStudi();
+      final list = config.simulated.formatedFakultas();
       nameE.value = nameC.text.isBlank() ? '*required' : !nameC.text.contains(RegExp(r'\((.*?)\)')) ? '*invalid format' : model.name != s?.name && list.contains(model.name) ? '*already exist' : null;
 
       if (nameE.value != null) return false;
@@ -2044,13 +2360,13 @@ class ProgramStudiController extends GetxController {
   void delete(int id) {
     if (loadingQueue.contains(id)) return;
     deleteQueue.add(id);
-    qfsp.onChanged();
+    qfsped.refresh();
   }
 
   void undoDelete(int id) {
     if (loadingQueue.contains(id)) return;
     deleteQueue.remove(id);
-    qfsp.onChanged();
+    qfsped.refresh();
   }
 
   void deletePageSelectedData() {
@@ -2059,7 +2375,7 @@ class ProgramStudiController extends GetxController {
       if (deleteQueue.contains(id)) continue;
       deleteQueue.add(id);
     }
-    qfsp.onChanged();
+    qfsped.refresh();
   }
 
   void undoDeletePageData() {
@@ -2067,7 +2383,7 @@ class ProgramStudiController extends GetxController {
       if (loadingQueue.contains(id)) continue;
       deleteQueue.remove(id);
     }
-    qfsp.onChanged();
+    qfsped.refresh();
   }
 
   void undoDeletePageSelectedData() {
@@ -2075,7 +2391,7 @@ class ProgramStudiController extends GetxController {
       if (loadingQueue.contains(id)) continue;
       deleteQueue.remove(id);
     }
-    qfsp.onChanged();
+    qfsped.refresh();
   }
 
   void undoChange(Set<int> ids) {
@@ -2101,13 +2417,9 @@ class ProgramStudiController extends GetxController {
     qfsp.onChanged();
   }
 
-  void undoChangePageData() {
-    undoChange(pagedIds);
-  }
+  void undoChangePageData() => undoChange(pagedIds);
 
-  void undoChangePageSelectedData() {
-    undoChange(pagedSelectedIds);
-  }
+  void undoChangePageSelectedData() => undoChange(pagedSelectedIds);
 
   void transfer(List<ProgramStudiModel> from, List<ProgramStudiModel> to, ProgramStudiModel item) {
     from.removeWhere((v) => v.id == item.id);
@@ -2115,21 +2427,13 @@ class ProgramStudiController extends GetxController {
     isSelected.remove(item.id);
   }
   
-  void pushAction(ProgramStudiModel data) async {
-    config.pushAction(data);
-  }
+  void pushAction(ProgramStudiModel data) async => config.pushAction(data);
 
-  void pushSimAction() {
-    config.pushQueuedAction(sim);
-  }
+  void pushSimAction() => config.pushQueuedAction(sim);
 
-  void pushPageAction() {
-    config.pushQueuedAction(qfsped.value);
-  }
+  void pushPageAction() => config.pushQueuedAction(qfsped.value);
 
-  void pushPageSelectedAction() {
-    config.pushQueuedAction(pagedSelectedData);
-  }
+  void pushPageSelectedAction() => config.pushQueuedAction(pagedSelectedData);
   
   void inputDialog([ProgramStudiModel? s, bool multi = false]) {
     final data = multi ? pagedSelectedData : null;
@@ -2146,7 +2450,7 @@ class ProgramStudiController extends GetxController {
     final id = s?.id ?? ((insertQueue.lastOrNull ?? 0) - 1);
     ProgramStudiModel createModel() => ProgramStudiModel(
       id: id, 
-      name: nameC!.text.trim(),
+      name: nameC!.text.trim().capitalCase(),
       fakultas: fakultasC.value ?? fakultas!.name,
       matprak: s?.mataKuliah ?? [],
     );
@@ -2238,7 +2542,6 @@ class ProgramStudiController extends GetxController {
           }
         } else {
           if (!checkEmptyFields()) return;
-          closeAllDialog();
           final model = createModel();
           if (s != null && s.name == model.name && s.fakultas == model.fakultas) return;
           final list = config.simulated.getFakultas(model.fakultas)!.programStudi;
@@ -2264,6 +2567,7 @@ class ProgramStudiController extends GetxController {
             }
           }
         }
+        closeAllDialog();
         qfsp.onChanged();
       },
     );
@@ -2390,13 +2694,13 @@ class MatprakController extends GetxController {
   void delete(int id) {
     if (loadingQueue.contains(id)) return;
     deleteQueue.add(id);
-    qfsp.onChanged();
+    qfsped.refresh();
   }
 
   void undoDelete(int id) {
     if (loadingQueue.contains(id)) return;
     deleteQueue.remove(id);
-    qfsp.onChanged();
+    qfsped.refresh();
   }
 
   void deletePageSelectedData() {
@@ -2405,7 +2709,7 @@ class MatprakController extends GetxController {
       if (deleteQueue.contains(id)) continue;
       deleteQueue.add(id);
     }
-    qfsp.onChanged();
+    qfsped.refresh();
   }
 
   void undoDeletePageData() {
@@ -2413,7 +2717,7 @@ class MatprakController extends GetxController {
       if (loadingQueue.contains(id)) continue;
       deleteQueue.remove(id);
     }
-    qfsp.onChanged();
+    qfsped.refresh();
   }
 
   void undoDeletePageSelectedData() {
@@ -2421,7 +2725,7 @@ class MatprakController extends GetxController {
       if (loadingQueue.contains(id)) continue;
       deleteQueue.remove(id);
     }
-    qfsp.onChanged();
+    qfsped.refresh();
   }
 
   void reset() {
@@ -2449,13 +2753,9 @@ class MatprakController extends GetxController {
     qfsp.onChanged();
   }
 
-  void undoChangePageData() {
-    undoChange(pagedIds);
-  }
+  void undoChangePageData() => undoChange(pagedIds);
 
-  void undoChangePageSelectedData() {
-    undoChange(pagedSelectedIds);
-  }
+  void undoChangePageSelectedData() => undoChange(pagedSelectedIds);
 
   void setType(MatprakModel s, bool? isPraktikum) {
     s.isPraktikum = isPraktikum;
@@ -2483,21 +2783,13 @@ class MatprakController extends GetxController {
     qfsp.onChanged();
   }
   
-  void pushAction(MatprakModel data) async {
-    config.pushAction(data);
-  }
+  void pushAction(MatprakModel data) async => config.pushAction(data);
 
-  void pushSimAction() {
-    config.pushQueuedAction(sim);
-  }
+  void pushSimAction() => config.pushQueuedAction(sim);
 
-  void pushPageAction() {
-    config.pushQueuedAction(qfsped.value);
-  }
+  void pushPageAction() => config.pushQueuedAction(qfsped.value);
 
-  void pushPageSelectedAction() {
-    config.pushQueuedAction(pagedSelectedData);
-  }
+  void pushPageSelectedAction() => config.pushQueuedAction(pagedSelectedData);
 
   void inputDialog([MatprakModel? s, bool multi = false]) {
     final data = multi ? pagedSelectedData : null;
@@ -2524,7 +2816,7 @@ class MatprakController extends GetxController {
     MatprakModel createModel() => MatprakModel(
       id: id, 
       kode: kode!.text.trim().toUpperCase(),
-      nama: nama!.text.trim().capitalCase(false),
+      nama: nama!.text.trim().capitalCase(),
       programStudi: programStudiC.value!,
       isPraktikum: type.value == 'keduanya' ? null : type.value == 'praktikum'
     );
@@ -2545,15 +2837,11 @@ class MatprakController extends GetxController {
     }
     
     kodeF?.addListener(() {
-      if (!kodeF.hasFocus) {
-        kode?.text = kode.text.trim().toUpperCase();
-      }
+      if (!kodeF.hasFocus) kode?.text = kode.text.trim().toUpperCase();
     });
 
     namaF?.addListener(() {
-      if (!namaF.hasFocus) {
-        nama?.text = nama.text.trim().capitalCase(false);
-      }
+      if (!namaF.hasFocus) nama?.text = nama.text.trim().capitalCase(false);
     });
     
     alertDialog(

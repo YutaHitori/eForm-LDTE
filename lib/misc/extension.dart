@@ -21,7 +21,8 @@ extension StringNExtensions on String? {
 }
 
 extension StringExtensions on String {
-  String capitalCase([bool retain = true]) => split(' ').map((w) {
+  String capitalCase([bool retain = true]) => 
+  replaceAll(RegExp(r'\s+'), ' ').split(' ').map((w) {
     if (w.isEmpty) return '';
     if (!retain) w = w.toLowerCase();
     return w[0].toUpperCase() + w.substring(1);

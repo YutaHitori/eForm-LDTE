@@ -59,7 +59,7 @@ void alertDialog<T>(String title, String? subtitle, {double? titleFontSize, doub
           if (confirmAction != null) ElevatedButton(onPressed: confirmAction, child: Text(confirmText)),
           if (actions != null) for (var action in actions) action
         ],
-        actionsPadding: EdgeInsets.only(bottom: 16, right: 16),
+        actionsPadding: EdgeInsets.only(bottom: 16, right: 20),
       ),
     ),
     barrierDismissible: dismissible,

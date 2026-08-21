@@ -61,7 +61,7 @@ class DetailPeminjamanPeralatan extends StatelessWidget {
                       minTileHeight: 0,
                       title: Text(
                         "Cara Pengisisan Formulir Peminjaman Peralatan:",
-                        style: TextStyle(fontSize: 13.2),
+                        style: TextStyle(fontSize: 14.8),
                       ),
                       tilePadding: EdgeInsets.zero,
                       childrenPadding: EdgeInsets.only(bottom: 8),
@@ -72,15 +72,17 @@ class DetailPeminjamanPeralatan extends StatelessWidget {
                     ),
                     CustomTextField(
                       controller: c.namaC,
+                      focusNode: c.namaF,
                       labelText: 'Nama Peminjam',
                       errorText: c.namaE.value,
-                      decoration: InputDecoration(hintText: '-'),
+                      decoration: InputDecoration(hintText: 'e.g. Safaraz Akma Fadhil'),
                     ),
                     CustomTextField(
                       controller: c.nimC,
+                      focusNode: c.nimF,
                       labelText: 'NIM Peminjam',
                       errorText: c.nimE.value,
-                      decoration: InputDecoration(hintText: '-'),
+                      decoration: InputDecoration(hintText: 'e.g. 123456789'),
                       keyboardType: TextInputType.number,
                       inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'[0-9\-\/\s]')) ],
                     ),
@@ -105,7 +107,7 @@ class DetailPeminjamanPeralatan extends StatelessWidget {
                                     controller: c.barangDC.value[i],
                                     expandedHeaderPadding: EdgeInsets.only(right: 12),
                                     closedHeaderPadding: EdgeInsets.only(right: 12),
-                                    listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
+                                    listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item == 'custom' ? NC.isSyncing.value ? 'Syncing in progress, please wait...' : item : item, style: TextStyle(color: isSelected ? Colors.black : null)),
                                     decoration: CustomDropdownDecoration(
                                       searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.scaffoldBackgroundColor),
                                       closedFillColor: appTheme.inputDecorationTheme.fillColor,
@@ -118,17 +120,15 @@ class DetailPeminjamanPeralatan extends StatelessWidget {
                                         decoration: InputDecoration(hintText: 'Nama Barang'),
                                         onChanged: (value) {
                                           change = false;
-                                          var contain = items.where((v) => v.toLowerCase() == value.toLowerCase());
-                                          if (contain.isEmpty) {
-                                            c.barangDC.value[i].value = 'custom';
-                                          } else c.barangDC.value[i].value = contain.first;
+                                          final contain = c.items.firstWhereOrNull((v) => v.toLowerCase() == value.trim().toLowerCase());
+                                          c.barangDC.value[i].value = contain ?? 'custom';
                                           change = true;
                                         },
                                       );
                                     },
                                     excludeSelected: false,
-                                    items: items,
-                                    hintText: 'select',
+                                    items: ['custom', if (!NC.isSyncing.value) ...c.items],
+                                    hintText: 'pilih nama barang',
                                     onChanged: (v) {
                                       if (!change) return;
                                       var text = v;
@@ -184,7 +184,7 @@ class DetailPeminjamanPeralatan extends StatelessWidget {
                       c.banyakC.add(SingleSelectController<int>(null));
                       c.barangE.add(null);
                       c.banyakE.add(null);
-                    }, icon: Icon(Icons.add), label: Text('Add item'), style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.secondary)),
+                    }, icon: Icon(Icons.add), label: Text('Tambah Barang'), style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.secondary)),
                     Row(
                       spacing: 12,
                       children: [
@@ -223,7 +223,7 @@ class DetailPeminjamanPeralatan extends StatelessWidget {
                         ),
                       ],
                     ),
-                    ElevatedButton(onPressed: c.updateForm, child: Text('Update')),
+                    ElevatedButton(onPressed: c.submit, child: Text('Update')),
                   ],
                 ),
               ),

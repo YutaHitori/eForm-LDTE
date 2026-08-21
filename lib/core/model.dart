@@ -51,18 +51,18 @@ class SuratKeteranganPraktikumModel {
 } 
 
 class LastUpdatedModel {
-  String? field;
+  String? field, reference;
   late DateTime timestamp;
   
   LastUpdatedModel.fromJson(Map<String, dynamic> json) {
     field = json['field'];
+    reference = json['reference'];
     timestamp = DateTime.parse(json['updated_at']);
   }
 }
 
 class GlobalConfigModel {
   String? nomorSurat, lineOALDTE, namaKepalaLDTE, nipKepalaLDTE, caraPinjam, caraKeterangan, caraPertukaran;
-  DateTime fakultas = DateTime(2000);
 
   GlobalConfigModel({
     this.nomorSurat,
@@ -72,8 +72,7 @@ class GlobalConfigModel {
     this.caraPinjam,
     this.caraKeterangan,
     this.caraPertukaran,
-    DateTime? fakultas
-  }) : fakultas = fakultas ?? DateTime(2000);
+  });
 
   GlobalConfigModel.fromJson(Map<String, dynamic> json) {
     nomorSurat = json['nomor_surat'];
@@ -83,7 +82,6 @@ class GlobalConfigModel {
     caraPinjam = (json['cara_pinjam'] as String).trim();
     caraKeterangan = (json['cara_keterangan'] as String).trim();
     caraPertukaran = (json['cara_pertukaran'] as String).trim();
-    fakultas = DateTime.tryParse(json['fakultas']) ?? DateTime(2000);
   }
 
   GlobalConfigModel duplicate() => GlobalConfigModel(
@@ -94,7 +92,6 @@ class GlobalConfigModel {
     caraPinjam: caraPinjam,
     caraKeterangan: caraKeterangan,
     caraPertukaran: caraPertukaran,
-    fakultas: fakultas
   );
 }
 
@@ -112,7 +109,7 @@ class FakultasModel {
   FakultasModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
-    if (json['program_studi'] != null) List.of(json['program_studi']).forEach((v) => programStudi.add(ProgramStudiModel.fromJson(v, name)));
+    if (json['program_studi'] != null) programStudi = List.from(json['program_studi']).map((v) => ProgramStudiModel.fromJson(v, name)).toList();
   }
 
   FakultasModel duplicate() => FakultasModel(
@@ -144,7 +141,7 @@ class ProgramStudiModel {
     id = json['id'];
     name = json['name'];
     fakultas = fakultasName ?? json['fakultas'];
-    if (json['mata_kuliah'] != null) List.of(json['mata_kuliah']).forEach((v) => matprak.add(MatprakModel.fromJson(v, name)));
+    if (json['mata_kuliah'] != null) List.from(json['mata_kuliah']).forEach((v) => matprak.add(MatprakModel.fromJson(v, name)));
   }
 
   List<String> formatedMataKuliah() => mataKuliah.map((v) => '${v.kode} ${v.nama}').toList();
@@ -212,17 +209,41 @@ class UserPreferenceModel {
   );
 }
 
+class ItemModel {
+  late int id;
+  late String name;
+  
+  ItemModel({
+    required this.id,
+    required this.name,
+  });
+
+  ItemModel.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    name = json['name'];
+  }
+
+  bool isEqualTo(ItemModel ref) => id == ref.id && name == ref.name;
+
+  ItemModel duplicate() => ItemModel(
+    id: id,
+    name: name,
+  );
+}
+
 class StorageCacheModel {
   GlobalConfigModel globalConfig;
   List<FakultasModel> fakultas;
+  List<ItemModel> item;
   UserPreferenceModel userPreference;
   DateTime? lastSync;
   
   StorageCacheModel({
     required this.globalConfig,
     required this.fakultas,
+    required this.userPreference,
     required this.lastSync,
-    required this.userPreference
+    required this.item,
   });
   
   // List<({FakultasModel fakultas, MatprakModel matprak, ProgramStudiModel programStudi})> get _flattened => 
@@ -248,12 +269,16 @@ class StorageCacheModel {
   List<String> formatedPraktikum() => praktikum.map((v) => '${v.kode} ${v.nama}').toList();
   List<String> formatedMatprak() => matprak.map((v) => '${v.kode} ${v.nama}').toList();
 
+  List<String> formatedItem() => item.map((v) => v.name).toList();
+
   FakultasModel? getFakultas(String name) => fakultas.firstWhereOrNull((v) => v.name == name);
   ProgramStudiModel? getProgramStudi(String name) => programStudi.firstWhereOrNull((v) => v.name == name);
   ProgramStudiModel? getProgramStudiFromMatprak(MatprakModel model) => programStudi.firstWhereOrNull((v) => v.matprak.any((v) => v.id == model.id));
 
   void removeWhere<T>(bool Function(dynamic) test) {
-    if (T == FakultasModel) {
+    if (T == ItemModel) {
+      item.removeWhere(test as bool Function(ItemModel element));
+    } else if (T == FakultasModel) {
       fakultas.removeWhere(test as bool Function(FakultasModel element));
     } else {
       for (var f in fakultas) {
@@ -273,6 +298,7 @@ class StorageCacheModel {
     fakultas: fakultas.map((v) => v.duplicate()).toList(),
     userPreference: userPreference.duplicate(),
     lastSync: lastSync,
+    item: item.map((v) => v.duplicate()).toList()
   );
 }
 

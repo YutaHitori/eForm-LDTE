@@ -95,7 +95,16 @@ ThemeData appTheme = ThemeData(
   ),
 
   textButtonTheme: TextButtonThemeData(
-    style: FilledButton.styleFrom(
+    style: TextButton.styleFrom(
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    ),
+  ),
+
+  outlinedButtonTheme: OutlinedButtonThemeData(
+    style: OutlinedButton.styleFrom(
       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -150,6 +159,7 @@ class CustomTextField extends StatelessWidget {
     this.onChanged,
     this.enabled,
     this.readOnly = false,
+    this.scrollbar = true,
     this.onSubmitted,
     this.autofillHints = const <String>[],
     this.inputFormatters,
@@ -167,6 +177,7 @@ class CustomTextField extends StatelessWidget {
   final bool canError;
   final bool? enabled;
   final bool readOnly;
+  final bool scrollbar;
   final void Function(String)? onChanged;
   final void Function(String)? onSubmitted;
   final Iterable<String>? autofillHints;
@@ -175,6 +186,26 @@ class CustomTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final child = TextField(
+      onTapOutside: (_) => FocusScope.of(context).unfocus(),
+      inputFormatters: inputFormatters,
+      controller: controller,
+      focusNode: focusNode,
+      maxLines: maxLines,
+      decoration: (decoration ?? InputDecoration()).copyWith(
+        filled: true,
+        helperText: canError ? '' : null,
+        errorText: errorText == null ? null : ''
+      ),
+      keyboardType: keyboardType,
+      onChanged: onChanged,
+      obscureText: obscureText ?? false,
+      onSubmitted: onSubmitted,
+      autofillHints: autofillHints,
+      enabled: enabled,
+      readOnly: readOnly,
+      scrollPhysics: readOnly && maxLines != 1 ? NeverScrollableScrollPhysics() : null,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: 4,
@@ -191,29 +222,10 @@ class CustomTextField extends StatelessWidget {
             ),
           ]
         ),
-        ScrollConfiguration(
+        maxLines != 1 && !scrollbar ? ScrollConfiguration(
           behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-          child: TextField(
-            onTapOutside: (_) => FocusScope.of(context).unfocus(),
-            inputFormatters: inputFormatters,
-            controller: controller,
-            focusNode: focusNode,
-            maxLines: maxLines,
-            decoration: (decoration ?? InputDecoration()).copyWith(
-              filled: true,
-              helperText: canError ? '' : null,
-              errorText: errorText == null ? null : ''
-            ),
-            keyboardType: keyboardType,
-            onChanged: onChanged,
-            obscureText: obscureText ?? false,
-            onSubmitted: onSubmitted,
-            autofillHints: autofillHints,
-            enabled: enabled,
-            readOnly: readOnly,
-            scrollPhysics: readOnly ? NeverScrollableScrollPhysics() : null,
-          ),
-        ),
+          child: child
+        ) : child,
       ],
     );
   }

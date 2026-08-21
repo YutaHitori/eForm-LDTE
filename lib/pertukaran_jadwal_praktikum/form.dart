@@ -25,7 +25,7 @@ class PertukaranJadwalPraktikum extends StatelessWidget {
         builder: (context, constrains) {
           return SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
               child: Obx(() => Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 spacing: 8,
@@ -34,7 +34,7 @@ class PertukaranJadwalPraktikum extends StatelessWidget {
                     minTileHeight: 0,
                     title: Text(
                       "Cara Pengisisan Formulir Pergantian Jadwal Praktikum:",
-                      style: TextStyle(fontSize: 14.2),
+                      style: TextStyle(fontSize: 14.8),
                     ),
                     expandedAlignment: Alignment.centerLeft,
                     tilePadding: EdgeInsets.zero,
@@ -198,6 +198,7 @@ class PertukaranJadwalPraktikum extends StatelessWidget {
                       if (v.length > 10) c.datePC.text = v.substring(0, 10);
                     },
                   ),
+                  SizedBox(height: 24),
                   ElevatedButton(onPressed: c.isLoading.value ? null : c.submit, child: Text('Format')),
                 ],
               )),

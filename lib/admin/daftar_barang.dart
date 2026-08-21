@@ -1,45 +1,32 @@
-import 'package:eform_ldte/misc/global.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:get/get.dart';
 import 'package:eform_ldte/core/controller.dart';
-import 'package:eform_ldte/misc/widget.dart';
 import 'package:eform_ldte/misc/function.dart';
+import 'package:eform_ldte/misc/global.dart';
+import 'package:eform_ldte/misc/widget.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:number_paginator/number_paginator.dart';
 
-class ProgramStudi extends StatelessWidget {
-  const ProgramStudi({super.key});
+class DaftarBarang extends StatelessWidget {
+  const DaftarBarang({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final c = Get.find<ProgramStudiController>();
+    final c = Get.find<DaftarBarangController>();
     return Obx(() {
       c.qfsped.value;
       return Scaffold(
         appBar: AppBar(
-          title: Text(c.name),
+          title: Text('Admin - Daftar Barang'),
           actions: [
-            if (c.isSimAnyQueued) IconButton(onPressed: c.pushSimAction, icon: Icon(Icons.save_rounded), tooltip: 'Save ${c.name}'),
-            if (c.isAnyQueued) TextButton(onPressed: c.config.saveQueuedAction, child: Text('Save All')),
+            if (c.isSimAnyQueued) IconButton(onPressed: c.pushSimAction, icon: Icon(Icons.save_rounded), tooltip: 'Save List'),
           ],
         ),
-        floatingActionButton: c.fakultas == null ? null : Padding(
+        floatingActionButton: Padding(
           padding: const EdgeInsets.only(bottom: 52),
           child: FloatingActionButton(onPressed: c.inputDialog, child: Icon(Icons.add_rounded)),
         ),
-        body: c.fakultas == null
-        ? Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            spacing: 24,
-            children: [
-              Text("${c.name} didn't exist, please check the inputed url"),
-              TextButton(onPressed: currentContext?.pop, child: Text('Go back'))
-            ],
-          ),
-        )
-        : Column(
+        body: Column(
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
@@ -88,7 +75,7 @@ class ProgramStudi extends StatelessWidget {
                     : SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: SizedBox(
-                        width: constrains.maxWidth > 800 ? constrains.maxWidth : 800,
+                        width: constrains.maxWidth > 512 ? constrains.maxWidth : 512,
                         height: constrains.maxHeight,
                         child: Column(
                           children: [
@@ -103,9 +90,7 @@ class ProgramStudi extends StatelessWidget {
                                       ? Colors.green 
                                       : c.areUpdating
                                         ? Colors.amber  
-                                        : c.areModifying
-                                          ? Colors.blue
-                                          : Colors.white).withAlpha(c.isPagedLoading ? 128 : 255), 
+                                        :Colors.white).withAlpha(c.isPagedLoading ? 128 : 255), 
                                   width: 8
                                 ),
                               ),
@@ -134,14 +119,10 @@ class ProgramStudi extends StatelessWidget {
                                   children: [
                                     SizedBox(width: 12),
                                     SizedBox(
+                                      width: 160,
                                       child: Row(
                                         mainAxisAlignment: MainAxisAlignment.end,
                                         children: [
-                                          IconButton(
-                                            onPressed: !c.canPagedSelectedEdit ? null : () => c.selectedPageInputDialog(),
-                                            icon: Icon(Icons.edit_note_rounded),
-                                            tooltip: 'Edit Selected',
-                                          ),
                                           IconButton(
                                             onPressed: c.isPageAnyQueued ? c.pushPageAction : null, 
                                             icon: Icon(Icons.save_outlined), 
@@ -174,7 +155,7 @@ class ProgramStudi extends StatelessWidget {
                                             tooltip: 'Delete Selected'
                                           ),
                                         ]
-                                      )
+                                      ),
                                     )
                                   ],
                                 ),
@@ -191,7 +172,6 @@ class ProgramStudi extends StatelessWidget {
                                   final entry = c.qfsped.value[i];
                                   final isLoading = c.loadingQueue.contains(entry.id);
                                   final isAdding = c.insertQueue.contains(entry.id);
-                                  final isModifying = entry.matprak.any((v) => c.config.matprakQueue.contains(v.id));
                                   final isUpdating = c.updateQueue.contains(entry.id);
                                   final isDeleting = c.deleteQueue.contains(entry.id);
                                   return Card(
@@ -205,9 +185,7 @@ class ProgramStudi extends StatelessWidget {
                                             ? Colors.green 
                                             : isUpdating
                                               ? Colors.amber
-                                              : isModifying
-                                                ? Colors.blue
-                                                : Colors.white).withAlpha(isLoading ? 128 : 255), 
+                                              : Colors.white).withAlpha(isLoading ? 128 : 255), 
                                         width: 8
                                       ),
                                     ),
@@ -218,11 +196,9 @@ class ProgramStudi extends StatelessWidget {
                                         ? appTheme.scaffoldBackgroundColor.withGreen(isLoading ? 36 : 42) 
                                         : isUpdating
                                           ? appTheme.scaffoldBackgroundColor.withRed(isLoading ? 36 : 42).withGreen(isLoading ? 36 : 42) 
-                                          : isModifying
-                                            ? appTheme.scaffoldBackgroundColor.withBlue(isLoading ? 36 : 42)
-                                            : null,
+                                          : null,
                                       contentPadding: EdgeInsets.only(right: 12, left: 8),
-                                      onTap: isDeleting || isLoading ? null : () => currentContext?.push('${NamedRoute.list}/${c.fakultas!.name}/${entry.name}'),
+                                      onTap: isDeleting || isLoading ? null : () => c.inputDialog(entry),
                                       leading: Transform.translate(
                                         offset: Offset(8, 0),
                                         child: Row(
@@ -253,7 +229,7 @@ class ProgramStudi extends StatelessWidget {
                                         children: [
                                           SizedBox(width: 12),
                                           SizedBox(
-                                            width: 256,
+                                            width: 160,
                                             child: Row(
                                               mainAxisAlignment: MainAxisAlignment.end,
                                               children: [
@@ -266,18 +242,13 @@ class ProgramStudi extends StatelessWidget {
                                                 //     isLoading ? Icons.remove : Icons.add,
                                                 //   ), tooltip: isLoading ? 'Testing...' : 'Test'
                                                 // ),
-                                                if (isAdding || isUpdating || isDeleting || isModifying) IconButton(
+                                                if (isAdding || isUpdating || isDeleting) IconButton(
                                                   onPressed: isLoading ? null : () => c.pushAction(entry),
                                                   icon: Icon(
                                                     Icons.save_rounded,
                                                   ), tooltip: isLoading ? 'Saving...' : 'Save'
                                                 ),
-                                                IconButton(
-                                                  onPressed: isDeleting || isLoading ? null : () => c.inputDialog(entry),
-                                                  icon: Icon(Icons.edit_rounded),
-                                                  tooltip: 'Edit',
-                                                ),
-                                          VerticalDivider(color: appTheme.colorScheme.surface),
+                                                VerticalDivider(color: appTheme.colorScheme.surface),
                                                 if (isUpdating) IconButton(
                                                   onPressed: isLoading ? null : () => c.undoChange({entry.id}),
                                                   icon: Icon(Icons.undo_rounded, color: isLoading ? null : Colors.amber),

@@ -65,15 +65,16 @@ class StorageCacheModelAdapter extends TypeAdapter<StorageCacheModel> {
     return StorageCacheModel(
       globalConfig: fields[6] as GlobalConfigModel,
       fakultas: (fields[9] as List).cast<FakultasModel>(),
-      lastSync: fields[5] as DateTime?,
       userPreference: fields[8] as UserPreferenceModel,
+      lastSync: fields[5] as DateTime?,
+      item: (fields[10] as List).cast<ItemModel>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, StorageCacheModel obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(5)
       ..writeByte(5)
       ..write(obj.lastSync)
       ..writeByte(6)
@@ -81,7 +82,9 @@ class StorageCacheModelAdapter extends TypeAdapter<StorageCacheModel> {
       ..writeByte(8)
       ..write(obj.userPreference)
       ..writeByte(9)
-      ..write(obj.fakultas);
+      ..write(obj.fakultas)
+      ..writeByte(10)
+      ..write(obj.item);
   }
 
   @override
@@ -113,20 +116,17 @@ class GlobalConfigModelAdapter extends TypeAdapter<GlobalConfigModel> {
       caraPinjam: fields[3] as String?,
       caraKeterangan: fields[4] as String?,
       caraPertukaran: fields[5] as String?,
-      fakultas: fields[2] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, GlobalConfigModel obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.nomorSurat)
       ..writeByte(1)
       ..write(obj.lineOALDTE)
-      ..writeByte(2)
-      ..write(obj.fakultas)
       ..writeByte(3)
       ..write(obj.caraPinjam)
       ..writeByte(4)
@@ -271,6 +271,40 @@ class ProgramStudiModelAdapter extends TypeAdapter<ProgramStudiModel> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is ProgramStudiModelAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class ItemModelAdapter extends TypeAdapter<ItemModel> {
+  @override
+  final typeId = 6;
+
+  @override
+  ItemModel read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return ItemModel(id: (fields[0] as num).toInt(), name: fields[1] as String);
+  }
+
+  @override
+  void write(BinaryWriter writer, ItemModel obj) {
+    writer
+      ..writeByte(2)
+      ..writeByte(0)
+      ..write(obj.id)
+      ..writeByte(1)
+      ..write(obj.name);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ItemModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

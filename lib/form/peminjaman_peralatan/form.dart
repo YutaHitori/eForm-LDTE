@@ -32,7 +32,7 @@ class Pinjam extends StatelessWidget {
         onRefresh: hardRefresh,
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               spacing: 8,
@@ -41,7 +41,7 @@ class Pinjam extends StatelessWidget {
                   minTileHeight: 0,
                   title: Text(
                     "Cara Pengisisan Formulir Peminjaman Peralatan:",
-                    style: TextStyle(fontSize: 14.2),
+                    style: TextStyle(fontSize: 14.8),
                   ),
                   tilePadding: EdgeInsets.zero,
                   childrenPadding: EdgeInsets.only(bottom: 8),
@@ -52,15 +52,17 @@ class Pinjam extends StatelessWidget {
                 ),
                 CustomTextField(
                   controller: c.namaC,
+                  focusNode: c.namaF,
                   labelText: 'Nama Peminjam',
                   errorText: c.namaE.value,
-                  decoration: InputDecoration(hintText: '-'),
+                  decoration: InputDecoration(hintText: 'e.g. Safaraz Akma Fadhil'),
                 ),
                 CustomTextField(
                   controller: c.nimC,
+                  focusNode: c.nimF,
                   labelText: 'NIM Peminjam',
                   errorText: c.nimE.value,
-                  decoration: InputDecoration(hintText: '-'),
+                  decoration: InputDecoration(hintText: 'e.g. 123456789'),
                   keyboardType: TextInputType.number,
                   inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'[0-9\-\/\s]')) ],
                 ),
@@ -71,7 +73,7 @@ class Pinjam extends StatelessWidget {
                     Text('Fakultas/Sekolah ', textScaleFactor: 1.02,),
                     DropdownFlutter<String>(
                       listItemBuilder: (context, item, isSelected, onItemSelect) => 
-                        Text('${item}', style: TextStyle(color: item == 'reset' ? Colors.red : isSelected ? Colors.black : null)),
+                        Text(item, style: TextStyle(color: item == 'reset' ? Colors.red : isSelected ? Colors.black : null)),
                       decoration: CustomDropdownDecoration(
                         expandedFillColor: appTheme.inputDecorationTheme.fillColor,
                         closedFillColor: appTheme.inputDecorationTheme.fillColor,
@@ -79,7 +81,7 @@ class Pinjam extends StatelessWidget {
                       ),
                       excludeSelected: false,
                       items: ['reset'] + (NC.isSyncing.value ? [] : c.fakultasList),
-                    hintText: NC.isSyncing.value ? 'Syncing in progress, please wait...' : 'select',
+                      hintText: NC.isSyncing.value ? 'Syncing in progress, please wait...' : 'pilih fakultas/sekolah',
                       controller: c.fakultasC,
                       onChanged: (value) { 
                         if (value == 'reset') c.fakultasC.value = null;
@@ -94,7 +96,7 @@ class Pinjam extends StatelessWidget {
                   children: [
                     Text('Program Studi ', textScaleFactor: 1.02,),
                     DropdownFlutter<String>(
-                      hintText: c.fakultasC.hasValue ? null : 'pilih fakultas/sekolah terlebih dahulu',
+                      hintText: c.fakultasC.hasValue ? 'pilih program studi' : 'pilih fakultas/sekolah terlebih dahulu',
                       listItemBuilder: (context, item, isSelected, onItemSelect) => 
                         Text('${item}', style: TextStyle(color: item == 'reset' ? Colors.red : isSelected ? Colors.black : null)),
                       decoration: CustomDropdownDecoration(
@@ -117,26 +119,30 @@ class Pinjam extends StatelessWidget {
                   ],
                 ),
                 CustomTextField(
-                  labelText: 'Dosen Pembimbing',
-                  decoration: InputDecoration(hintText: '-'),
                   controller: c.dosenC,
+                  focusNode: c.dosenF,
+                  labelText: 'Dosen Pembimbing',
+                  decoration: InputDecoration(hintText: 'e.g. Safaraz Akma Fadhil'),
                 ),
                 CustomTextField(
-                  labelText: 'NIP Dosen Pembimbing',
-                  decoration: InputDecoration(hintText: '-'),
                   controller: c.nipDosenC,
+                  focusNode: c.nipDosenF,
+                  labelText: 'NIP Dosen Pembimbing',
+                  decoration: InputDecoration(hintText: 'e.g. 123456789'),
                   keyboardType: TextInputType.number,
                   inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'[0-9\-\/\s]')) ],
                 ),
                 CustomTextField(
-                  labelText: 'Ketua Prodi',
-                  decoration: InputDecoration(hintText: '-'),
                   controller: c.ketuaC,
+                  focusNode: c.ketuaF,
+                  labelText: 'Ketua Prodi',
+                  decoration: InputDecoration(hintText: 'e.g. Safaraz Akma Fadhil'),
                 ),
                 CustomTextField(
-                  labelText: 'NIP Ketua Prodi',
-                  decoration: InputDecoration(hintText: '-'),
                   controller: c.nipKetuaC,
+                  focusNode: c.nipKetuaF,
+                  labelText: 'NIP Ketua Prodi',
+                  decoration: InputDecoration(hintText: 'e.g. 123456789'),
                   keyboardType: TextInputType.number,
                   inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'[0-9\-\/\s]')) ],
                 ),
@@ -161,7 +167,7 @@ class Pinjam extends StatelessWidget {
                                 controller: c.barangDC.value[i],
                                 expandedHeaderPadding: EdgeInsets.only(right: 12),
                                 closedHeaderPadding: EdgeInsets.only(right: 12),
-                                listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
+                                listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item == 'custom' ? NC.isSyncing.value ? 'Syncing in progress, please wait...' : item : item, style: TextStyle(color: isSelected ? Colors.black : null)),
                                 decoration: CustomDropdownDecoration(
                                   searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.scaffoldBackgroundColor),
                                   closedFillColor: appTheme.inputDecorationTheme.fillColor,
@@ -174,17 +180,15 @@ class Pinjam extends StatelessWidget {
                                     decoration: InputDecoration(hintText: 'Nama Barang'),
                                     onChanged: (value) {
                                       change = false;
-                                      var contain = items.where((v) => v.toLowerCase() == value.toLowerCase());
-                                      if (contain.isEmpty) {
-                                        c.barangDC.value[i].value = 'custom';
-                                      } else c.barangDC.value[i].value = contain.first;
+                                      final contain = c.items.firstWhereOrNull((v) => v.toLowerCase() == value.trim().toLowerCase());
+                                      c.barangDC.value[i].value = contain ?? 'custom';
                                       change = true;
                                     },
                                   );
                                 },
                                 excludeSelected: false,
-                                items: items,
-                                hintText: 'select',
+                                items: ['custom', if (!NC.isSyncing.value) ...c.items],
+                                hintText: 'pilih nama barang',
                                 onChanged: (v) {
                                   if (!change) return;
                                   var text = v;
@@ -240,7 +244,7 @@ class Pinjam extends StatelessWidget {
                   c.banyakC.add(SingleSelectController<int>(null));
                   c.barangE.add(null);
                   c.banyakE.add(null);
-                }, icon: Icon(Icons.add), label: Text('Add item'), style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.secondary)),
+                }, icon: Icon(Icons.add), label: Text('Tambah Barang'), style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.secondary)),
                 Row(
                   spacing: 12,
                   children: [
@@ -279,55 +283,51 @@ class Pinjam extends StatelessWidget {
                     ),
                   ],
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Foto/Scan Kartu Identitas Peminjam', textScaleFactor: 1.02,),
-                        if (c.idCardE.value != null) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
-                      ],
+                    Text('Foto/Scan Kartu Identitas Peminjam', textScaleFactor: 1.02,),
+                    if (c.idCardE.value != null) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
+                  ],
+                ),
+                Row(
+                  spacing: 8,
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: c.selectImage,
+                        label: Text('Choose an image'),
+                        icon: Icon(Icons.image_search_rounded),
+                        style: ElevatedButton.styleFrom(backgroundColor: c.idCardE.value != null ? appTheme.colorScheme.error : appTheme.colorScheme.secondary),
+                      ),
                     ),
-                    Row(
-                      spacing: 8,
-                      children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: c.selectImage,
-                            label: Text('Choose an image'),
-                            icon: Icon(Icons.image_search_rounded),
-                            style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.secondary),
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: c.idCard.value == null
-                              ? null : c.previewImage,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: appTheme.colorScheme.tertiary,
-                          ),
-                          child: Text('Preview'),
-                        ),
-                      ],  
+                    ElevatedButton(
+                      onPressed: c.idCard.value == null
+                          ? null : c.previewImage,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: appTheme.colorScheme.tertiary,
+                      ),
+                      child: Text('Preview'),
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Text("Selected: ${c.idCard.value?.name ?? '- none -'}"),
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: c.idCard.value == null ? null : c.resetImage,
-                          icon: Icon(Icons.delete_rounded, color: c.idCard.value == null ? null : Colors.redAccent),
-                        ),
-                      ],
+                  ],  
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Text("Selected: ${c.idCard.value?.name ?? '- none -'}"),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: c.idCard.value == null ? null : c.resetImage,
+                      icon: Icon(Icons.delete_rounded, color: c.idCard.value == null ? null : Colors.redAccent),
                     ),
                   ],
                 ),
-                ElevatedButton(onPressed: c.pinjam, child: Text('Pinjam')),
+                SizedBox(height: 24),
+                ElevatedButton(onPressed: c.submit, child: Text('Pinjam')),
               ],
             ),
           ),

@@ -25,7 +25,8 @@ class Admin extends StatelessWidget {
               children: [
                 ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.config), child: Text('Global Config')),
                 Divider(color: appTheme.colorScheme.surface),
-                ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.pinjamAdmin), child: Text('Peminjaman Peralatan')),
+                Text('Daftar Kiriman'),
+                ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.pinjamAdmin), child: Text('Formulir Peminjaman Peralatan')),
                 ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.keteranganAdmin), child: Text('Surat Keterangan Praktikum')),
               ],
             ),

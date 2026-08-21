@@ -21,7 +21,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
         builder: (context, constrains) {
           return SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
               child: Obx(() => c.isLoading.value
               ? Center(
                 child: Column(
@@ -41,7 +41,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                     minTileHeight: 0,
                     title: Text(
                       "Cara Pengisisan Formulir Surat Keterangan Praktikum:",
-                      style: TextStyle(fontSize: 14.2),
+                      style: TextStyle(fontSize: 14.8),
                     ),
                     expandedAlignment: Alignment.centerLeft,
                     tilePadding: EdgeInsets.zero,
@@ -53,7 +53,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                   for (var i = 0; i < c.namaC.value.length; i++) ...[
                     CustomTextField(
                       controller: c.namaC.value[i],
-                      labelText: 'Nama ${c.namaC.value.length == 1 ? '' : i+1}',
+                      labelText: 'Nama Pemohon ${c.namaC.value.length == 1 ? '' : i+1}',
                       errorText: c.namaE.value[i],
                       decoration: InputDecoration(hintText: 'e.g. Safaraz Akma Fadhil'),
                     ),
@@ -63,7 +63,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                         Expanded(
                           child: CustomTextField(
                             controller: c.nimC.value[i],
-                            labelText: 'Nim ${c.namaC.value.length == 1 ? '' : i+1}',
+                            labelText: 'Nim Pemohon ${c.namaC.value.length == 1 ? '' : i+1}',
                             errorText: c.nimE.value[i],
                             keyboardType: TextInputType.number,
                             inputFormatters: [ FilteringTextInputFormatter.digitsOnly ],
@@ -88,7 +88,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                     c.nimC.add(TextEditingController());
                     c.namaE.add(null);
                     c.nimE.add(null);
-                  }, icon: Icon(Icons.person_add_alt_1_rounded), label: Text('Add'), style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.secondary)),
+                  }, icon: Icon(Icons.person_add_alt_1_rounded), label: Text('Tambah Pemohon'), style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.secondary)),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -112,7 +112,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                     ),
                     excludeSelected: false,
                     items: ['Lainnya...'] + (NC.isSyncing.value ? [] : c.matkulList),
-                    hintText: NC.isSyncing.value ? 'Syncing in progress, please wait...' : 'select',
+                    hintText: NC.isSyncing.value ? 'Syncing in progress, please wait...' : 'pilih mata kuliah',
                     onChanged: (v) => c.isMatkulLainnya.value = v == 'Lainnya...',
                   ),
                   if (c.isMatkulLainnya.value) Row(
@@ -172,7 +172,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                               ),
                               excludeSelected: false,
                               items: ['Lainnya...'] + (NC.isSyncing.value ? [] : c.praktikumList),
-                              hintText: NC.isSyncing.value ? 'Syncing in progress, please wait...' : 'select',
+                              hintText: NC.isSyncing.value ? 'Syncing in progress, please wait...' : 'pilih praktikum',
                               onChanged: (v) => c.isPraktikumLainnya.value = v == 'Lainnya...',
                             ),
                           ],
@@ -256,7 +256,7 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('Waktu Praktikum', textScaleFactor: 1.02,),
-                      if (c.timeStartE.value != null || c.timeEndE.value != null) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
+                      if (c.timeStartE.value != null || c.timeEndE.value != null) Text(c.timeStartE.value ?? c.timeEndE.value!, style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
                     ],
                   ),
                   SizedBox(
@@ -297,47 +297,43 @@ class SuratKeteranganPraktikum extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Screenshot bukti jadwal praktikum', textScaleFactor: 1.02,),
-                          if (c.buktiE.value != null) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
-                        ],
-                      ),
-                      Row(
-                        spacing: 8,
-                        children: [
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: c.selectImage,
-                                label: Text('Choose an image'),
-                                icon: Icon(Icons.image_search_rounded),
-                                style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.secondary),
-                              ),
-                            ),
-                          ElevatedButton(onPressed: c.bukti.value == null ? null : c.previewImage, child: Text('Preview'), style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.tertiary)),
-                        ],  
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Text("Selected: ${c.bukti.value?.name ?? '- none -'}"),
-                            ),
+                      Text('Screenshot bukti jadwal praktikum', textScaleFactor: 1.02,),
+                      if (c.buktiE.value != null) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
+                    ],
+                  ),
+                  Row(
+                    spacing: 8,
+                    children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: c.selectImage,
+                            label: Text('Choose an image'),
+                            icon: Icon(Icons.image_search_rounded),
+                            style: ElevatedButton.styleFrom(backgroundColor: c.buktiE.value != null ? appTheme.colorScheme.error : appTheme.colorScheme.secondary),
                           ),
-                          IconButton(
-                            onPressed: c.bukti.value == null ? null : c.resetImage,
-                            icon: Icon(Icons.delete_rounded, color: c.bukti.value == null ? null : Colors.redAccent),
-                          ),
-                        ],
+                        ),
+                      ElevatedButton(onPressed: c.bukti.value == null ? null : c.previewImage, child: Text('Preview'), style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.tertiary)),
+                    ],  
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Text("Selected: ${c.bukti.value?.name ?? '- none -'}"),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: c.bukti.value == null ? null : c.resetImage,
+                        icon: Icon(Icons.delete_rounded, color: c.bukti.value == null ? null : Colors.redAccent),
                       ),
                     ],
                   ),
+                  SizedBox(height: 24),
                   ElevatedButton(onPressed: c.submit, child: Text('Submit')),
                 ],
               )),

@@ -14,7 +14,7 @@ class GlobalConfig extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = Get.find<GlobalConfigController>();
     return Obx(() => PopScope(
-      canPop: c.isSaved.value && !c.isAnyQueued,
+      canPop: c.isSaved.value && !c.isAnyQueued && !c.itemQueue.isAnyQueued,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         c.saveAllDialog();
@@ -22,7 +22,7 @@ class GlobalConfig extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text('Global Config'),
-          actions: (c.isSaved.value && !c.isAnyQueued) || c.isLoading.value ? null : [
+          actions: (c.isSaved.value && !c.isAnyQueued & !c.itemQueue.isAnyQueued) || c.isLoading.value ? null : [
             TextButton(onPressed: c.saveAll, child: Text('Save All'))
           ],
         ),
@@ -185,6 +185,7 @@ class GlobalConfig extends StatelessWidget {
                     controller: c.caraPinjam,
                     onChanged: (v) => c.isSavedCheck(),
                     labelText: 'Cara Pengisian Formulir Peminjaman Peralatan',
+                    scrollbar: false,
                     decoration: InputDecoration(
                       fillColor: c.caraPinjamCanEdit.value ? null : Color(0xFF181818),
                       hoverColor: c.caraPinjamCanEdit.value ? null : Colors.transparent,
@@ -219,6 +220,7 @@ class GlobalConfig extends StatelessWidget {
                     controller: c.caraKeterangan,
                     onChanged: (v) => c.isSavedCheck(),
                     labelText: 'Cara Pengisian Surat Keterangan Praktikum',
+                    scrollbar: false,
                     decoration: InputDecoration(
                       fillColor: c.caraKeteranganCanEdit.value ? null : Color(0xFF181818),
                       hoverColor: c.caraKeteranganCanEdit.value ? null : Colors.transparent,
@@ -253,6 +255,7 @@ class GlobalConfig extends StatelessWidget {
                     controller: c.caraPertukaran,
                     onChanged: (v) => c.isSavedCheck(),
                     labelText: 'Cara Pengisian Formulir Pertukaran Jadwal Praktikum',
+                    scrollbar: false,
                     decoration: InputDecoration(
                       fillColor: c.caraPertukaranCanEdit.value ? null : Color(0xFF181818),
                       hoverColor: c.caraPertukaranCanEdit.value ? null : Colors.transparent,
@@ -288,8 +291,15 @@ class GlobalConfig extends StatelessWidget {
               Row(
                 spacing: 8,
                 children: [
-                  Expanded(child: ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.list), child: Text('Daftar Fakultas ${c.isAnyQueued ? '(Unsaved)' : ''}'))),
+                  Expanded(child: ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.list), child: Text('Daftar Fakultas/Sekolah ${c.isAnyQueued ? '(Unsaved)' : ''}'))),
                   if (c.isAnyQueued) ElevatedButton(onPressed: c.saveQueuedAction, child: Text('Save'))
+                ],
+              ),
+              Row(
+                spacing: 8,
+                children: [
+                  Expanded(child: ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.barang), child: Text('Daftar Barang ${c.itemQueue.isAnyQueued ? '(Unsaved)' : ''}'))),
+                  if (c.itemQueue.isAnyQueued) ElevatedButton(onPressed: c.saveItemAction, child: Text('Save'))
                 ],
               ),
             ],
