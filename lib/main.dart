@@ -15,7 +15,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   initializeDateFormatting('id_ID');
-
   await Supabase.initialize(
     url: const String.fromEnvironment('SUPABASE_URL'),
     publishableKey: const String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY'),
@@ -31,4 +30,7 @@ void main() async {
       theme: appTheme,
     ),
   );
+  
+  await auth.verify();
+  await storage.sync();
 }

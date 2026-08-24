@@ -263,13 +263,13 @@ class StorageCacheModel {
   List<MatprakModel> get mataKuliah => programStudi.expand((p) => p.mataKuliah).toList();
   List<MatprakModel> get praktikum => programStudi.expand((p) => p.praktikum).toList();
 
-  List<String> formatedFakultas() => fakultas.map((v) => v.name).toList();
-  List<String> formatedProgramStudi() => programStudi.map((v) => v.name).toList();
-  List<String> formatedMataKuliah() => mataKuliah.map((v) => '${v.kode} ${v.nama}').toList();
-  List<String> formatedPraktikum() => praktikum.map((v) => '${v.kode} ${v.nama}').toList();
-  List<String> formatedMatprak() => matprak.map((v) => '${v.kode} ${v.nama}').toList();
+  List<String> formatedFakultas([bool lowerCase = false]) => fakultas.map((v) => lowerCase ? v.name.toLowerCase() : v.name).toList();
+  List<String> formatedProgramStudi([bool lowerCase = false]) => programStudi.map((v) => lowerCase ? v.name.toLowerCase() : v.name).toList();
+  List<String> formatedMataKuliah([bool lowerCase = false]) => mataKuliah.map((v) => lowerCase ? '${v.kode} ${v.nama}'.toLowerCase() : '${v.kode} ${v.nama}').toList();
+  List<String> formatedPraktikum([bool lowerCase = false]) => praktikum.map((v) => lowerCase ? '${v.kode} ${v.nama}'.toLowerCase() : '${v.kode} ${v.nama}').toList();
+  List<String> formatedMatprak([bool lowerCase = false]) => matprak.map((v) => lowerCase ? '${v.kode} ${v.nama}'.toLowerCase() : '${v.kode} ${v.nama}').toList();
 
-  List<String> formatedItem() => item.map((v) => v.name).toList();
+  List<String> formatedItem([bool lowerCase = false]) => item.map((v) => lowerCase ? v.name.toLowerCase() : v.name).toList();
 
   FakultasModel? getFakultas(String name) => fakultas.firstWhereOrNull((v) => v.name == name);
   ProgramStudiModel? getProgramStudi(String name) => programStudi.firstWhereOrNull((v) => v.name == name);

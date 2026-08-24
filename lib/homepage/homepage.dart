@@ -17,7 +17,7 @@ class Homepage extends StatelessWidget {
           Text('Formulir Elektronik\nLab Dasar Teknik Elektro\nSTEI ITB', textScaleFactor: 1.64, textAlign: TextAlign.center,),
           SizedBox(height: 4),
           Column(
-            spacing: 8,
+            spacing: 12,
             children: [
               ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.pinjam), child: Text('Pinjam Peralatan')),
               ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.keterangan), child: Text('Keterangan Praktikum')),

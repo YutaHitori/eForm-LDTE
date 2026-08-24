@@ -168,7 +168,6 @@ class StorageService {
     await box.compact();
 
     NC.lastSync.value = cached.lastSync;
-    await sync();
   }
 
   Future<void> save() async {
@@ -355,9 +354,6 @@ class StorageService {
 class AuthService {
   SupabaseClient get supabase => Supabase.instance.client;
 
-  Stream<AuthState> get onAuthChanged =>
-    supabase.auth.onAuthStateChange;
-
   User? get user => supabase.auth.currentUser;
   Session? get session => supabase.auth.currentSession;
   Future<String> get token async => await refreshExpiredToken() ?? session!.accessToken;
@@ -372,7 +368,7 @@ class AuthService {
   }
 
   void listenAuthChange() {
-    onAuthChanged.listen((data) async {
+    supabase.auth.onAuthStateChange.listen((data) async {
       final event = data.event;
   
       if (event == AuthChangeEvent.signedIn) {
@@ -404,6 +400,16 @@ class AuthService {
     }
     return false;
   } 
+
+  Future<void> verify() async {
+    if (!auth.isLoggedIn) return;
+    try {
+      await Supabase.instance.client.auth.getUser();
+    } catch (e) {
+      snackbar('Unauthorized!', 'Invalid token, please re-login.');
+      await auth.supabase.auth.signOut();
+    }
+  }
 }
 
 class QFSPService {
@@ -637,9 +643,9 @@ class PeminjamanPeralatanService extends PDFService {
 
   Future<Uint8List?> compilePDF(Map<String, dynamic> form, [Uint8List? idCard]) async {
     try {
-      final ttf = await rootBundle.load("fonts/calibri.ttf");
-      final ttfBold = await rootBundle.load("fonts/calibri-bold.ttf");
-      final ttfItalic = await rootBundle.load("fonts/calibri-italic.ttf");
+      final ttf = (await rootBundle.load("fonts/calibri.ttf")).buffer.asUint8List();
+      final ttfBold = (await rootBundle.load("fonts/calibri-bold.ttf")).buffer.asUint8List();
+      final ttfItalic = (await rootBundle.load("fonts/calibri-italic.ttf")).buffer.asUint8List();
 
       form['mulai'] = '${form['mulai']}'.toDateTime() == null ? null : DateFormat('d MMMM yyyy', 'id_ID').format('${form['mulai']}'.toDateTime()!);
       form['akhir'] = '${form['akhir']}'.toDateTime() == null ? null : DateFormat('d MMMM yyyy', 'id_ID').format('${form['akhir']}'.toDateTime()!);
@@ -817,8 +823,7 @@ class AdminSuratKeteranganPraktikumService extends PDFService {
 
   Future<Uint8List?> compilePDF(SuratKeteranganPraktikumModel data) async {
     try {
-      final ttf = await rootBundle.load("fonts/tahoma.ttf");
-      final fontBytes = ttf.buffer.asUint8List();
+      final ttf = (await rootBundle.load("fonts/tahoma.ttf")).buffer.asUint8List();
 
       final today = DateFormat('d MMMM yyyy', 'id_ID').format(now);
       final timeStart = data.timeStart.toFormatedString();
@@ -839,7 +844,7 @@ class AdminSuratKeteranganPraktikumService extends PDFService {
       final footerBytes = await bytesImage('assets/Footer ITB STEI.png');
 
       final Map<String, dynamic> params = {
-        'fontBytes': fontBytes,
+        'ttf': ttf,
         'headerBytes': headerBytes,
         'footerBytes': footerBytes,
         'buktiBytes': buktiBytes,

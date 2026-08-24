@@ -5,41 +5,41 @@ import 'package:pdf/widgets.dart' as pw;
 
 @pragma('vm:entry-point')
 @isolateManagerWorker
-Future<Uint8List> peminjamanPeralatanCompilePdfWorker(dynamic form) async {
-  final ttf = form['ttf'];
-  final ttfBold = form['ttfBold'];
-  final ttfItalic = form['ttfItalic'];
+Future<Uint8List> peminjamanPeralatanCompilePdfWorker(dynamic params) async {
+  final Uint8List ttf = params['ttf'];
+  final Uint8List ttfBold = params['ttfBold'];
+  final Uint8List ttfItalic = params['ttfItalic'];
 
-  final String? nama = form['nama'];
-  final String? nim = form['nim'];
-  final String fakultas = form['fakultas'] ?? "__________";
-  final String prodi = form['prodi'] ?? "__________";
-  final String? dosen = form['dosen'];
-  final String? nipDosen = form['nipDosen'];
-  final String ketua = form['ketua'] ?? "";
-  final String nipKetua = form['nipKetua'] ?? "";
+  final String? nama = params['nama'];
+  final String? nim = params['nim'];
+  final String fakultas = params['fakultas'] ?? "__________";
+  final String prodi = params['prodi'] ?? "__________";
+  final String? dosen = params['dosen'];
+  final String? nipDosen = params['nipDosen'];
+  final String ketua = params['ketua'] ?? "";
+  final String nipKetua = params['nipKetua'] ?? "";
 
-  final mulai = form['mulai'] ?? "_______________________";
-  final akhir = form['akhir'] ?? "_____________________";
+  final mulai = params['mulai'] ?? "_______________________";
+  final akhir = params['akhir'] ?? "_____________________";
 
-  final List<String> barang = form['barang'].map((e) {
+  final List<String> barang = params['barang'].map((e) {
     return e == null || e.trim().isEmpty
       ? "_____________________________________________________________________" 
       : e.trim();
   }).toList();
-  final List<String> banyak = form['banyak'].map(
+  final List<String> banyak = params['banyak'].map(
     (e) => e == null ? "" : 'x$e'
   ).toList();
 
-  final Uint8List? idCard = form['idCard'] is Uint8List ? form ['idCard'] : null;
+  final Uint8List? idCard = params['idCard'] is Uint8List ? params ['idCard'] : null;
 
   final pdf = pw.Document();
   pdf.addPage(pw.MultiPage(
     pageFormat: PdfPageFormat.letter,
     theme: pw.ThemeData.withFont(
-      base: pw.Font.ttf(ttf),
-      bold: pw.Font.ttf(ttfBold),
-      italic: pw.Font.ttf(ttfItalic),
+      base: pw.Font.ttf(ByteData.sublistView(ttf)),
+      bold: pw.Font.ttf(ByteData.sublistView(ttfBold)),
+      italic: pw.Font.ttf(ByteData.sublistView(ttfItalic)),
     ),
     margin: pw.EdgeInsets.fromLTRB(72, 36, 72, 36),
     footer: (context) {
@@ -249,12 +249,12 @@ Future<Uint8List> peminjamanPeralatanCompilePdfWorker(dynamic form) async {
                           pw.TableRow(children: [pw.SizedBox(height: 5)]),
                           pw.TableRow(children: [
                             pw.Text('b.'),
-                            pw.Text('mahasiswa mengisi form peminjaman online dan offline serta meminta tanda tangan / rekomendasi pembimbing dan kaprodi (jika diperlukan).'),
+                            pw.Text('mahasiswa mengisi params peminjaman online dan offline serta meminta tanda tangan / rekomendasi pembimbing dan kaprodi (jika diperlukan).'),
                           ]),
                           pw.TableRow(children: [pw.SizedBox(height: 5)]),
                           pw.TableRow(children: [
                             pw.Text('c.'),
-                            pw.Text('mahasiswa menyerahkan form peminjaman yang telah diisi dan ditandatangani secara lengkap kepada teknisi, dan teknisi mencocokkan identitas peminjam.'),
+                            pw.Text('mahasiswa menyerahkan params peminjaman yang telah diisi dan ditandatangani secara lengkap kepada teknisi, dan teknisi mencocokkan identitas peminjam.'),
                           ]),
                           pw.TableRow(children: [pw.SizedBox(height: 5)]),
                           pw.TableRow(children: [
@@ -269,7 +269,7 @@ Future<Uint8List> peminjamanPeralatanCompilePdfWorker(dynamic form) async {
                           pw.TableRow(children: [pw.SizedBox(height: 5)]),
                           pw.TableRow(children: [
                             pw.Text('f.'),
-                            pw.Text('Proses pengambilan dan pengembalian harus dilakukan oleh mahasiswa yang namanya tertera di form peminjaman.'),
+                            pw.Text('Proses pengambilan dan pengembalian harus dilakukan oleh mahasiswa yang namanya tertera di params peminjaman.'),
                           ]),
                         ]
                       )
@@ -282,7 +282,7 @@ Future<Uint8List> peminjamanPeralatanCompilePdfWorker(dynamic form) async {
                     pw.TableRow(children: [pw.SizedBox(height: 5)]),
                     pw.TableRow(children: [
                       pw.Text('7.'),
-                      pw.Text('Peserta melampirkan foto KTM dan KTP pada form ini.'),
+                      pw.Text('Peserta melampirkan foto KTM dan KTP pada params ini.'),
                     ]),
                   ],
                 )
@@ -324,7 +324,8 @@ Future<Uint8List> peminjamanPeralatanCompilePdfWorker(dynamic form) async {
 @pragma('vm:entry-point')
 @isolateManagerWorker
   Future<Uint8List> suratKeteranganPraktikumCompilePdfWorker(dynamic params) {
-    final Uint8List fontBytes = params['fontBytes'];
+    final Uint8List ttf = params['ttf'];
+
     final Uint8List headerBytes = params['headerBytes'];
     final Uint8List footerBytes = params['footerBytes'];
     final Uint8List buktiBytes = params['buktiBytes'];
@@ -344,8 +345,6 @@ Future<Uint8List> peminjamanPeralatanCompilePdfWorker(dynamic form) async {
     final List<String> nama = List<String>.from(params['nama']);
     final List<String> nim = List<String>.from(params['nim']);
 
-    final ttfFont = pw.Font.ttf(ByteData.sublistView(fontBytes));
-
     final headerImage = pw.MemoryImage(headerBytes);
     final footerImage = pw.MemoryImage(footerBytes);
     final buktiImage = pw.MemoryImage(buktiBytes);
@@ -355,7 +354,7 @@ Future<Uint8List> peminjamanPeralatanCompilePdfWorker(dynamic form) async {
     pdf.addPage(pw.MultiPage(
       pageFormat: PdfPageFormat.a4,
       theme: pw.ThemeData.withFont(
-        base: ttfFont
+        base: pw.Font.ttf(ByteData.sublistView(ttf))
       ),
       margin: pw.EdgeInsets.fromLTRB(2.wcm, 0, 2.wcm, 5.wmm),
       header: (context) => pw.Image(headerImage, width: PdfPageFormat.a4.availableWidth),

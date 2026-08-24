@@ -61,7 +61,7 @@ class PermissionController {
 }
 
 class NavigationController extends GetxController {
-  var isSyncing = false.obs;
+  var isSyncing = true.obs;
   var lastSync = Rxn<DateTime>(null);
   var buildVersion = ''.obs;
   var isLoggedIn = auth.isLoggedIn.obs;
@@ -107,7 +107,7 @@ class LoginController extends GetxController {
   var password = TextEditingController();
   var emailE = Rxn<String>(null); 
   var passwordE = Rxn<String>(null);  
-  var isObscured = RxBool(true);
+  var isObscured = true.obs;
 
   void resetValue() {
     email.text = '';
@@ -180,7 +180,7 @@ class PeminjamanPeralatanController extends GetxController {
   final service = PeminjamanPeralatanService();
   var isLoading = false.obs;
 
-  final cara = storage.cached.globalConfig.caraPinjam ?? "Didn't exist, please refresh browser or contact our Line OA";
+  String get cara => storage.cached.globalConfig.caraPinjam ?? "Didn't exist, please refresh browser or contact our Line OA";
   List<String> get fakultasList => storage.cached.formatedFakultas();
 
   Rxn<XFile> idCard = Rxn<XFile>(ImagePickerService.lastImages['idCard']); 
@@ -255,7 +255,7 @@ class PeminjamanPeralatanController extends GetxController {
       alertDialog(
         'Cara Pengisisan Formulir Peminjaman Peralatan:',
         null,
-        message: Column(
+        message: Obx(() => Column(
           children: [
             Container(
               width: double.infinity,
@@ -272,24 +272,24 @@ class PeminjamanPeralatanController extends GetxController {
                 child: SingleChildScrollView(
                   child: Padding(
                     padding: EdgeInsets.only(right: 8.0),
-                    child: Text(cara, style: TextStyle(fontSize: 12.8)),
+                    child: Text(NC.isSyncing.value ? 'Syncingin progress, please wait...' : cara, style: TextStyle(fontSize: 12.8)),
                   )
                 )
               ),
             ),
-            Obx(() => Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Remind me again'),
-                Switch(value: remindMe.value, onChanged: (v) {
+                Switch(value: remindMe.value, onChanged: NC.isSyncing.value ? null : (v) {
                   remindMe.value = v;
                   storage.cached.userPreference.remindPeminjamanPeralatan = v;
                   storage.save();
                 })
               ],
-            )),
+            ),
           ],
-        ),
+        )),
         titleFontSize: 20,
       );
     }
@@ -389,7 +389,7 @@ class SuratKeteranganPraktikumController extends GetxController {
   var isLoading = false.obs;
   var message = RxnString(null);
 
-  final cara = storage.cached.globalConfig.caraKeterangan ?? "Didn't exist, please refresh browser or contact our Line OA";
+  String get cara => storage.cached.globalConfig.caraKeterangan ?? "Didn't exist, please refresh browser or contact our Line OA";
   final service = SuratKeteranganPraktikumService();
   List<String> get matkulList => storage.cached.formatedMataKuliah();
   List<String> get praktikumList => storage.cached.formatedPraktikum();
@@ -400,7 +400,7 @@ class SuratKeteranganPraktikumController extends GetxController {
       alertDialog(
         'Cara Pengisisan Formulir Surat Keterangan Praktikum:',
         null,
-        message: Column(
+        message: Obx(() => Column(
           children: [
             Container(
               width: double.infinity,
@@ -417,24 +417,24 @@ class SuratKeteranganPraktikumController extends GetxController {
                 child: SingleChildScrollView(
                   child: Padding(
                     padding: EdgeInsets.only(right: 8.0),
-                    child: Text(cara, style: TextStyle(fontSize: 12.8)),
+                    child: Text(NC.isSyncing.value ? 'Syncingin progress, please wait...' : cara, style: TextStyle(fontSize: 12.8)),
                   )
                 )
               ),
             ),
-            Obx(() => Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Remind me again'),
-                Switch(value: remindMe.value, onChanged: (v) {
+                Switch(value: remindMe.value, onChanged: NC.isSyncing.value ? null : (v) {
                   remindMe.value = v;
                   storage.cached.userPreference.remindSuratKeteranganPraktikum = v;
                   storage.save();
                 })
               ],
-            )),
+            ),
           ],
-        ),
+        )),
         titleFontSize: 20,
       );
     }
@@ -624,7 +624,7 @@ class PertukaranJadwalPraktikumController extends GetxController {
 
   final service = SuratKeteranganPraktikumService();
   
-  final cara = storage.cached.globalConfig.caraPertukaran ?? "Didn't exist, please refresh browser or contact our Line OA";
+  String get cara => storage.cached.globalConfig.caraPertukaran ?? "Didn't exist, please refresh browser or contact our Line OA";
   List<String> get praktikumList => storage.cached.formatedPraktikum();
 
   void showReminderDialog() {
@@ -633,7 +633,7 @@ class PertukaranJadwalPraktikumController extends GetxController {
       alertDialog(
         'Cara Pengisisan Formulir Pergantian Jadwal Praktikum:',
         null,
-        message: Column(
+        message: Obx(() => Column(
           children: [
             Container(
               width: double.infinity,
@@ -650,24 +650,24 @@ class PertukaranJadwalPraktikumController extends GetxController {
                 child: SingleChildScrollView(
                   child: Padding(
                     padding: EdgeInsets.only(right: 8.0),
-                    child: Text(cara, style: TextStyle(fontSize: 12.8)),
+                    child: Text(NC.isSyncing.value ? 'Syncingin progress, please wait...' : cara, style: TextStyle(fontSize: 12.8)),
                   )
                 )
               ),
             ),
-            Obx(() => Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Remind me again'),
-                Switch(value: remindMe.value, onChanged: (v) {
+                Switch(value: remindMe.value, onChanged: NC.isSyncing.value ? null : (v) {
                   remindMe.value = v;
                   storage.cached.userPreference.remindPertukaranJadwal = v;
                   storage.save();
                 })
               ],
-            )),
+            ),
           ],
-        ),
+        )),
         titleFontSize: 20,
       );
     }
@@ -1934,8 +1934,8 @@ class DaftarBarangController extends GetxController {
 
     bool checkEmptyFields() {
       final model = createModel();
-      final list = config.simulated.formatedItem();
-      nameE.value = nameC.text.isBlank() ? '*required' : model.name != s?.name && list.contains(model.name) ? '*already exist' : null;
+      final list = config.simulated.formatedItem(true);
+      nameE.value = nameC.text.isBlank() ? '*required' : model.name.toLowerCase() != s?.name.toLowerCase() && list.contains(model.name.toLowerCase()) ? '*already exist' : null;
 
       if (nameE.value != null) return false;
       
@@ -1944,7 +1944,7 @@ class DaftarBarangController extends GetxController {
     }
 
     nameF.addListener(() {
-      if (!nameF.hasFocus) nameC.text = nameC.text.trim().capitalCase(false);
+      if (!nameF.hasFocus) nameC.text = nameC.text.trim().capitalCase();
     });
     
     alertDialog(
@@ -2179,8 +2179,8 @@ class FakultasController extends GetxController {
 
     bool checkEmptyFields() {
       final model = createModel();
-      final list = config.simulated.formatedFakultas();
-      nameE.value = nameC.text.isBlank() ? '*required' : !nameC.text.contains(RegExp(r'\((.*?)\)')) ? '*invalid format' : model.name != s?.name && list.contains(model.name) ? '*already exist' : null;
+      final list = config.simulated.formatedFakultas(true);
+      nameE.value = nameC.text.isBlank() ? '*required' : !nameC.text.contains(RegExp(r'\((.*?)\)')) ? '*invalid format' : model.name.toLowerCase() != s?.name.toLowerCase() && list.contains(model.name.toLowerCase()) ? '*already exist' : null;
 
       if (nameE.value != null) return false;
       
@@ -2190,7 +2190,7 @@ class FakultasController extends GetxController {
 
     nameF.addListener(() {
       if (!nameF.hasFocus) {
-        final temp = nameC.text.trim().capitalCase(false);
+        final temp = nameC.text.trim().capitalCase();
         final abv = RegExp(r'\((.*?)\)').firstMatch(temp)?.group(1);
         if (abv != null) nameC.text = temp.replaceAll(RegExp(r'\((.*?)\)'), '(${abv.toUpperCase()})');
       }
@@ -2457,8 +2457,8 @@ class ProgramStudiController extends GetxController {
 
     bool checkEmptyFields() {
       final model = createModel();
-      final list = config.simulated.formatedProgramStudi();
-      nameE!.value = nameC!.text.isBlank() ? '*required' : !nameC.text.contains(RegExp(r'\((.*?)\)')) ? '*invalid format' : model.name != s?.name && list.contains(model.name) ? '*already exist' : null;
+      final list = config.simulated.formatedProgramStudi(true);
+      nameE!.value = nameC!.text.isBlank() ? '*required' : !nameC.text.contains(RegExp(r'\((.*?)\)')) ? '*invalid format' : model.name.toLowerCase() != s?.name.toLowerCase() && list.contains(model.name.toLowerCase()) ? '*already exist' : null;
       fakultasE.value = !fakultasC.hasValue ? '*required' : null;
 
       if (nameE.value != null || fakultasE.value != null) return false;
@@ -2468,7 +2468,7 @@ class ProgramStudiController extends GetxController {
     }
     nameF?.addListener(() {
       if (!nameF.hasFocus) {
-        final temp = nameC!.text.trim().capitalCase(false);
+        final temp = nameC!.text.trim().capitalCase();
         final abv = RegExp(r'\((.*?)\)').firstMatch(temp)?.group(1);
         if (abv != null) nameC.text = temp.replaceAll(RegExp(r'\((.*?)\)'), '(${abv.toUpperCase()})');
       }
@@ -2823,10 +2823,10 @@ class MatprakController extends GetxController {
 
     bool checkEmptyFields() {
       final model = createModel();
-      final kodes = config.simulated.matprak.map((v) => v.kode);
-      final namas = config.simulated.matprak.map((v) => v.nama);
-      kodeE!.value = kode!.text.isBlank() ? '*required' : model.kode != s?.kode && kodes.contains(model.kode) ? '*already exist' : null;
-      namaE!.value = nama!.text.isBlank() ? '*required' : model.nama != s?.nama && namas.contains(model.nama) ? '*already exist' :null;
+      final kodes = config.simulated.matprak.map((v) => v.kode.toLowerCase());
+      final namas = config.simulated.matprak.map((v) => v.nama.toLowerCase());
+      kodeE!.value = kode!.text.isBlank() ? '*required' : model.kode.toLowerCase() != s?.kode.toLowerCase() && kodes.contains(model.kode.toLowerCase()) ? '*already exist' : null;
+      namaE!.value = nama!.text.isBlank() ? '*required' : model.nama.toLowerCase() != s?.nama.toLowerCase() && namas.contains(model.nama.toLowerCase()) ? '*already exist' : null;
       programStudiE.value = !programStudiC.hasValue ? '*required' : null;
       typeE.value = !type.hasValue ? '*required' : null;
 
@@ -2841,7 +2841,7 @@ class MatprakController extends GetxController {
     });
 
     namaF?.addListener(() {
-      if (!namaF.hasFocus) nama?.text = nama.text.trim().capitalCase(false);
+      if (!namaF.hasFocus) nama?.text = nama.text.trim().capitalCase();
     });
     
     alertDialog(
