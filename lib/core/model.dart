@@ -62,7 +62,7 @@ class LastUpdatedModel {
 }
 
 class GlobalConfigModel {
-  String? nomorSurat, lineOALDTE, namaKepalaLDTE, nipKepalaLDTE, caraPinjam, caraKeterangan, caraPertukaran;
+  String? nomorSurat, lineOALDTE, namaKepalaLDTE, nipKepalaLDTE, caraPinjam, caraKeterangan, caraPertukaran, caraIzin;
 
   GlobalConfigModel({
     this.nomorSurat,
@@ -72,6 +72,7 @@ class GlobalConfigModel {
     this.caraPinjam,
     this.caraKeterangan,
     this.caraPertukaran,
+    this.caraIzin
   });
 
   GlobalConfigModel.fromJson(Map<String, dynamic> json) {
@@ -82,6 +83,7 @@ class GlobalConfigModel {
     caraPinjam = (json['cara_pinjam'] as String).trim();
     caraKeterangan = (json['cara_keterangan'] as String).trim();
     caraPertukaran = (json['cara_pertukaran'] as String).trim();
+    caraIzin = (json['cara_izin'] as String).trim();
   }
 
   GlobalConfigModel duplicate() => GlobalConfigModel(
@@ -92,6 +94,7 @@ class GlobalConfigModel {
     caraPinjam: caraPinjam,
     caraKeterangan: caraKeterangan,
     caraPertukaran: caraPertukaran,
+    caraIzin: caraIzin,
   );
 }
 
@@ -195,17 +198,20 @@ class UserPreferenceModel {
   bool remindPeminjamanPeralatan;
   bool remindSuratKeteranganPraktikum;
   bool remindPertukaranJadwal;
+  bool remindSuratKeteranganIzin;
   
   UserPreferenceModel({
     this.remindPeminjamanPeralatan = true,
     this.remindSuratKeteranganPraktikum = true,
     this.remindPertukaranJadwal = true,
+    this.remindSuratKeteranganIzin = true,
   });
 
   UserPreferenceModel duplicate() => UserPreferenceModel(
     remindPeminjamanPeralatan: remindPeminjamanPeralatan,
     remindSuratKeteranganPraktikum: remindSuratKeteranganPraktikum,
     remindPertukaranJadwal: remindPertukaranJadwal,
+    remindSuratKeteranganIzin: remindSuratKeteranganIzin,
   );
 }
 

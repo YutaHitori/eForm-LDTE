@@ -2,6 +2,7 @@ import 'package:eform_ldte/admin/daftar_barang.dart';
 import 'package:eform_ldte/admin/fakultas.dart';
 import 'package:eform_ldte/admin/mata_kuliah.dart';
 import 'package:eform_ldte/admin/program_studi.dart';
+import 'package:eform_ldte/form/izin/form.dart';
 import 'package:eform_ldte/form/peminjaman_peralatan/detail.dart';
 import 'package:eform_ldte/form/surat_keterangan_praktikum/detail.dart';
 import 'package:eform_ldte/admin/config.dart';
@@ -17,7 +18,7 @@ import 'package:eform_ldte/form/surat_keterangan_praktikum/form.dart';
 import 'package:eform_ldte/homepage/layout.dart';
 import 'package:eform_ldte/misc/function.dart';
 import 'package:eform_ldte/misc/global.dart';
-import 'package:eform_ldte/pertukaran_jadwal_praktikum/form.dart';
+import 'package:eform_ldte/form/pertukaran_jadwal_praktikum/form.dart';
 import "package:universal_html/universal_html.dart" as html;
 
 String prev = '';
@@ -58,6 +59,15 @@ final GoRouter router = GoRouter(
             return GetXRouteBinding(
               controllerBuilder: () => Get.put(PertukaranJadwalPraktikumController()),
               child: PertukaranJadwalPraktikum(),
+            );
+          },
+        ),
+        GoRoute(
+          path: 'surat-izin',
+          builder: (context, state) {
+            return GetXRouteBinding(
+              controllerBuilder: () => Get.put(SuratKeteranganIzinController()),
+              child: SuratKeteranganIzin(),
             );
           },
         ),

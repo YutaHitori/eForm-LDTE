@@ -61,24 +61,34 @@ class GlobalConfig extends StatelessWidget {
                       prefix: Text('@'),
                       suffixIcon: Padding(
                         padding: const EdgeInsets.only(right: 8.0),
-                        child: IconButton(
-                          onPressed: c.lineOASaved.value 
-                            ? () {
-                              c.lineOACanEdit.value = !c.lineOACanEdit.value;
-                              if (c.lineOACanEdit.value) {
-                                c.lineOAFocus.requestFocus();
-                              } else {
-                                c.lineOAFocus.unfocus();
-                              }
-                            }
-                            : c.saveLineOa,
-                          icon: Icon(
-                            c.lineOASaved.value 
-                            ? c.lineOACanEdit.value
-                              ? Icons.edit_off_rounded
-                              : Icons.edit_rounded
-                            : Icons.save_rounded
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (!c.lineOASaved.value)
+                            IconButton(
+                              onPressed: c.lineOAUndo,
+                              icon: Icon(Icons.undo_rounded),
+                            ),
+                            IconButton(
+                              onPressed: c.lineOASaved.value 
+                                ? () {
+                                  c.lineOACanEdit.value = !c.lineOACanEdit.value;
+                                  if (c.lineOACanEdit.value) {
+                                    c.lineOAFocus.requestFocus();
+                                  } else {
+                                    c.lineOAFocus.unfocus();
+                                  }
+                                }
+                                : c.saveLineOa,
+                              icon: Icon(
+                                c.lineOASaved.value 
+                                ? c.lineOACanEdit.value
+                                  ? Icons.edit_off_rounded
+                                  : Icons.edit_rounded
+                                : Icons.save_rounded
+                              ),
+                            ),
+                          ],
                         ),
                       )
                     ),
@@ -98,24 +108,34 @@ class GlobalConfig extends StatelessWidget {
                       ), 
                       suffixIcon: Padding(
                         padding: const EdgeInsets.only(right: 8.0),
-                        child: IconButton(
-                          onPressed: c.nomorSuratSaved.value 
-                            ? () {
-                              c.nomorSuratCanEdit.value = !c.nomorSuratCanEdit.value;
-                              if (c.nomorSuratCanEdit.value) {
-                                c.nomorSuratFocus.requestFocus();
-                              } else {
-                                c.nomorSuratFocus.unfocus();
-                              }
-                            }
-                            : c.saveNomorSurat,
-                          icon: Icon(
-                            c.nomorSuratSaved.value 
-                            ? c.nomorSuratCanEdit.value
-                              ? Icons.edit_off_rounded
-                              : Icons.edit_rounded
-                            : Icons.save_rounded
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (!c.nomorSuratSaved.value)
+                            IconButton(
+                              onPressed: c.nomorSuratUndo,
+                              icon: Icon(Icons.undo_rounded),
+                            ),
+                            IconButton(
+                              onPressed: c.nomorSuratSaved.value 
+                                ? () {
+                                  c.nomorSuratCanEdit.value = !c.nomorSuratCanEdit.value;
+                                  if (c.nomorSuratCanEdit.value) {
+                                    c.nomorSuratFocus.requestFocus();
+                                  } else {
+                                    c.nomorSuratFocus.unfocus();
+                                  }
+                                }
+                                : c.saveNomorSurat,
+                              icon: Icon(
+                                c.nomorSuratSaved.value 
+                                ? c.nomorSuratCanEdit.value
+                                  ? Icons.edit_off_rounded
+                                  : Icons.edit_rounded
+                                : Icons.save_rounded
+                              ),
+                            ),
+                          ],
                         ),
                       )
                     ),
@@ -135,24 +155,34 @@ class GlobalConfig extends StatelessWidget {
                       ), 
                       suffixIcon: Padding(
                         padding: const EdgeInsets.only(right: 8.0),
-                        child: IconButton(
-                          onPressed: c.namaKepalaLDTESaved.value 
-                            ? () {
-                              c.namaKepalaLDTECanEdit.value = !c.namaKepalaLDTECanEdit.value;
-                              if (c.namaKepalaLDTECanEdit.value) {
-                                c.namaKepalaLDTEFocus.requestFocus();
-                              } else {
-                                c.namaKepalaLDTEFocus.unfocus();
-                              }
-                            }
-                            : c.saveNamaKepalaLDTE,
-                          icon: Icon(
-                            c.namaKepalaLDTESaved.value 
-                            ? c.namaKepalaLDTECanEdit.value
-                              ? Icons.edit_off_rounded
-                              : Icons.edit_rounded
-                            : Icons.save_rounded
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (!c.namaKepalaLDTESaved.value)
+                            IconButton(
+                              onPressed: c.namaKepalaLDTEUndo,
+                              icon: Icon(Icons.undo_rounded),
+                            ),
+                            IconButton(
+                              onPressed: c.namaKepalaLDTESaved.value 
+                                ? () {
+                                  c.namaKepalaLDTECanEdit.value = !c.namaKepalaLDTECanEdit.value;
+                                  if (c.namaKepalaLDTECanEdit.value) {
+                                    c.namaKepalaLDTEFocus.requestFocus();
+                                  } else {
+                                    c.namaKepalaLDTEFocus.unfocus();
+                                  }
+                                }
+                                : c.saveNamaKepalaLDTE,
+                              icon: Icon(
+                                c.namaKepalaLDTESaved.value 
+                                ? c.namaKepalaLDTECanEdit.value
+                                  ? Icons.edit_off_rounded
+                                  : Icons.edit_rounded
+                                : Icons.save_rounded
+                              ),
+                            ),
+                          ],
                         ),
                       )
                     ),
@@ -174,24 +204,34 @@ class GlobalConfig extends StatelessWidget {
                       ), 
                       suffixIcon: Padding(
                         padding: const EdgeInsets.only(right: 8.0),
-                        child: IconButton(
-                          onPressed: c.nipKepalaLDTESaved.value 
-                            ? () {
-                              c.nipKepalaLDTECanEdit.value = !c.nipKepalaLDTECanEdit.value;
-                              if (c.nipKepalaLDTECanEdit.value) {
-                                c.nipKepalaLDTEFocus.requestFocus();
-                              } else {
-                                c.nipKepalaLDTEFocus.unfocus();
-                              }
-                            }
-                            : c.saveNipKepalaLDTE,
-                          icon: Icon(
-                            c.nipKepalaLDTESaved.value 
-                            ? c.nipKepalaLDTECanEdit.value
-                              ? Icons.edit_off_rounded
-                              : Icons.edit_rounded
-                            : Icons.save_rounded
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (!c.nipKepalaLDTESaved.value)
+                            IconButton(
+                              onPressed: c.nipKepalaLDTEUndo,
+                              icon: Icon(Icons.undo_rounded),
+                            ),
+                            IconButton(
+                              onPressed: c.nipKepalaLDTESaved.value 
+                                ? () {
+                                  c.nipKepalaLDTECanEdit.value = !c.nipKepalaLDTECanEdit.value;
+                                  if (c.nipKepalaLDTECanEdit.value) {
+                                    c.nipKepalaLDTEFocus.requestFocus();
+                                  } else {
+                                    c.nipKepalaLDTEFocus.unfocus();
+                                  }
+                                }
+                                : c.saveNipKepalaLDTE,
+                              icon: Icon(
+                                c.nipKepalaLDTESaved.value 
+                                ? c.nipKepalaLDTECanEdit.value
+                                  ? Icons.edit_off_rounded
+                                  : Icons.edit_rounded
+                                : Icons.save_rounded
+                              ),
+                            ),
+                          ],
                         ),
                       )
                     ),
@@ -211,26 +251,37 @@ class GlobalConfig extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12.0),
                         borderSide: BorderSide.none,
                       ), 
+                      hintText: '\n\n',
                       suffixIcon: Padding(
                         padding: const EdgeInsets.only(right: 8.0),
-                        child: IconButton(
-                          onPressed: c.caraPinjamSaved.value 
-                            ? () {
-                              c.caraPinjamCanEdit.value = !c.caraPinjamCanEdit.value;
-                              if (c.caraPinjamCanEdit.value) {
-                                c.caraPinjamFocus.requestFocus();
-                              } else {
-                                c.caraPinjamFocus.unfocus();
-                              }
-                            }
-                            : c.saveCaraPinjam,
-                          icon: Icon(
-                            c.caraPinjamSaved.value 
-                            ? c.caraPinjamCanEdit.value
-                              ? Icons.edit_off_rounded
-                              : Icons.edit_rounded
-                            : Icons.save_rounded
-                          ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (!c.caraPinjamSaved.value)
+                            IconButton(
+                              onPressed: c.caraPinjamUndo,
+                              icon: Icon(Icons.undo_rounded),
+                            ),
+                            IconButton(
+                              onPressed: c.caraPinjamSaved.value 
+                                ? () {
+                                  c.caraPinjamCanEdit.value = !c.caraPinjamCanEdit.value;
+                                  if (c.caraPinjamCanEdit.value) {
+                                    c.caraPinjamFocus.requestFocus();
+                                  } else {
+                                    c.caraPinjamFocus.unfocus();
+                                  }
+                                }
+                                : c.saveCaraPinjam,
+                              icon: Icon(
+                                c.caraPinjamSaved.value 
+                                ? c.caraPinjamCanEdit.value
+                                  ? Icons.edit_off_rounded
+                                  : Icons.edit_rounded
+                                : Icons.save_rounded
+                              ),
+                            ),
+                          ],
                         ),
                       )
                     ),
@@ -252,26 +303,37 @@ class GlobalConfig extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12.0),
                         borderSide: BorderSide.none,
                       ), 
+                      hintText: '\n\n',
                       suffixIcon: Padding(
                         padding: const EdgeInsets.only(right: 8.0),
-                        child: IconButton(
-                          onPressed: c.caraKeteranganSaved.value 
-                            ? () {
-                              c.caraKeteranganCanEdit.value = !c.caraKeteranganCanEdit.value;
-                              if (c.caraKeteranganCanEdit.value) {
-                                c.caraKeteranganFocus.requestFocus();
-                              } else {
-                                c.caraKeteranganFocus.unfocus();
-                              }
-                            }
-                            : c.saveCaraKeterangan,
-                          icon: Icon(
-                            c.caraKeteranganSaved.value 
-                            ? c.caraKeteranganCanEdit.value
-                              ? Icons.edit_off_rounded
-                              : Icons.edit_rounded
-                            : Icons.save_rounded
-                          ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (!c.caraKeteranganSaved.value)
+                            IconButton(
+                              onPressed: c.caraKeteranganUndo,
+                              icon: Icon(Icons.undo_rounded),
+                            ),
+                            IconButton(
+                              onPressed: c.caraKeteranganSaved.value 
+                                ? () {
+                                  c.caraKeteranganCanEdit.value = !c.caraKeteranganCanEdit.value;
+                                  if (c.caraKeteranganCanEdit.value) {
+                                    c.caraKeteranganFocus.requestFocus();
+                                  } else {
+                                    c.caraKeteranganFocus.unfocus();
+                                  }
+                                }
+                                : c.saveCaraKeterangan,
+                              icon: Icon(
+                                c.caraKeteranganSaved.value 
+                                ? c.caraKeteranganCanEdit.value
+                                  ? Icons.edit_off_rounded
+                                  : Icons.edit_rounded
+                                : Icons.save_rounded
+                              ),
+                            ),
+                          ],
                         ),
                       )
                     ),
@@ -293,32 +355,95 @@ class GlobalConfig extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12.0),
                         borderSide: BorderSide.none,
                       ), 
+                      hintText: '\n\n',
                       suffixIcon: Padding(
                         padding: const EdgeInsets.only(right: 8.0),
-                        child: IconButton(
-                          onPressed: c.caraPertukaranSaved.value 
-                            ? () {
-                              c.caraPertukaranCanEdit.value = !c.caraPertukaranCanEdit.value;
-                              if (c.caraPertukaranCanEdit.value) {
-                                c.caraPertukaranFocus.requestFocus();
-                              } else {
-                                c.caraPertukaranFocus.unfocus();
-                              }
-                            }
-                            : c.saveCaraPertukaran,
-                          icon: Icon(
-                            c.caraPertukaranSaved.value 
-                            ? c.caraPertukaranCanEdit.value
-                              ? Icons.edit_off_rounded
-                              : Icons.edit_rounded
-                            : Icons.save_rounded
-                          ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (!c.caraPertukaranSaved.value)
+                            IconButton(
+                              onPressed: c.caraPertukaranUndo,
+                              icon: Icon(Icons.undo_rounded),
+                            ),
+                            IconButton(
+                              onPressed: c.caraPertukaranSaved.value 
+                                ? () {
+                                  c.caraPertukaranCanEdit.value = !c.caraPertukaranCanEdit.value;
+                                  if (c.caraPertukaranCanEdit.value) {
+                                    c.caraPertukaranFocus.requestFocus();
+                                  } else {
+                                    c.caraPertukaranFocus.unfocus();
+                                  }
+                                }
+                                : c.saveCaraPertukaran,
+                              icon: Icon(
+                                c.caraPertukaranSaved.value 
+                                ? c.caraPertukaranCanEdit.value
+                                  ? Icons.edit_off_rounded
+                                  : Icons.edit_rounded
+                                : Icons.save_rounded
+                              ),
+                            ),
+                          ],
                         ),
                       )
                     ),
                     maxLines: c.caraPertukaranCanEdit.value ? null : 3,
                     keyboardType: TextInputType.multiline,
                     readOnly: !c.caraPertukaranCanEdit.value,
+                  ),
+                  CustomTextField(
+                    controller: c.caraIzin,
+                    focusNode: c.caraIzinFocus,
+                    onChanged: (v) => c.isSavedCheck(),
+                    labelText: 'Cara Pengisian Formulir Surat Keterangan Izin',
+                    scrollbar: false,
+                    maxHeight: 256,
+                    decoration: InputDecoration(
+                      fillColor: c.caraIzinCanEdit.value ? null : Color(0xFF181818),
+                      hoverColor: c.caraIzinCanEdit.value ? null : Colors.transparent,
+                      focusedBorder: c.caraIzinCanEdit.value ? null : OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: BorderSide.none,
+                      ), 
+                      hintText: '\n\n',
+                      suffixIcon: Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (!c.caraIzinSaved.value)
+                            IconButton(
+                              onPressed: c.caraIzinUndo,
+                              icon: Icon(Icons.undo_rounded),
+                            ),
+                            IconButton(
+                              onPressed: c.caraIzinSaved.value 
+                                ? () {
+                                  c.caraIzinCanEdit.value = !c.caraIzinCanEdit.value;
+                                  if (c.caraIzinCanEdit.value) {
+                                    c.caraIzinFocus.requestFocus();
+                                  } else {
+                                    c.caraIzinFocus.unfocus();
+                                  }
+                                }
+                                : c.saveCaraIzin,
+                              icon: Icon(
+                                c.caraIzinSaved.value 
+                                ? c.caraIzinCanEdit.value
+                                  ? Icons.edit_off_rounded
+                                  : Icons.edit_rounded
+                                : Icons.save_rounded
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    ),
+                    maxLines: c.caraIzinCanEdit.value ? null : 3,
+                    keyboardType: TextInputType.multiline,
+                    readOnly: !c.caraIzinCanEdit.value,
                   ),
                   Row(
                     spacing: 8,

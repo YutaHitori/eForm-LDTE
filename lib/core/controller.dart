@@ -704,8 +704,6 @@ class SuratKeteranganPraktikumController extends GetxController {
 class PertukaranJadwalPraktikumController extends GetxController {
   var isLoading = false.obs;
 
-  final service = SuratKeteranganPraktikumService();
-  
   String get cara => storage.cached.globalConfig.caraPertukaran ?? "Didn't exist, please refresh browser or contact our Line OA";
   List<String> get praktikumList => storage.cached.formatedPraktikum();
 
@@ -885,11 +883,7 @@ Pertukaran diperbolehkan setelah ada chat konfirmasi dari LDTE.''';
             ),
           ),
         ),
-        dismissible: false,
-        confirmText: 'Close Page',
-        confirmAction: () {
-          currentContext?.go(NamedRoute.homepage);
-        },
+        confirmText: 'Close',
       );
     } else {
       alertDialog('Error', 'Device is not synced.');
@@ -932,6 +926,211 @@ Pertukaran diperbolehkan setelah ada chat konfirmasi dari LDTE.''';
                 Switch(value: remindMe.value, onChanged: NC.isSyncing.value ? null : (v) {
                   remindMe.value = v;
                   storage.cached.userPreference.remindPertukaranJadwal = v;
+                  storage.save();
+                })
+              ],
+            ),
+          ],
+        )),
+        titleFontSize: 20,
+      );
+    }
+  }
+} 
+
+class SuratKeteranganIzinController extends GetxController {
+  var isLoading = false.obs;
+
+  String get cara => storage.cached.globalConfig.caraIzin ?? "Didn't exist, please refresh browser or contact our Line OA";
+  List<String> get praktikumList => storage.cached.formatedPraktikum();
+
+  @override
+  void onInit() {
+    super.onInit();
+    showReminderDialog();
+    namaF.addListener(() {
+      if (!namaF.hasFocus) namaC.text = namaC.text.trim().capitalCase(false);
+    });
+    nimF.addListener(() {
+      if (!nimF.hasFocus) nimC.text = nimC.text.trim();
+    });
+    namaPraktikumF.addListener(() {
+      if (!namaPraktikumF.hasFocus) namaPraktikum.text = namaPraktikum.text.trim().capitalCase();
+    });
+    kodePraktikumF.addListener(() {
+      if (!kodePraktikumF.hasFocus) kodePraktikum.text = kodePraktikum.text.trim().toUpperCase();
+    });
+    alasanF.addListener(() {
+      if (!alasanF.hasFocus) alasanC.text = alasanC.text.trim();
+    });
+  }
+
+  @override 
+  void onClose() {
+    super.onClose();
+    namaF.dispose();
+    nimF.dispose();
+    namaPraktikumF.dispose();
+    kodePraktikumF.dispose();
+    alasanF.dispose();
+  }
+
+  Future<void> selectDate() async {
+    final picked = await DateTimePickerService.selectDate(initial: dateC.text.toDateTime() ?? today, helpText: "Jadwal Sebelum Pertukaran");
+    if (picked != null) dateC.text = picked.toDateString();
+  }
+
+  final namaC = TextEditingController();
+  final nimC = TextEditingController();
+  final praktikum = SingleSelectController<String>(null);
+  var isPraktikumLainnya = false.obs;
+  final kodePraktikum = TextEditingController();
+  final namaPraktikum = TextEditingController();
+  final modul = SingleSelectController<int>(null);
+  final dateC = TextEditingController();
+  final alasanC = TextEditingController();
+
+  var namaE = Rxn<String>(null); 
+  var nimE = Rxn<String>(null); 
+  var praktikumE = Rxn<String>(null); 
+  var namaPraktikumE = Rxn<String>(null); 
+  var kodePraktikumE = Rxn<String>(null); 
+  var modulE = Rxn<String>(null); 
+  var alasanE = Rxn<String>(null); 
+  var dateE = Rxn<String>(null); 
+
+  var prodiList = <String>[].obs;
+
+  final namaF = FocusNode();
+  final nimF = FocusNode();
+  final namaPraktikumF = FocusNode();
+  final kodePraktikumF = FocusNode();
+  final alasanF = FocusNode();
+
+  String get compiledMessage => '''Untuk izin, silahkan chat sesuai format berikut:
+----------------------------------------
+Nama : ${namaC.text.trim().capitalCase(false)}
+NIM : ${nimC.text.trim()}
+Praktikum : ${praktikum.value == 'Lainnya...' ? '${kodePraktikum.text.trim().toUpperCase()} ${namaPraktikum.text.trim().capitalCase()}' : praktikum.value}
+Modul : ${modul.value ?? ''}
+Hari/Tanggal : ${dateC.text.toDateTime()?.toDateFormatString()}
+Alasan : ${alasanC.text.trim()}
+----------------------------------------
+Silahkan memberikan surat keterangan sakit / izin ke TU LDTE untuk diberikan jadwal pengganti.
+Terimakasih.''';
+
+   bool checkEmptyFields() {
+    if (
+      namaC.text.isBlank() || 
+      nimC.text.isBlank() || 
+      !praktikum.hasValue || 
+        (praktikum.value == 'Lainnya...' && (namaPraktikum.text.isBlank() || kodePraktikum.text.isBlank())) || 
+      !modul.hasValue || 
+      (dateC.text.isBlank() || dateC.text.toDateTime() == null)
+      ||
+      alasanC.text.isBlank() 
+    ) {
+      namaE.value = namaC.text.isBlank() ? '*required' : null;
+      nimE.value = nimC.text.isBlank() ? '*required' : null;
+      praktikumE.value = !praktikum.hasValue ? '*required' : null;
+      namaPraktikumE.value = praktikum.value == 'Lainnya...' && namaPraktikum.text.isBlank () ? '': null;
+      kodePraktikumE.value = praktikum.value == 'Lainnya...' && kodePraktikum.text.isBlank () ? '': null;
+      modulE.value = !modul.hasValue ? '' : null ;
+      dateE.value = dateC.text.isBlank() ? '*required' : dateC.text.toDateTime() == null ? '*invalid' : null;
+      alasanE.value = alasanC.text.isBlank() ? '*required' : null;
+      return false;
+    }
+    namaE.value = nimE.value = praktikumE.value = namaPraktikumE.value = kodePraktikumE.value = modulE.value = dateE.value = alasanE.value = null;
+    return true;
+  }
+
+  void submit() async {
+    if (!checkEmptyFields()) return;
+    isLoading.value = true;
+    final message = compiledMessage;
+    final url = await storage.getLineOALDTEUrl(message);
+    print(url);
+    print(url);
+    Clipboard.setData(ClipboardData(text: message));
+    Get.showSnackbar(GetSnackBar(message: 'Message copied to clipboard!', duration: Duration(seconds: 2)));
+    if (url != null) {
+      alertDialog(
+        'Form Formated!', null,
+        width: 360,
+        message: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: 'Data telah berhasil diformat dan tersalin ke dalam clipboard. Silahkan kirim pesan yang telah tersalin ke admin melalui link berikut: ',
+                  style: TextStyle(color: Colors.white)
+                ),
+                WidgetSpan(
+                  child: Transform.translate(
+                    offset: Offset(0, 2),
+                    child: InkWell(
+                      onTap: () async {
+                        if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+                          alertDialog('Error!', 'Link tidak dapat dibuka, silahkan kirim pesan yang telah tersalin ke Line OA LDTE secara manual.');
+                          Clipboard.setData(ClipboardData(text: message));
+                        }
+                      }, 
+                      child: Text('OA Line LDTE', style: TextStyle(color: Colors.blue))
+                    ),
+                  ),
+                ),
+                TextSpan(
+                  text: '.\n\nNote: Jika link tidak dapat dibuka, silahkan kirim pesan yang telah tersalin ke Line OA LDTE secara manual.',
+                  style: TextStyle(color: Colors.white, fontSize: 12)
+                ),
+              ],
+            ),
+          ),
+        ),
+        confirmText: 'Close',
+      );
+    } else {
+      alertDialog('Error', 'Device is not synced.');
+    }
+    isLoading.value = false;
+  }
+
+  void showReminderDialog() {
+    var remindMe = storage.cached.userPreference.remindSuratKeteranganIzin.obs;
+    if (remindMe.value) {
+      alertDialog(
+        'Cara Pengisisan Formulir Surat Keterangan Izin:',
+        null,
+        message: Obx(() => Column(
+          children: [
+            Container(
+              width: double.infinity,
+              margin: EdgeInsets.symmetric(vertical: 8),
+              constraints: BoxConstraints(maxHeight: 152),
+              decoration: BoxDecoration(
+                color: appTheme.colorScheme.background,
+                borderRadius: BorderRadius.circular(8)
+              ),
+              padding: const EdgeInsets.all(8),
+              child: Scrollbar(
+                thumbVisibility: true,
+                radius: Radius.circular(4),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.only(right: 8.0),
+                    child: Text(NC.isSyncing.value ? 'Syncingin progress, please wait...' : cara, style: TextStyle(fontSize: 12.8)),
+                  )
+                )
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Remind me again'),
+                Switch(value: remindMe.value, onChanged: NC.isSyncing.value ? null : (v) {
+                  remindMe.value = v;
+                  storage.cached.userPreference.remindSuratKeteranganIzin = v;
                   storage.save();
                 })
               ],
@@ -1380,6 +1579,12 @@ class GlobalConfigController extends GetxController {
         isSavedCheck();
       }
     });
+    caraIzinFocus.addListener(() {
+      if (!caraIzinFocus.hasFocus) {
+        caraIzin.text = caraIzin.text.trim();
+        isSavedCheck();
+      }
+    });
   }
 
   @override
@@ -1392,6 +1597,7 @@ class GlobalConfigController extends GetxController {
     caraPinjamFocus.dispose();
     caraKeteranganFocus.dispose();
     caraPertukaranFocus.dispose();
+    caraIzinFocus.dispose();
   }
 
   final service = GlobalConfigService();
@@ -1408,6 +1614,7 @@ class GlobalConfigController extends GetxController {
     caraPinjamSaved.value = caraPinjam.text.trim() == storage.cached.globalConfig.caraPinjam;
     caraKeteranganSaved.value = caraKeterangan.text.trim() == storage.cached.globalConfig.caraKeterangan;
     caraPertukaranSaved.value = caraPertukaran.text.trim() == storage.cached.globalConfig.caraPertukaran;
+    caraIzinSaved.value = caraIzin.text.trim() == storage.cached.globalConfig.caraIzin;
     isSaved.value = lineOASaved.value && nomorSuratSaved.value && namaKepalaLDTESaved.value && nipKepalaLDTESaved.value && caraPinjamSaved.value;
     return isSaved.value && !isAnyQueued && !itemQueue.isAnyQueued;
   }
@@ -1423,6 +1630,7 @@ class GlobalConfigController extends GetxController {
     caraPinjam.text = storage.cached.globalConfig.caraPinjam ?? '';
     caraKeterangan.text = storage.cached.globalConfig.caraKeterangan ?? '';
     caraPertukaran.text = storage.cached.globalConfig.caraPertukaran ?? '';
+    caraIzin.text = storage.cached.globalConfig.caraIzin ?? '';
   }
 
   final lineOA = TextEditingController();
@@ -1460,12 +1668,21 @@ class GlobalConfigController extends GetxController {
   var caraPertukaranCanEdit = false.obs;
   var caraPertukaranSaved = true.obs;
 
-  Map<String, dynamic> get form {
+  final caraIzin = TextEditingController();
+  final caraIzinFocus = FocusNode();
+  var caraIzinCanEdit = false.obs;
+  var caraIzinSaved = true.obs;
+
+  Map<String, String> get form {
     lineOA.text = lineOA.text.trim().toLowerCase();
     if (lineOA.text[0] == '@') lineOA.text.substring(1);
     nomorSurat.text = nomorSurat.text.trim().toUpperCase();
     namaKepalaLDTE.text = namaKepalaLDTE.text.trim().capitalCase();
     nipKepalaLDTE.text = nipKepalaLDTE.text.trim();
+    caraPinjam.text = caraPinjam.text.trim();
+    caraKeterangan.text = caraKeterangan.text.trim();
+    caraPertukaran.text = caraPertukaran.text.trim();
+    caraIzin.text = caraIzin.text.trim();
     return {
       if (lineOA.text != storage.cached.globalConfig.lineOALDTE) 'lineoa_ldte' : lineOA.text,
       if (nomorSurat.text != storage.cached.globalConfig.nomorSurat) 'nomor_surat' : nomorSurat.text,
@@ -1474,10 +1691,61 @@ class GlobalConfigController extends GetxController {
       if (caraPinjam.text != storage.cached.globalConfig.caraPinjam) 'cara_pinjam' : caraPinjam.text,
       if (caraKeterangan.text != storage.cached.globalConfig.caraKeterangan) 'cara_keterangan' : caraKeterangan.text,
       if (caraPertukaran.text != storage.cached.globalConfig.caraPertukaran) 'cara_pertukaran' : caraPertukaran.text,
+      if (caraIzin.text != storage.cached.globalConfig.caraIzin) 'cara_izin' : caraIzin.text,
     };
+  }
+  
+  void lineOAUndo() async {
+    lineOA.text = storage.cached.globalConfig.lineOALDTE ?? '';
+    lineOA.selection = TextSelection.collapsed(offset: lineOA.text.length);
+    isSavedCheck();
+  }
+  
+  void nomorSuratUndo() async {
+    nomorSurat.text = storage.cached.globalConfig.nomorSurat ?? '';
+    nomorSurat.selection = TextSelection.collapsed(offset: nomorSurat.text.length);
+    isSavedCheck();
+  }
+  
+  void namaKepalaLDTEUndo() async {
+    namaKepalaLDTE.text = storage.cached.globalConfig.namaKepalaLDTE ?? '';
+    namaKepalaLDTE.selection = TextSelection.collapsed(offset: namaKepalaLDTE.text.length);
+    isSavedCheck();
+  }
+  
+  void nipKepalaLDTEUndo() async {
+    nipKepalaLDTE.text = storage.cached.globalConfig.nipKepalaLDTE ?? '';
+    nipKepalaLDTE.selection = TextSelection.collapsed(offset: nipKepalaLDTE.text.length);
+    isSavedCheck();
+  }
+  
+  void caraPinjamUndo() async {
+    caraPinjam.text = storage.cached.globalConfig.caraPinjam ?? '';
+    caraPinjam.selection = TextSelection.collapsed(offset: caraPinjam.text.length);
+    isSavedCheck();
+  }
+  
+  void caraKeteranganUndo() async {
+    caraKeterangan.text = storage.cached.globalConfig.caraKeterangan ?? '';
+    caraKeterangan.selection = TextSelection.collapsed(offset: caraKeterangan.text.length);
+    isSavedCheck();
+  }
+  
+  void caraPertukaranUndo() async {
+    caraPertukaran.text = storage.cached.globalConfig.caraPertukaran ?? '';
+    caraPertukaran.selection = TextSelection.collapsed(offset: caraPertukaran.text.length);
+    isSavedCheck();
+  }
+  
+  void caraIzinUndo() async {
+    caraIzin.text = storage.cached.globalConfig.caraIzin ?? '';
+    caraIzin.selection = TextSelection.collapsed(offset: caraIzin.text.length);
+    isSavedCheck();
   }
 
   void save(String? key, RxBool canEdit) async {
+    if (form[key].isBlank()) return;
+    
     final message = key == 
     'lineoa_ldte' ? 'line official account' : key == 
     'lineoa_ldte' ? 'line official account' : key == 
@@ -1485,8 +1753,9 @@ class GlobalConfigController extends GetxController {
     'nama_kepala_ldte' ? 'nama kepala LDTE' : key == 
     'nip_kepala_ldte' ? 'nim kepala LDTE' : key == 
     'cara_pinjam' ? 'cara pengisian formulir peminjaman peralatan' : key == 
-    'cara_keterangan' ? 'cara pengisian surat keterangan' : key == 
-    'cara_pertukaran' ? 'cara pengisian formulir pertukaran' : 'unknown';
+    'cara_keterangan' ? 'cara pengisian surat keterangan praktikum' : key == 
+    'cara_pertukaran' ? 'cara pengisian formulir pertukaran' : key == 
+    'cara_izin' ? 'cara pengisian surat keteragan izin' : 'unknown';
     
     loadingMessage.value = 'Saving $message, please wait...';
     isLoading.value = true;
@@ -1516,6 +1785,8 @@ class GlobalConfigController extends GetxController {
   void saveCaraKeterangan() => save('cara_keterangan', caraKeteranganCanEdit);
 
   void saveCaraPertukaran() => save('cara_pertukaran', caraPertukaranCanEdit);
+
+  void saveCaraIzin() => save('cara_izin', caraIzinCanEdit);
 
   Future<void> saveQueuedAction() async {
     isLoading.value = true;
