@@ -91,9 +91,7 @@ final GoRouter router = GoRouter(
       routes: [
         GoRoute(
           path: 'peminjaman-peralatan',
-          redirect: (context, state) {
-            return redirect();
-          },
+          redirect: (context, state) => redirect(),
           builder: (context, state) {
             return GetXRouteBinding(
               controllerBuilder: () => Get.put(AdminPeminjamanPeralatanController()),
@@ -103,9 +101,7 @@ final GoRouter router = GoRouter(
           routes: [
             GoRoute(
               path: ':id',
-              redirect: (context, state) {
-                return redirect();
-              },
+              redirect: (context, state) => redirect(),
               builder: (context, state) {
                 return GetXRouteBinding(
                   controllerBuilder: () => Get.put(DetailPeminjamanPeralatanController()),
@@ -117,9 +113,7 @@ final GoRouter router = GoRouter(
         ),
         GoRoute(
           path: 'surat-keterangan',
-          redirect: (context, state) {
-            return redirect();
-          },
+          redirect: (context, state) => redirect(),
           builder: (context, state) {
             return GetXRouteBinding(
               controllerBuilder: () => Get.put(AdminSuratKeteranganPraktikumController()),
@@ -129,9 +123,7 @@ final GoRouter router = GoRouter(
           routes: [
             GoRoute(
               path: ':id',
-              redirect: (context, state) {
-                return redirect();
-              },
+              redirect: (context, state) => redirect(),
               builder: (context, state) {
                 return GetXRouteBinding(
                   controllerBuilder: () => Get.put(DetailSuratKeteranganPraktikumController()),
@@ -143,9 +135,7 @@ final GoRouter router = GoRouter(
         ),
         GoRoute(
           path: 'config',
-          redirect: (context, state) {
-            return redirect();
-          },
+          redirect: (context, state) => redirect(),
           builder: (context, state) {
             return GetXRouteBinding(
               controllerBuilder: () => Get.put(GlobalConfigController()),
@@ -162,9 +152,7 @@ final GoRouter router = GoRouter(
           routes: [
             GoRoute(
               path: 'barang',
-              redirect: (context, state) {
-                return redirect();
-              },
+              redirect: (context, state) => redirect(),
               builder: (context, state) {
                 return GetXRouteBinding(
                   controllerBuilder: () => Get.put(DaftarBarangController()),
@@ -174,9 +162,7 @@ final GoRouter router = GoRouter(
             ),
             GoRoute(
               path: 'list',
-              redirect: (context, state) {
-                return redirect();
-              },
+              redirect: (context, state) => redirect(),
               builder: (context, state) {
                 return GetXRouteBinding(
                   controllerBuilder: () => Get.put(FakultasController()),
@@ -186,9 +172,7 @@ final GoRouter router = GoRouter(
               routes: [
                 GoRoute(
                   path: ':fakultas',
-                  redirect: (context, state) {
-                    return redirect();
-                  },
+                  redirect: (context, state) => redirect(),
                   builder: (context, state) => GetXRouteBinding(
                     controllerBuilder: () => Get.put(ProgramStudiController()),
                     child: ProgramStudi(),
@@ -196,9 +180,7 @@ final GoRouter router = GoRouter(
                   routes: [
                     GoRoute(
                       path: ':program_studi',
-                      redirect: (context, state) {
-                        return redirect();
-                      },
+                      redirect: (context, state) => redirect(),
                       builder: (context, state) => GetXRouteBinding(
                         controllerBuilder: () => Get.put(MatprakController()),
                         child: Matprak(),

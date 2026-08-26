@@ -154,6 +154,11 @@ class PeminjamanPeralatanController extends GetxController {
     nipKetuaF.addListener(() {
       if (!nipKetuaF.hasFocus) nipKetuaC.text = nipKetuaC.text.trim();
     });
+    for (int i = 0; i < 4; i++) {
+      barangF[i].addListener(() {
+        if (!barangF[i].hasFocus) barangC[i].text = barangC[i].text.trim().capitalCase();
+      });
+    }
     init();
   }
 
@@ -167,6 +172,9 @@ class PeminjamanPeralatanController extends GetxController {
   void onClose() {
     service.closeWorker();
     super.onClose();
+    for (int i = 0; i < 4; i++) {
+      barangF[i].dispose();
+    }
     namaF.dispose();
     nimF.dispose();
     dosenF.dispose();
@@ -183,7 +191,7 @@ class PeminjamanPeralatanController extends GetxController {
   String get cara => storage.cached.globalConfig.caraPinjam ?? "Didn't exist, please refresh browser or contact our Line OA";
   List<String> get fakultasList => storage.cached.formatedFakultas();
 
-  Rxn<XFile> idCard = Rxn<XFile>(ImagePickerService.lastImages['idCard']); 
+  Rxn<XFile> idCard = Rxn<XFile>(null); 
 
   final namaC = TextEditingController();
   final nimC = TextEditingController();
@@ -193,9 +201,10 @@ class PeminjamanPeralatanController extends GetxController {
   final nipDosenC = TextEditingController();
   final ketuaC = TextEditingController();
   final nipKetuaC = TextEditingController();
-  final barangC = <TextEditingController>[TextEditingController()].obs;
-  final barangDC = <SingleSelectController<String>>[SingleSelectController<String>('custom')].obs;
-  final banyakC = <SingleSelectController<int>>[SingleSelectController<int>(null)].obs;
+  var itemN = 1.obs;
+  final barangC = List.generate(4, (i) => TextEditingController());
+  final barangDC = List.generate(4, (i) => SingleSelectController<String>('custom'));
+  final banyakC = List.generate(4, (i) => SingleSelectController<int>(null));
   final mulaiC = TextEditingController();
   final akhirC = TextEditingController();
 
@@ -205,6 +214,46 @@ class PeminjamanPeralatanController extends GetxController {
   final nipDosenF = FocusNode();
   final ketuaF = FocusNode();
   final nipKetuaF = FocusNode();
+  final barangF = List.generate(4, (i) => FocusNode());
+
+  var enabled = true;
+
+  void addItem() => itemN++;
+
+  void removeItem(int index) {
+    enabled = false;
+    itemN--;
+    while (index < itemN.value) {
+      barangDC[index].value = barangDC[index + 1].value;
+      barangC[index].text = barangC[index + 1].text;
+      banyakC[index].value = banyakC[index + 1].value;
+      barangE[index] = barangE[index + 1];
+      banyakE[index] = banyakE[index + 1];
+      index++;
+    }
+    barangDC[index].value = 'custom';
+    barangC[index].clear();
+    banyakC[index].clear();
+    barangE[index] = null;
+    banyakE[index] = null;
+    enabled = true;
+  } 
+
+
+  void changeText(int index, String? value) {
+    if (!enabled) return;
+    var text = value;
+    if (value == 'custom') text = null;
+    barangC[index].text = text ?? '';
+  }
+
+  void selectIfExist(int index, String value) {
+    if (!enabled) return;
+    enabled = false;
+    final contain = items.firstWhereOrNull((v) => v.toLowerCase() == value.trim().toLowerCase());
+    barangDC[index].value = contain ?? 'custom';
+    enabled = true;
+  }
 
   Future<void> selectDateStart() async {
     final picked = await DateTimePickerService.selectDate(initial: mulaiC.text.toDateTime() ?? today, helpText: "Tanggal Peminjaman");
@@ -219,12 +268,12 @@ class PeminjamanPeralatanController extends GetxController {
   var prodiList = <String>[].obs;
 
   Map<String, dynamic> get dbform => {
-    if (!namaC.text.isBlank()) 'nama' : namaC.text.trim().capitalCase(false),
-    if (!nimC.text.isBlank()) 'nim' : nimC.text.trim(),
-    if (mulaiC.text.toDateTime() != null) 'mulai' : mulaiC.text.trim(),
-    if (akhirC.text.toDateTime() != null) 'akhir' : akhirC.text.trim(),
-    'barang' : barangC.value.map((e) => e.text.trim().capitalCase()).toList(),
-    'banyak' : banyakC.value.map((e) => e.value).toList(),
+    'nama' : namaC.text.trim().capitalCase(false),
+    'nim' : nimC.text.trim(),
+    'mulai' : mulaiC.text.trim(),
+    'akhir' : akhirC.text.trim(),
+    'barang' : List.generate(itemN.value, (i) => barangC[i].text.trim().capitalCase()),
+    'banyak' : List.generate(itemN.value, (i) => banyakC[i].value),
   };
 
   Map<String, dynamic> get form => {
@@ -247,6 +296,67 @@ class PeminjamanPeralatanController extends GetxController {
 
   void resetImage() {
     service.imagePicker.resetImage(idCard, key: 'idCard');
+  }
+  
+  void setProdi() {
+    if (!fakultasC.hasValue) return;
+    prodiC.value = null;
+    prodiList.value = storage.cached.getFakultas(fakultasC.value!)?.formatedProgramStudi() ?? [];
+  }
+
+  var namaE = Rxn<String>(null); 
+  var nimE = Rxn<String>(null); 
+  var mulaiE = Rxn<String>(null); 
+  var akhirE = Rxn<String>(null); 
+  var barangE = RxList<String?>([null, null, null, null]); 
+  var banyakE = RxList<String?>([null, null, null, null]); 
+  var idCardE = Rxn<String>(null); 
+
+  bool checkEmptyFields([bool reqId = true]) {
+    for (int i = 0; i < itemN.value; i++) {
+      barangE[i] = barangC[i].text.isBlank() ? '*required' : null;
+      banyakE[i] = !banyakC[i].hasValue ? '*required' : null;
+    }
+
+    namaE.value = namaC.text.isBlank () ? '*required' : null;
+    nimE.value = nimC.text.isBlank () ? '*required' : null;
+    final mulai = mulaiC.text.toDateTime();
+    final akhir = akhirC.text.toDateTime();
+    mulaiE.value = mulaiC.text.isBlank() ? '*required' : mulai == null ? '*invalid' : akhir != null && mulai.isAfter(akhir) ? '*melebihi tgl pengembalian' : null;
+    akhirE.value = akhirC.text.isBlank() ? '*required' : akhir == null ? '*invalid' : mulai != null && akhir.isBefore(mulai) ? '*kurang dari tgl pinjam' : null;
+    if (reqId) idCardE.value = idCard.value == null ? '*required' : null;
+    
+    if (barangE.any((v) => v != null) || banyakE.any((v) => v != null) || namaE.value != null || nimE.value != null || mulaiE.value != null || akhirE.value != null || (idCardE.value != null && reqId)) return false;
+   
+    barangE.fillRange(0, barangE.length, null);
+    banyakE.fillRange(0, banyakE.length, null);
+    namaE.value = nimE.value = mulaiE.value = akhirE.value = idCardE.value = null;
+    return true;
+  }
+  
+  var lastForm = <String, dynamic>{};
+  void submit() async {
+    if (!checkEmptyFields()) return;
+    final cdbform = dbform;
+    isLoading.value = true;
+    final savedFile = await service.compilePDF(form, await idCard.value?.readAsBytes());
+    if (savedFile != null) {
+      final fileName = "Form_Peminjaman-${DateTime.now().millisecondsSinceEpoch}.pdf";
+      service.preview(savedFile, fileName, (f) async {
+        if (cdbform.entries.every((e) => lastForm[e.key].toString() == e.value.toString())) {
+          f();
+          return;
+        }
+        isLoading.value = true;
+        final isSuccess = await service.submitForm(cdbform);
+        if (isSuccess) {
+          lastForm = cdbform;
+          f();
+        }
+        isLoading.value = false;
+      }, isLoading);
+    }
+    isLoading.value = false;
   }
 
   void showReminderDialog() {
@@ -294,81 +404,29 @@ class PeminjamanPeralatanController extends GetxController {
       );
     }
   }
-  
-  void setProdi() {
-    if (!fakultasC.hasValue) return;
-    prodiC.value = null;
-    prodiList.value = storage.cached.getFakultas(fakultasC.value!)?.formatedProgramStudi() ?? [];
-  }
-
-  var namaE = Rxn<String>(null); 
-  var nimE = Rxn<String>(null); 
-  var mulaiE = Rxn<String>(null); 
-  var akhirE = Rxn<String>(null); 
-  var barangE = RxList<String?>([null]); 
-  var banyakE = RxList<String?>([null]); 
-  var idCardE = Rxn<String>(null); 
-
-  bool checkEmptyFields([bool reqId = true]) {
-    barangE.value = barangC.map((e) => e.text.isBlank() ? '*required' : null).toList();
-    banyakE.value = banyakC.map((e) => !e.hasValue ? '*required' : null).toList();
-    namaE.value = namaC.text.isBlank () ? '*required' : null;
-    nimE.value = nimC.text.isBlank () ? '*required' : null;
-    final mulai = mulaiC.text.toDateTime();
-    final akhir = akhirC.text.toDateTime();
-    mulaiE.value = mulaiC.text.isBlank() ? '*required' : mulai == null ? '*invalid' : akhir != null && mulai.isAfter(akhir) ? '*melebihi tgl pengembalian' : null;
-    akhirE.value = akhirC.text.isBlank() ? '*required' : akhir == null ? '*invalid' : mulai != null && akhir.isBefore(mulai) ? '*kurang dari tgl pinjam' : null;
-    if (reqId) idCardE.value = idCard.value == null ? '*required' : null;
-    
-    if (barangE.any((v) => v != null) || banyakE.any((v) => v != null) || namaE.value != null || nimE.value != null || mulaiE.value != null || akhirE.value != null || (idCardE.value != null && reqId)) return false;
-   
-    barangE.value.fillRange(0, barangE.value.length, null);
-    banyakE.value.fillRange(0, banyakE.value.length, null);
-    namaE.value = nimE.value = mulaiE.value = akhirE.value = idCardE.value = null;
-    return true;
-  }
-  
-  var lastForm = <String, dynamic>{};
-  void submit() async {
-  if (!checkEmptyFields()) return;
-    isLoading.value = true;
-    final savedFile = await service.compilePDF(form, await idCard.value?.readAsBytes());
-    if (savedFile != null) {
-      final fileName = "Form_Peminjaman-${DateTime.now().millisecondsSinceEpoch}.pdf";
-      service.preview(savedFile, fileName, (f) async {
-        if (lastForm.entries.every((e) => dbform[e.key].toString() == e.value.toString())) {
-          f();
-          return;
-        }
-        isLoading.value = true;
-        final isSuccess = await service.submitForm(dbform);
-        if (isSuccess) {
-          lastForm = dbform;
-          f();
-        }
-        isLoading.value = false;
-      }, isLoading);
-    }
-    isLoading.value = false;
-  }
 } 
 
 class SuratKeteranganPraktikumController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
-      namaMatkulF.addListener(() {
-        if (!namaMatkulF.hasFocus) namaMatkul.text = namaMatkul.text.trim().capitalCase();
+    for (int i = 0; i < 4; i++) {
+      namaF[i].addListener(() {
+        if (!namaF[i].hasFocus) namaC[i].text = namaC[i].text.trim().capitalCase(false);
       });
-      kodeMatkulF.addListener(() {
-        if (!kodeMatkulF.hasFocus) kodeMatkul.text = kodeMatkul.text.trim().toUpperCase();
-      });
-      namaPraktikumF.addListener(() {
-        if (!namaPraktikumF.hasFocus) namaPraktikum.text = namaPraktikum.text.trim().capitalCase();
-      });
-      kodePraktikumF.addListener(() {
-        if (!kodePraktikumF.hasFocus) kodePraktikum.text = kodePraktikum.text.trim().toUpperCase();
-      });
+    }
+    namaMatkulF.addListener(() {
+      if (!namaMatkulF.hasFocus) namaMatkul.text = namaMatkul.text.trim().capitalCase();
+    });
+    kodeMatkulF.addListener(() {
+      if (!kodeMatkulF.hasFocus) kodeMatkul.text = kodeMatkul.text.trim().toUpperCase();
+    });
+    namaPraktikumF.addListener(() {
+      if (!namaPraktikumF.hasFocus) namaPraktikum.text = namaPraktikum.text.trim().capitalCase();
+    });
+    kodePraktikumF.addListener(() {
+      if (!kodePraktikumF.hasFocus) kodePraktikum.text = kodePraktikum.text.trim().toUpperCase();
+    });
     init();
   }
 
@@ -380,6 +438,9 @@ class SuratKeteranganPraktikumController extends GetxController {
   @override
   void onClose() {
     super.onClose();
+    for (int i = 0; i < 4; i++) {
+      namaF[i].dispose();
+    }
     namaMatkulF.dispose();
     kodeMatkulF.dispose();
     namaPraktikumF.dispose();
@@ -393,52 +454,6 @@ class SuratKeteranganPraktikumController extends GetxController {
   final service = SuratKeteranganPraktikumService();
   List<String> get matkulList => storage.cached.formatedMataKuliah();
   List<String> get praktikumList => storage.cached.formatedPraktikum();
-
-  void showReminderDialog() {
-    var remindMe = storage.cached.userPreference.remindSuratKeteranganPraktikum.obs;
-    if (remindMe.value) {
-      alertDialog(
-        'Cara Pengisisan Formulir Surat Keterangan Praktikum:',
-        null,
-        message: Obx(() => Column(
-          children: [
-            Container(
-              width: double.infinity,
-              margin: EdgeInsets.symmetric(vertical: 8),
-              constraints: BoxConstraints(maxHeight: 152),
-              decoration: BoxDecoration(
-                color: appTheme.colorScheme.background,
-                borderRadius: BorderRadius.circular(8)
-              ),
-              padding: const EdgeInsets.all(8),
-              child: Scrollbar(
-                thumbVisibility: true,
-                radius: Radius.circular(4),
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: EdgeInsets.only(right: 8.0),
-                    child: Text(NC.isSyncing.value ? 'Syncingin progress, please wait...' : cara, style: TextStyle(fontSize: 12.8)),
-                  )
-                )
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Remind me again'),
-                Switch(value: remindMe.value, onChanged: NC.isSyncing.value ? null : (v) {
-                  remindMe.value = v;
-                  storage.cached.userPreference.remindSuratKeteranganPraktikum = v;
-                  storage.save();
-                })
-              ],
-            ),
-          ],
-        )),
-        titleFontSize: 20,
-      );
-    }
-  }
 
   Future<void> selectDate() async {
     final picked = await DateTimePickerService.selectDate(initial: dateC.text.toDateTime() ?? today, helpText: "Tanggal Praktikum");
@@ -459,8 +474,8 @@ class SuratKeteranganPraktikumController extends GetxController {
     }
   }
 
-  final namaC = <TextEditingController>[TextEditingController()].obs;
-  final nimC = <TextEditingController>[TextEditingController()].obs;
+  final namaC = List.generate(4, (i) => TextEditingController());
+  final nimC = List.generate(4, (i) => TextEditingController());
   final matkul = SingleSelectController<String>(null);
   var isMatkulLainnya = false.obs;
   final kodeMatkul = TextEditingController();
@@ -474,8 +489,8 @@ class SuratKeteranganPraktikumController extends GetxController {
   var timeStartC = Rxn<TimeOfDay>(null);
   var timeEndC = Rxn<TimeOfDay>(null);
 
-  var namaE = RxList<String?>([null]); 
-  var nimE = RxList<String?>([null]); 
+  var namaE = RxList<String?>([null, null, null, null]); 
+  var nimE = RxList<String?>([null, null, null, null]); 
   var matkulE = Rxn<String>(null); 
   var namaMatkulE = Rxn<String>(null); 
   var kodeMatkulE = Rxn<String>(null); 
@@ -488,7 +503,7 @@ class SuratKeteranganPraktikumController extends GetxController {
   var timeEndE = Rxn<String>(null); 
   var buktiE = Rxn<String>(null); 
 
-  final namaF = FocusNode();
+  final namaF = List.generate(4, (i) => FocusNode());
   final namaMatkulF = FocusNode();
   final kodeMatkulF = FocusNode();
   final namaPraktikumF = FocusNode();
@@ -496,11 +511,30 @@ class SuratKeteranganPraktikumController extends GetxController {
 
   var prodiList = <String>[].obs;
 
-  Rxn<XFile> bukti = Rxn<XFile>(ImagePickerService.lastImages['bukti']); 
+  var itemN = 1.obs;
+
+  void addItem() => itemN++;
+
+  void removeItem(int index) {
+    itemN--;
+    while (index < itemN.value) {
+      namaC[index].text = namaC[index + 1].text;
+      nimC[index].text = nimC[index + 1].text;
+      namaE[index] = namaE[index + 1];
+      nimE[index] = nimE[index + 1];
+      index++;
+    }
+    namaC[index].clear();
+    nimC[index].clear();
+    namaE[index] = null;
+    nimE[index] = null;
+  } 
+
+  Rxn<XFile> bukti = Rxn<XFile>(null); 
 
   Map<String, dynamic> get form => {
-    'nama' : namaC.value.map((e) => e.text.trim().capitalCase()).toList(),
-    'nim' : nimC.value.map((e) => e.text.trim()).toList(),
+    'nama' : List.generate(itemN.value, (i) => namaC[i].text.trim().capitalCase(false)),
+    'nim' : List.generate(itemN.value, (i) => nimC[i].text.trim()),
     'matkul' : matkul.value == 'Lainnya...' ? '${kodeMatkul.text.trim().toUpperCase()} ${namaMatkul.text.trim().capitalCase()}' : matkul.value,
     'praktikum' : praktikum.value == 'Lainnya...' ? '${kodePraktikum.text.trim().toUpperCase()} ${namaPraktikum.text.trim().capitalCase()}' : praktikum.value,
     'modul' : modul.value!,
@@ -522,8 +556,11 @@ class SuratKeteranganPraktikumController extends GetxController {
   }
 
    bool checkEmptyFields([bool reqImage = true]) {
-    namaE.value = namaC.map((e) => e.text.isBlank() ? '*required' : null).toList();
-    nimE.value = nimC.map((e) => e.text.isBlank() ? '*required' : null).toList();
+    for (int i = 0; i < itemN.value; i++) {
+      namaE[i] = namaC[i].text.isBlank() ? '*required' : null;
+      nimE[i] = nimC[i].text.isBlank() ? '*required' : null;
+    }
+
     matkulE.value = !matkul.hasValue ? '*required' : null;
     namaMatkulE.value = matkul.value == 'Lainnya...' && namaMatkul.text.isBlank () ? '': null;
     kodeMatkulE.value = matkul.value == 'Lainnya...' && kodeMatkul.text.isBlank () ? '': null;
@@ -537,22 +574,21 @@ class SuratKeteranganPraktikumController extends GetxController {
     timeEndE.value = timeEndC.value == null ? '*required' : isInvalid ? '*waktu mulai melebihi waktu selesai' : null;
     if (reqImage) buktiE.value = bukti.value == null ? '*required' : null;
 
-    if (namaE.value.any((v) => v != null) || nimE.value.any((v) => v != null) || 
+    if (namaE.any((v) => v != null) || nimE.any((v) => v != null) || 
       matkulE.value != null || namaMatkulE.value != null || kodeMatkulE.value != null || 
       praktikumE.value != null || namaPraktikumE.value != null || kodePraktikumE.value != null || 
       modulE.value != null || dateE.value != null || timeStartE.value != null || 
       timeEndE.value != null || (reqImage && buktiE.value != null)) return false;
 
-    namaE.value.fillRange(0, namaE.value.length, null);
-    nimE.value.fillRange(0, nimE.value.length, null);
+    namaE.fillRange(0, namaE.length, null);
+    nimE.fillRange(0, nimE.length, null);
     matkulE.value = namaMatkulE.value = kodeMatkulE.value = praktikumE.value = namaPraktikumE.value = kodePraktikumE.value = modulE.value = dateE.value = timeStartE.value = timeEndE.value = buktiE.value = null;
     return true;
   }
 
   void submit() async {
     if (!checkEmptyFields()) return;
-    final uriMessage = "Saya telah mengirimkan formulir surat keterangan praktikum atas nama ${(form['nama'] as List<String>).join(', ')}: https://ldte-stei-itb.vercel.app/admin/surat-keterangan";
-    print(uriMessage);
+    final uriMessage = "Saya telah mengirimkan formulir surat keterangan praktikum atas nama ${(form['nama'] as List<String>).join(', ')}: https://eform-ldte.vercel.app/admin/surat-keterangan";
     final uri = await storage.getLineOALDTEUrl(uriMessage);
     print(uri);
     if (uri != null) {
@@ -617,21 +653,12 @@ class SuratKeteranganPraktikumController extends GetxController {
       alertDialog('Error', 'Device is not synced.');
     }
   }
-} 
-
-class PertukaranJadwalPraktikumController extends GetxController {
-  var isLoading = false.obs;
-
-  final service = SuratKeteranganPraktikumService();
-  
-  String get cara => storage.cached.globalConfig.caraPertukaran ?? "Didn't exist, please refresh browser or contact our Line OA";
-  List<String> get praktikumList => storage.cached.formatedPraktikum();
 
   void showReminderDialog() {
-    var remindMe = storage.cached.userPreference.remindPertukaranJadwal.obs;
+    var remindMe = storage.cached.userPreference.remindSuratKeteranganPraktikum.obs;
     if (remindMe.value) {
       alertDialog(
-        'Cara Pengisisan Formulir Pergantian Jadwal Praktikum:',
+        'Cara Pengisisan Formulir Surat Keterangan Praktikum:',
         null,
         message: Obx(() => Column(
           children: [
@@ -661,7 +688,7 @@ class PertukaranJadwalPraktikumController extends GetxController {
                 Text('Remind me again'),
                 Switch(value: remindMe.value, onChanged: NC.isSyncing.value ? null : (v) {
                   remindMe.value = v;
-                  storage.cached.userPreference.remindPertukaranJadwal = v;
+                  storage.cached.userPreference.remindSuratKeteranganPraktikum = v;
                   storage.save();
                 })
               ],
@@ -672,6 +699,15 @@ class PertukaranJadwalPraktikumController extends GetxController {
       );
     }
   }
+} 
+
+class PertukaranJadwalPraktikumController extends GetxController {
+  var isLoading = false.obs;
+
+  final service = SuratKeteranganPraktikumService();
+  
+  String get cara => storage.cached.globalConfig.caraPertukaran ?? "Didn't exist, please refresh browser or contact our Line OA";
+  List<String> get praktikumList => storage.cached.formatedPraktikum();
 
   @override
   void onInit() {
@@ -752,7 +788,7 @@ class PertukaranJadwalPraktikumController extends GetxController {
   final namaPraktikumF = FocusNode();
   final kodePraktikumF = FocusNode();
 
-  String get message => '''Silahkan chat sesuai template dibawah ini.
+  String get compiledMessage => '''Silahkan chat sesuai template dibawah ini.
 ----------------------------------------
 Pertukaran Jadwal Praktikum
 PRAKTIKAN
@@ -809,7 +845,7 @@ Pertukaran diperbolehkan setelah ada chat konfirmasi dari LDTE.''';
   void submit() async {
     if (!checkEmptyFields()) return;
     isLoading.value = true;
-    print(message);
+    final message = compiledMessage;
     final url = await storage.getLineOALDTEUrl(message);
     print(url);
     Clipboard.setData(ClipboardData(text: message));
@@ -859,6 +895,52 @@ Pertukaran diperbolehkan setelah ada chat konfirmasi dari LDTE.''';
       alertDialog('Error', 'Device is not synced.');
     }
     isLoading.value = false;
+  }
+
+  void showReminderDialog() {
+    var remindMe = storage.cached.userPreference.remindPertukaranJadwal.obs;
+    if (remindMe.value) {
+      alertDialog(
+        'Cara Pengisisan Formulir Pergantian Jadwal Praktikum:',
+        null,
+        message: Obx(() => Column(
+          children: [
+            Container(
+              width: double.infinity,
+              margin: EdgeInsets.symmetric(vertical: 8),
+              constraints: BoxConstraints(maxHeight: 152),
+              decoration: BoxDecoration(
+                color: appTheme.colorScheme.background,
+                borderRadius: BorderRadius.circular(8)
+              ),
+              padding: const EdgeInsets.all(8),
+              child: Scrollbar(
+                thumbVisibility: true,
+                radius: Radius.circular(4),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.only(right: 8.0),
+                    child: Text(NC.isSyncing.value ? 'Syncingin progress, please wait...' : cara, style: TextStyle(fontSize: 12.8)),
+                  )
+                )
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Remind me again'),
+                Switch(value: remindMe.value, onChanged: NC.isSyncing.value ? null : (v) {
+                  remindMe.value = v;
+                  storage.cached.userPreference.remindPertukaranJadwal = v;
+                  storage.save();
+                })
+              ],
+            ),
+          ],
+        )),
+        titleFontSize: 20,
+      );
+    }
   }
 } 
 
@@ -955,7 +1037,7 @@ class AdminPeminjamanPeralatanController extends GetxController {
   }
 
   void selectPageItem(bool? state) {
-    qfsped.value.forEach((v) => state == true ? isSelected.add(v.id) : isSelected.remove(v.id));
+    qfsped.forEach((v) => state == true ? isSelected.add(v.id) : isSelected.remove(v.id));
     Future(() => qfsped.refresh());
   }
 
@@ -1020,13 +1102,13 @@ class DetailPeminjamanPeralatanController extends PeminjamanPeralatanController 
     if (submission == null) return;
     namaC.text = submission.nama;
     nimC.text = submission.nim;
-    barangDC.value = List.generate(submission.barang.length, (i) => SingleSelectController<String>('custom'));
-    barangC.value = List.generate(submission.barang.length, (i) => TextEditingController(text: submission.barang[i]));
-    barangE.value = List.generate(submission.barang.length, (i) => null);
-    banyakC.value = List.generate(submission.banyak.length, (i) => SingleSelectController<int>(submission.banyak[i]));
-    banyakE.value = List.generate(submission.banyak.length, (i) => null);
+    for (int i = 0; i < submission.barang.length; i++) {
+      barangC[i].text = submission.barang[i];
+      banyakC[i].value = submission.banyak[i];
+    }
     mulaiC.text = submission.mulai.toDateString();
     akhirC.text = submission.akhir.toDateString();
+    itemN.value = submission.barang.length;
   }
 
   @override
@@ -1141,7 +1223,7 @@ class AdminSuratKeteranganPraktikumController extends GetxController {
   }
 
   void selectPageItem(bool? state) {
-    qfsped.value.forEach((v) => state == true ? isSelected.add(v.id) : isSelected.remove(v.id));
+    qfsped.forEach((v) => state == true ? isSelected.add(v.id) : isSelected.remove(v.id));
     Future(() => qfsped.refresh());
   }
 
@@ -1205,10 +1287,10 @@ class DetailSuratKeteranganPraktikumController extends SuratKeteranganPraktikumC
     final submission = ac.submissions.firstWhereOrNull((v) => v.id == id);
     if (submission == null) return;
 
-    namaC.value = List.generate(submission.nama.length, (i) => TextEditingController(text: submission.nama[i]));
-    namaE.value = List.generate(submission.nama.length, (i) => null);
-    nimC.value = List.generate(submission.nim.length, (i) => TextEditingController(text: submission.nim[i]));
-    nimE.value = List.generate(submission.nim.length, (i) => null);
+    for (int i = 0; i < submission.nama.length; i++) {
+      namaC[i].text = submission.nama[i];
+      nimC[i].text = submission.nim[i];
+    }
     
     isMatkulLainnya.value = !matkulList.contains(submission.matkul);
     matkul.value = isMatkulLainnya.value ? "Lainnya..." : submission.matkul;
@@ -1228,6 +1310,8 @@ class DetailSuratKeteranganPraktikumController extends SuratKeteranganPraktikumC
     dateC.text = submission.date.toDateString();
     timeStartC.value = submission.timeStart;
     timeEndC.value = submission.timeEnd;
+
+    itemN.value = submission.nama.length;
   }
 
   @override
@@ -1278,6 +1362,24 @@ class GlobalConfigController extends GetxController {
         isSavedCheck();
       }
     });
+    caraPinjamFocus.addListener(() {
+      if (!caraPinjamFocus.hasFocus) {
+        caraPinjam.text = caraPinjam.text.trim();
+        isSavedCheck();
+      }
+    });
+    caraKeteranganFocus.addListener(() {
+      if (!caraKeteranganFocus.hasFocus) {
+        caraKeterangan.text = caraKeterangan.text.trim();
+        isSavedCheck();
+      }
+    });
+    caraPertukaranFocus.addListener(() {
+      if (!caraPertukaranFocus.hasFocus) {
+        caraPertukaran.text = caraPertukaran.text.trim();
+        isSavedCheck();
+      }
+    });
   }
 
   @override
@@ -1303,9 +1405,9 @@ class GlobalConfigController extends GetxController {
     nomorSuratSaved.value = nomorSurat.text.trim().toUpperCase() == storage.cached.globalConfig.nomorSurat;
     namaKepalaLDTESaved.value = namaKepalaLDTE.text.trim().capitalCase() == storage.cached.globalConfig.namaKepalaLDTE;
     nipKepalaLDTESaved.value = nipKepalaLDTE.text.trim() == storage.cached.globalConfig.nipKepalaLDTE;
-    caraPinjamSaved.value = caraPinjam.text == storage.cached.globalConfig.caraPinjam;
-    caraKeteranganSaved.value = caraKeterangan.text == storage.cached.globalConfig.caraKeterangan;
-    caraPertukaranSaved.value = caraPertukaran.text == storage.cached.globalConfig.caraPertukaran;
+    caraPinjamSaved.value = caraPinjam.text.trim() == storage.cached.globalConfig.caraPinjam;
+    caraKeteranganSaved.value = caraKeterangan.text.trim() == storage.cached.globalConfig.caraKeterangan;
+    caraPertukaranSaved.value = caraPertukaran.text.trim() == storage.cached.globalConfig.caraPertukaran;
     isSaved.value = lineOASaved.value && nomorSuratSaved.value && namaKepalaLDTESaved.value && nipKepalaLDTESaved.value && caraPinjamSaved.value;
     return isSaved.value && !isAnyQueued && !itemQueue.isAnyQueued;
   }
@@ -1778,7 +1880,7 @@ class DaftarBarangController extends GetxController {
   late Set<int> isSelected = config.prodiQueue.select;
   
   Set<int> get simIds => sim.map((v) => v.id).toSet().difference(loadingQueue);
-  Set<int> get pagedIds => qfsped.value.map((v) => v.id).toSet().difference(loadingQueue);
+  Set<int> get pagedIds => qfsped.map((v) => v.id).toSet().difference(loadingQueue);
   Set<int> get selectedIds => isSelected.difference(loadingQueue);
   Set<int> get pagedSelectedIds => pagedIds.intersection(isSelected);
   Set<int> get simQueued => config.itemQueue.set.intersection(simIds);
@@ -2010,7 +2112,7 @@ class FakultasController extends GetxController {
   late Set<int> isSelected = config.prodiQueue.select;
   
   Set<int> get simIds => sim.map((v) => v.id).toSet().difference(loadingQueue);
-  Set<int> get pagedIds => qfsped.value.map((v) => v.id).toSet().difference(loadingQueue);
+  Set<int> get pagedIds => qfsped.map((v) => v.id).toSet().difference(loadingQueue);
   Set<int> get selectedIds => isSelected.difference(loadingQueue);
   Set<int> get pagedSelectedIds => pagedIds.intersection(isSelected);
   Set<int> get simQueued => config.fakultasQueue.set.intersection(simIds);
@@ -2030,7 +2132,7 @@ class FakultasController extends GetxController {
   bool get isFakultasAnyQueued => config.fakultasQueue.set.difference(loadingQueue).isNotEmpty;
   bool get isSimAnyQueued => simQueued.isNotEmpty || sim.any((f) => f.programStudi.any((pd) => config.prodiQueue.contains(pd.id, true) || pd.matprak.any((mp) => config.matprakQueue.contains(mp.id))));
   bool get isSimLoading => simQueued.difference(loadingQueue).isEmpty;
-  bool get isPageAnyQueued => pagedIds.any(inQueue) || qfsped.value.any((f) => f.programStudi.any((pd) => config.prodiQueue.contains(pd.id, true) || pd.matprak.any((mp) => config.matprakQueue.contains(mp.id))));
+  bool get isPageAnyQueued => pagedIds.any(inQueue) || qfsped.any((f) => f.programStudi.any((pd) => config.prodiQueue.contains(pd.id, true) || pd.matprak.any((mp) => config.matprakQueue.contains(mp.id))));
   bool get isPageSelectedAnyQueued => pagedSelectedIds.any(inQueue) || pagedSelectedData.any((f) => f.programStudi.any((pd) => config.prodiQueue.contains(pd.id, true) || pd.matprak.any((mp) => config.matprakQueue.contains(mp.id))));
   bool get areDeleting => deleteQueue.isEmpty ? false : isPagedAnySelected ? selectedIds.every(inDeleteQ) : pagedIds.every(inDeleteQ);
   bool get areInserting => insertQueue.isEmpty ? false : isPagedAnySelected ? selectedIds.every(inInsertQ) : pagedIds.every(inInsertQ);
@@ -2267,7 +2369,7 @@ class ProgramStudiController extends GetxController {
   late Set<int> isSelected = config.prodiQueue.select;
   
   Set<int> get simIds => sim.map((v) => v.id).toSet().difference(loadingQueue);
-  Set<int> get pagedIds => qfsped.value.map((v) => v.id).toSet().difference(loadingQueue);
+  Set<int> get pagedIds => qfsped.map((v) => v.id).toSet().difference(loadingQueue);
   Set<int> get selectedIds => isSelected.difference(loadingQueue);
   Set<int> get pagedSelectedIds => pagedIds.intersection(isSelected);
   Set<int> get simQueued => config.prodiQueue.set.intersection(simIds);
@@ -2287,7 +2389,7 @@ class ProgramStudiController extends GetxController {
   bool get isProdiAnyQueued => config.prodiQueue.set.difference(loadingQueue).isNotEmpty;
   bool get isSimAnyQueued => simQueued.isNotEmpty || sim.any((p) => p.matprak.any((m) => config.matprakQueue.contains(m.id)));
   bool get isSimLoading => simQueued.difference(loadingQueue).isNotEmpty;
-  bool get isPageAnyQueued => pagedIds.any(inQueue) || qfsped.value.any((p) => p.matprak.any((m) => config.matprakQueue.contains(m.id)));
+  bool get isPageAnyQueued => pagedIds.any(inQueue) || qfsped.any((p) => p.matprak.any((m) => config.matprakQueue.contains(m.id)));
   bool get isPageSelectedAnyQueued => pagedSelectedIds.any(inQueue) || pagedSelectedData.any((p) => p.matprak.any((m) => config.matprakQueue.contains(m.id)));
   bool get areDeleting => deleteQueue.isEmpty ? false : isPagedAnySelected ? selectedIds.every(inDeleteQ) : pagedIds.every(inDeleteQ);
   bool get areInserting => insertQueue.isEmpty ? false : isPagedAnySelected ? selectedIds.every(inInsertQ) : pagedIds.every(inInsertQ);
@@ -2599,7 +2701,7 @@ class MatprakController extends GetxController {
   late Set<int> isSelected = config.prodiQueue.select;
   
   Set<int> get simIds => sim.map((v) => v.id).toSet().difference(loadingQueue);
-  Set<int> get pagedIds => qfsped.value.map((v) => v.id).toSet().difference(loadingQueue);
+  Set<int> get pagedIds => qfsped.map((v) => v.id).toSet().difference(loadingQueue);
   Set<int> get selectedIds => isSelected.difference(loadingQueue);
   Set<int> get pagedSelectedIds => pagedIds.intersection(isSelected);
   Set<int> get simQueued => config.matprakQueue.set.intersection(simIds);

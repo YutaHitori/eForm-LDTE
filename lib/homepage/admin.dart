@@ -23,7 +23,16 @@ class Admin extends StatelessWidget {
               spacing: 8,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Text('Pengaturan'),
                 ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.config), child: Text('Global Config')),
+                ElevatedButton(onPressed: () {
+                  currentContext?.push(NamedRoute.config);
+                  WidgetsBinding.instance.addPostFrameCallback((_) => currentContext?.push(NamedRoute.barang));
+                }, child: Text('Daftar Barang')),
+                ElevatedButton(onPressed: () {
+                  currentContext?.push(NamedRoute.config);
+                  WidgetsBinding.instance.addPostFrameCallback((_) => currentContext?.push(NamedRoute.list));
+                }, child: Text('Daftar Fakultas/Sekolah')),
                 Divider(color: appTheme.colorScheme.surface),
                 Text('Daftar Kiriman'),
                 ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.pinjamAdmin), child: Text('Formulir Peminjaman Peralatan')),

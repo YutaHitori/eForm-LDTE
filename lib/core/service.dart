@@ -416,16 +416,16 @@ class QFSPService {
   void updateButton(QFSPController c, String filterKey, String itemkey) {
     final filter = c.getFilterEnrty(filterKey);
     if (c.filter.firstWhere((v) => v.filterKey == filterKey).multiSelect) {
-      filter.value[itemkey] = !filter.value[itemkey]!;
-      filter.value['all'] = false;
+      filter[itemkey] = !filter[itemkey]!;
+      filter['all'] = false;
       if (itemkey == 'all') {
-        filter.value.updateAll((k,v) => false);
+        filter.updateAll((k,v) => false);
       }
     } else {
-      filter.value.updateAll((k,v) => false);
-      filter.value[itemkey] = true;
+      filter.updateAll((k,v) => false);
+      filter[itemkey] = true;
     }
-    if (filter.value.values.every((v) => v == false)) filter.value['all'] = true;
+    if (filter.values.every((v) => v == false)) filter['all'] = true;
     filter.refresh();
   }
 
@@ -440,9 +440,9 @@ class QFSPService {
       entries = entries.where((e) => dateAttribure(e) == null ? false : dateAttribure(e)!.isAfter(date![0]!) && dateAttribure(e)!.isBefore(date[1]!)).toList();
     }
     for (var item in c.filter) {
-      if (!item.filterEntry.value['all']!) {
+      if (!item.filterEntry['all']!) {
         final List<T> temp = [];
-        item.filterEntry.value.forEach((key, value) {
+        item.filterEntry.forEach((key, value) {
           if (value) temp.addAll(entries.where((v) => item.reference(v) == key));
         });
         entries = temp;

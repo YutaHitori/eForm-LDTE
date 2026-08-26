@@ -1,6 +1,5 @@
 import 'package:eform_ldte/misc/function.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:eform_ldte/core/controller.dart';
 import 'package:eform_ldte/misc/widget.dart';
@@ -71,7 +70,7 @@ class Matprak extends StatelessWidget {
                     constraints: BoxConstraints(
                       minHeight: constrains.maxHeight,
                     ),
-                    child: c.qfsped.value.isEmpty
+                    child: c.qfsped.isEmpty
                     ? SingleChildScrollView(
                       physics: AlwaysScrollableScrollPhysics(),
                       child: SizedBox( 
@@ -206,9 +205,9 @@ class Matprak extends StatelessWidget {
                                 physics: AlwaysScrollableScrollPhysics(),
                                 shrinkWrap: true,
                                 padding: EdgeInsets.only(bottom: 92),
-                                itemCount: c.qfsped.value.length,
+                                itemCount: c.qfsped.length,
                                 itemBuilder: (context, i) {
-                                  final entry = c.qfsped.value[i];
+                                  final entry = c.qfsped[i];
                                   final isLoading = c.loadingQueue.contains(entry.id);
                                   final isPraktikum = entry.isPraktikum;
                                   final isAdding = c.insertQueue.contains(entry.id);

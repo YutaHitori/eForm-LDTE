@@ -18,17 +18,17 @@ class Pinjam extends StatelessWidget {
         title: Text('Peminjaman Peralatan')
       ),
       body: Obx(() => c.isLoading.value
-      ? Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          spacing: 24,
-          children: [
-            CircularProgressIndicator(),
-            Text('Generating PDF, please wait')
-          ],
-        ),
-      ) 
-      : RefreshIndicator(
+        ? Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 24,
+            children: [
+              CircularProgressIndicator(),
+              Text('Generating PDF, please wait')
+            ],
+          ),
+        ) 
+        : RefreshIndicator(
         onRefresh: hardRefresh,
         child: SingleChildScrollView(
           child: Padding(
@@ -98,14 +98,14 @@ class Pinjam extends StatelessWidget {
                     DropdownFlutter<String>(
                       hintText: c.fakultasC.hasValue ? 'pilih program studi' : 'pilih fakultas/sekolah terlebih dahulu',
                       listItemBuilder: (context, item, isSelected, onItemSelect) => 
-                        Text('${item}', style: TextStyle(color: item == 'reset' ? Colors.red : isSelected ? Colors.black : null)),
+                        Text(item, style: TextStyle(color: item == 'reset' ? Colors.red : isSelected ? Colors.black : null)),
                       decoration: CustomDropdownDecoration(
                         expandedFillColor: appTheme.inputDecorationTheme.fillColor,
                         closedFillColor: appTheme.inputDecorationTheme.fillColor,
                         listItemStyle: TextStyle(color: Colors.black),
                       ),
                       excludeSelected: false,
-                      items: ['reset', ...c.prodiList.value],
+                      items: ['reset', ...c.prodiList],
                       controller: c.prodiC,
                       onChanged: (value) {
                         if (value == 'reset') c.prodiC.value = null;
@@ -150,101 +150,76 @@ class Pinjam extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('Barang yang Dipinjam ', textScaleFactor: 1.02),
-                    if (c.barangE.value.any((v) => v != null) || c.banyakE.value.any((v) => v != null)) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
+                    if (c.barangE.any((v) => v != null) || c.banyakE.any((v) => v != null)) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
                   ],
                 ),
-                Builder(
-                  builder: (context) {
-                    var change = true;
-                    return Column(
+                Column(
+                  spacing: 8,
+                  children: [
+                    for (var i = 0; i < c.itemN.value; i++) Row(
                       spacing: 8,
                       children: [
-                        for (var i = 0; i < c.barangC.value.length; i++) Row(
-                          spacing: 8,
+                        Expanded(
+                          child: DropdownFlutter<String>.search(
+                            controller: c.barangDC[i],
+                            expandedHeaderPadding: EdgeInsets.only(right: 12),
+                            closedHeaderPadding: EdgeInsets.only(right: 12),
+                            listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item == 'custom' ? NC.isSyncing.value ? 'Syncing in progress, please wait...' : item : item, style: TextStyle(color: isSelected ? Colors.black : null)),
+                            decoration: CustomDropdownDecoration(
+                              searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.scaffoldBackgroundColor),
+                              closedFillColor: appTheme.inputDecorationTheme.fillColor,
+                              expandedFillColor: appTheme.inputDecorationTheme.fillColor,
+                              closedBorder: c.barangE[i] != null ? Border.all(color: appTheme.colorScheme.error) : null
+                            ),
+                            headerBuilder: (context, selectedItem, enabled) => TextField(
+                              controller: c.barangC[i],
+                              focusNode: c.barangF[i],
+                              decoration: InputDecoration(hintText: 'Nama Barang'),
+                              onChanged: (value) => c.selectIfExist(i, value),
+                            ),
+                            excludeSelected: false,
+                            items: ['custom', if (!NC.isSyncing.value) ...c.items],
+                            hintText: 'pilih nama barang',
+                            onChanged: (v) => c.changeText(i, v),
+                          ),
+                        ),
+                        Text('x'),
+                        SizedBox(
+                          width: 64,
+                          child: Column(
+                          spacing: 4,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              child: DropdownFlutter<String>.search(
-                                controller: c.barangDC.value[i],
-                                expandedHeaderPadding: EdgeInsets.only(right: 12),
-                                closedHeaderPadding: EdgeInsets.only(right: 12),
-                                listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item == 'custom' ? NC.isSyncing.value ? 'Syncing in progress, please wait...' : item : item, style: TextStyle(color: isSelected ? Colors.black : null)),
-                                decoration: CustomDropdownDecoration(
-                                  searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.scaffoldBackgroundColor),
-                                  closedFillColor: appTheme.inputDecorationTheme.fillColor,
-                                  expandedFillColor: appTheme.inputDecorationTheme.fillColor,
-                                  closedBorder: c.barangE.value[i] != null ? Border.all(color: appTheme.colorScheme.error) : null
-                                ),
-                                headerBuilder: (context, selectedItem, enabled) {
-                                  return TextField(
-                                    controller: c.barangC.value[i],
-                                    decoration: InputDecoration(hintText: 'Nama Barang'),
-                                    onChanged: (value) {
-                                      change = false;
-                                      final contain = c.items.firstWhereOrNull((v) => v.toLowerCase() == value.trim().toLowerCase());
-                                      c.barangDC.value[i].value = contain ?? 'custom';
-                                      change = true;
-                                    },
-                                  );
-                                },
-                                excludeSelected: false,
-                                items: ['custom', if (!NC.isSyncing.value) ...c.items],
-                                hintText: 'pilih nama barang',
-                                onChanged: (v) {
-                                  if (!change) return;
-                                  var text = v;
-                                  if (v == 'custom') text = null;
-                                  c.barangC.value[i] = TextEditingController(text: text);
-                                },
+                            DropdownFlutter<int>(
+                              controller: c.banyakC[i],
+                              listItemBuilder: (context, item, isSelected, onItemSelect) => Text('$item', style: TextStyle(color: isSelected ? Colors.black : null),),
+                              decoration: CustomDropdownDecoration(
+                                closedFillColor: appTheme.inputDecorationTheme.fillColor,
+                                expandedFillColor: appTheme.inputDecorationTheme.fillColor,
+                                closedSuffixIcon: SizedBox(),
+                                expandedSuffixIcon: SizedBox(),
+                                closedBorder: c.banyakE[i] != null ? Border.all(color: appTheme.colorScheme.error) : null
                               ),
-                            ),
-                            Text('x'),
-                            SizedBox(
-                              width: 64,
-                              child: Column(
-                              spacing: 4,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                DropdownFlutter<int>(
-                                  controller: c.banyakC.value[i],
-                                  listItemBuilder: (context, item, isSelected, onItemSelect) => Text('$item', style: TextStyle(color: isSelected ? Colors.black : null),),
-                                  decoration: CustomDropdownDecoration(
-                                    closedFillColor: appTheme.inputDecorationTheme.fillColor,
-                                    expandedFillColor: appTheme.inputDecorationTheme.fillColor,
-                                    closedSuffixIcon: SizedBox(),
-                                    expandedSuffixIcon: SizedBox(),
-                                    closedBorder: c.banyakE.value[i] != null ? Border.all(color: appTheme.colorScheme.error) : null
-                                  ),
-                                  excludeSelected: false,
-                                  items: List.generate(9, (i) => i + 1),
-                                  hintText: 'q',
-                                  onChanged: (v) {},
-                                ),
-                              ],
-                            ),
-                            ),
-                            GestureDetector(
-                              onTap: c.barangDC.length <= 1 ? null :() { 
-                                c.barangDC.value.removeAt(i); c.barangDC.refresh(); 
-                                c.barangC.value.removeAt(i); c.barangC.refresh(); 
-                                c.banyakC.value.removeAt(i); c.banyakC.refresh(); 
-                                c.barangE.value.removeAt(i); c.barangE.refresh(); 
-                                c.banyakE.value.removeAt(i); c.banyakE.refresh(); 
-                              },
-                              child: Icon(Icons.delete, color: c.barangDC.length <= 1 ? null : Colors.redAccent,)
+                              excludeSelected: false,
+                              items: List.generate(9, (i) => i + 1),
+                              hintText: 'q',
+                              onChanged: (v) {},
                             ),
                           ],
-                        )
+                        ),
+                        ),
+                        GestureDetector(
+                          onTap: c.itemN.value <= 1 ? null : () => c.removeItem(i),
+                          child: Icon(Icons.delete, color: c.itemN.value <= 1 ? null : Colors.redAccent)
+                        ),
                       ],
-                    );
-                  }
+                    )
+                  ],
                 ),
-                ElevatedButton.icon(onPressed: c.barangDC.length >= 4 ? null : () {
-                  c.barangDC.add(SingleSelectController<String>('custom'));
-                  c.barangC.add(TextEditingController());
-                  c.banyakC.add(SingleSelectController<int>(null));
-                  c.barangE.add(null);
-                  c.banyakE.add(null);
-                }, icon: Icon(Icons.add), label: Text('Tambah Barang'), style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.secondary)),
+                ElevatedButton.icon(
+                  onPressed: c.itemN.value >= 4 ? null : c.addItem, 
+                  icon: Icon(Icons.add), label: Text('Tambah Barang'), style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.secondary)
+                ),
                 Row(
                   spacing: 12,
                   children: [

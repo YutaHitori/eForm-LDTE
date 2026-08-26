@@ -7,10 +7,6 @@ import 'package:eform_ldte/core/service.dart';
 import 'package:eform_ldte/misc/function.dart';
 import 'package:eform_ldte/misc/global.dart';
 
-class Assets {
-  static const String logo = 'assets/logo.png';
-}
-
 ThemeData appTheme = ThemeData(
   visualDensity: VisualDensity.standard,
 
@@ -164,6 +160,7 @@ class CustomTextField extends StatelessWidget {
     this.autofillHints = const <String>[],
     this.inputFormatters,
     this.labelFlexAxis = Axis.horizontal,
+    this.maxHeight = double.infinity,
   });
 
   final String? labelText;
@@ -183,30 +180,35 @@ class CustomTextField extends StatelessWidget {
   final Iterable<String>? autofillHints;
   final List<TextInputFormatter>? inputFormatters;
   final Axis labelFlexAxis;
+  final double maxHeight;
 
   @override
   Widget build(BuildContext context) {
-    final child = TextField(
-      onTapOutside: (_) => FocusScope.of(context).unfocus(),
-      inputFormatters: inputFormatters,
-      controller: controller,
-      focusNode: focusNode,
-      maxLines: maxLines,
-      decoration: (decoration ?? InputDecoration()).copyWith(
-        filled: true,
-        helperText: canError ? '' : null,
-        errorText: errorText == null ? null : ''
+    final child = ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: maxHeight),
+      child: TextField(
+        onTapOutside: (_) => FocusScope.of(context).unfocus(),
+        inputFormatters: inputFormatters,
+        controller: controller,
+        focusNode: focusNode,
+        maxLines: maxLines,
+        decoration: (decoration ?? InputDecoration()).copyWith(
+          filled: true,
+          helperText: canError ? '' : null,
+          errorText: errorText == null ? null : ''
+        ),
+        keyboardType: keyboardType,
+        onChanged: onChanged,
+        obscureText: obscureText ?? false,
+        onSubmitted: onSubmitted,
+        autofillHints: autofillHints,
+        enabled: enabled,
+        readOnly: readOnly,
+        scrollPhysics: readOnly && maxLines != 1 ? NeverScrollableScrollPhysics() : null,
       ),
-      keyboardType: keyboardType,
-      onChanged: onChanged,
-      obscureText: obscureText ?? false,
-      onSubmitted: onSubmitted,
-      autofillHints: autofillHints,
-      enabled: enabled,
-      readOnly: readOnly,
-      scrollPhysics: readOnly && maxLines != 1 ? NeverScrollableScrollPhysics() : null,
     );
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: 4,
       children: [
@@ -249,7 +251,6 @@ class FilterRow extends StatelessWidget {
         children: [
           TextButton(
             onPressed: () => controller.onChanged('all', filterKey),
-            child: Text('all'),
             style: TextButton.styleFrom(
               minimumSize: Size(56, 32),
               backgroundColor: map['all']!
@@ -257,6 +258,7 @@ class FilterRow extends StatelessWidget {
               foregroundColor: map['all']!
                 ? Colors.white : null,
             ),
+            child: Text('all'),
           ),
           Expanded(
             child: SingleChildScrollView(
@@ -267,7 +269,6 @@ class FilterRow extends StatelessWidget {
                   for (var item in map.entries) ...[
                     if (item.key != 'all') TextButton(
                       onPressed: () => controller.onChanged(item.key, filterKey),
-                      child: Text(item.key),
                       style: TextButton.styleFrom(
                         minimumSize: Size(56, 32),
                         backgroundColor: item.value
@@ -278,6 +279,7 @@ class FilterRow extends StatelessWidget {
                           ? Colors.white 
                           : getColorFromSubmissionStatus(item.key)
                       ),
+                      child: Text(item.key),
                     ),
                   ]
                 ],
@@ -379,10 +381,10 @@ class SortRow extends StatelessWidget {
 
 class GetXRouteBinding<T extends GetxController> extends StatefulWidget {
   final T Function() controllerBuilder;
-  void Function()? initCallback;
+  final void Function()? initCallback;
   final Widget child;
 
-  GetXRouteBinding({
+  const GetXRouteBinding({
     super.key, 
     required this.controllerBuilder, 
     required this.child,
@@ -405,6 +407,11 @@ class _GetXRouteBindingState<T extends GetxController> extends State<GetXRouteBi
   void dispose() {
     Get.delete<T>();
     super.dispose();
+  }
+
+  @override
+  void readyState() {
+
   }
 
   @override

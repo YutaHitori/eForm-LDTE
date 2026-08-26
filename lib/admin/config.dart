@@ -26,25 +26,25 @@ class GlobalConfig extends StatelessWidget {
             TextButton(onPressed: c.saveAll, child: Text('Save All'))
           ],
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: c.isLoading.value
-            ? Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                spacing: 24,
-                children: [
-                  CircularProgressIndicator(),
-                  Text(c.loadingMessage.value ?? 'Loading...', textAlign: TextAlign.center)
-                ],
-              ),
-            ) 
-            : Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            spacing: 16,
-            children: [
-              Column(
-                spacing: 8,
+        body: c.isLoading.value
+          ? Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 24,
+              children: [
+                CircularProgressIndicator(),
+                Text(c.loadingMessage.value ?? 'Loading...', textAlign: TextAlign.center)
+              ],
+            ),
+          ) 
+          : RefreshIndicator(
+            onRefresh: c.isSaved.value && !c.isAnyQueued && !c.itemQueue.isAnyQueued ? hardRefresh : () async {},
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: 16,
                 children: [
                   CustomTextField(
                     controller: c.lineOA,
@@ -65,7 +65,11 @@ class GlobalConfig extends StatelessWidget {
                           onPressed: c.lineOASaved.value 
                             ? () {
                               c.lineOACanEdit.value = !c.lineOACanEdit.value;
-                              if (c.lineOACanEdit.value) c.lineOAFocus.requestFocus();
+                              if (c.lineOACanEdit.value) {
+                                c.lineOAFocus.requestFocus();
+                              } else {
+                                c.lineOAFocus.unfocus();
+                              }
                             }
                             : c.saveLineOa,
                           icon: Icon(
@@ -98,7 +102,11 @@ class GlobalConfig extends StatelessWidget {
                           onPressed: c.nomorSuratSaved.value 
                             ? () {
                               c.nomorSuratCanEdit.value = !c.nomorSuratCanEdit.value;
-                              if (c.nomorSuratCanEdit.value) c.nomorSuratFocus.requestFocus();
+                              if (c.nomorSuratCanEdit.value) {
+                                c.nomorSuratFocus.requestFocus();
+                              } else {
+                                c.nomorSuratFocus.unfocus();
+                              }
                             }
                             : c.saveNomorSurat,
                           icon: Icon(
@@ -131,7 +139,11 @@ class GlobalConfig extends StatelessWidget {
                           onPressed: c.namaKepalaLDTESaved.value 
                             ? () {
                               c.namaKepalaLDTECanEdit.value = !c.namaKepalaLDTECanEdit.value;
-                              if (c.namaKepalaLDTECanEdit.value) c.namaKepalaLDTEFocus.requestFocus();
+                              if (c.namaKepalaLDTECanEdit.value) {
+                                c.namaKepalaLDTEFocus.requestFocus();
+                              } else {
+                                c.namaKepalaLDTEFocus.unfocus();
+                              }
                             }
                             : c.saveNamaKepalaLDTE,
                           icon: Icon(
@@ -166,7 +178,11 @@ class GlobalConfig extends StatelessWidget {
                           onPressed: c.nipKepalaLDTESaved.value 
                             ? () {
                               c.nipKepalaLDTECanEdit.value = !c.nipKepalaLDTECanEdit.value;
-                              if (c.nipKepalaLDTECanEdit.value) c.nipKepalaLDTEFocus.requestFocus();
+                              if (c.nipKepalaLDTECanEdit.value) {
+                                c.nipKepalaLDTEFocus.requestFocus();
+                              } else {
+                                c.nipKepalaLDTEFocus.unfocus();
+                              }
                             }
                             : c.saveNipKepalaLDTE,
                           icon: Icon(
@@ -183,9 +199,11 @@ class GlobalConfig extends StatelessWidget {
                   ),
                   CustomTextField(
                     controller: c.caraPinjam,
+                    focusNode: c.caraPinjamFocus,
                     onChanged: (v) => c.isSavedCheck(),
                     labelText: 'Cara Pengisian Formulir Peminjaman Peralatan',
                     scrollbar: false,
+                    maxHeight: 256,
                     decoration: InputDecoration(
                       fillColor: c.caraPinjamCanEdit.value ? null : Color(0xFF181818),
                       hoverColor: c.caraPinjamCanEdit.value ? null : Colors.transparent,
@@ -199,7 +217,11 @@ class GlobalConfig extends StatelessWidget {
                           onPressed: c.caraPinjamSaved.value 
                             ? () {
                               c.caraPinjamCanEdit.value = !c.caraPinjamCanEdit.value;
-                              if (c.caraPinjamCanEdit.value) c.caraPinjamFocus.requestFocus();
+                              if (c.caraPinjamCanEdit.value) {
+                                c.caraPinjamFocus.requestFocus();
+                              } else {
+                                c.caraPinjamFocus.unfocus();
+                              }
                             }
                             : c.saveCaraPinjam,
                           icon: Icon(
@@ -218,9 +240,11 @@ class GlobalConfig extends StatelessWidget {
                   ),
                   CustomTextField(
                     controller: c.caraKeterangan,
+                    focusNode: c.caraKeteranganFocus,
                     onChanged: (v) => c.isSavedCheck(),
                     labelText: 'Cara Pengisian Surat Keterangan Praktikum',
                     scrollbar: false,
+                    maxHeight: 256,
                     decoration: InputDecoration(
                       fillColor: c.caraKeteranganCanEdit.value ? null : Color(0xFF181818),
                       hoverColor: c.caraKeteranganCanEdit.value ? null : Colors.transparent,
@@ -234,7 +258,11 @@ class GlobalConfig extends StatelessWidget {
                           onPressed: c.caraKeteranganSaved.value 
                             ? () {
                               c.caraKeteranganCanEdit.value = !c.caraKeteranganCanEdit.value;
-                              if (c.caraKeteranganCanEdit.value) c.caraKeteranganFocus.requestFocus();
+                              if (c.caraKeteranganCanEdit.value) {
+                                c.caraKeteranganFocus.requestFocus();
+                              } else {
+                                c.caraKeteranganFocus.unfocus();
+                              }
                             }
                             : c.saveCaraKeterangan,
                           icon: Icon(
@@ -253,9 +281,11 @@ class GlobalConfig extends StatelessWidget {
                   ),
                   CustomTextField(
                     controller: c.caraPertukaran,
+                    focusNode: c.caraPertukaranFocus,
                     onChanged: (v) => c.isSavedCheck(),
                     labelText: 'Cara Pengisian Formulir Pertukaran Jadwal Praktikum',
                     scrollbar: false,
+                    maxHeight: 256,
                     decoration: InputDecoration(
                       fillColor: c.caraPertukaranCanEdit.value ? null : Color(0xFF181818),
                       hoverColor: c.caraPertukaranCanEdit.value ? null : Colors.transparent,
@@ -269,7 +299,11 @@ class GlobalConfig extends StatelessWidget {
                           onPressed: c.caraPertukaranSaved.value 
                             ? () {
                               c.caraPertukaranCanEdit.value = !c.caraPertukaranCanEdit.value;
-                              if (c.caraPertukaranCanEdit.value) c.caraPertukaranFocus.requestFocus();
+                              if (c.caraPertukaranCanEdit.value) {
+                                c.caraPertukaranFocus.requestFocus();
+                              } else {
+                                c.caraPertukaranFocus.unfocus();
+                              }
                             }
                             : c.saveCaraPertukaran,
                           icon: Icon(
@@ -286,25 +320,25 @@ class GlobalConfig extends StatelessWidget {
                     keyboardType: TextInputType.multiline,
                     readOnly: !c.caraPertukaranCanEdit.value,
                   ),
+                  Row(
+                    spacing: 8,
+                    children: [
+                      Expanded(child: ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.list), child: Text('Daftar Fakultas/Sekolah ${c.isAnyQueued ? '(Unsaved)' : ''}'))),
+                      if (c.isAnyQueued) ElevatedButton(onPressed: c.saveQueuedAction, child: Text('Save'))
+                    ],
+                  ),
+                  Row(
+                    spacing: 8,
+                    children: [
+                      Expanded(child: ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.barang), child: Text('Daftar Barang ${c.itemQueue.isAnyQueued ? '(Unsaved)' : ''}'))),
+                      if (c.itemQueue.isAnyQueued) ElevatedButton(onPressed: c.saveItemAction, child: Text('Save'))
+                    ],
+                  ),
                 ],
+                          ),
               ),
-              Row(
-                spacing: 8,
-                children: [
-                  Expanded(child: ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.list), child: Text('Daftar Fakultas/Sekolah ${c.isAnyQueued ? '(Unsaved)' : ''}'))),
-                  if (c.isAnyQueued) ElevatedButton(onPressed: c.saveQueuedAction, child: Text('Save'))
-                ],
-              ),
-              Row(
-                spacing: 8,
-                children: [
-                  Expanded(child: ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.barang), child: Text('Daftar Barang ${c.itemQueue.isAnyQueued ? '(Unsaved)' : ''}'))),
-                  if (c.itemQueue.isAnyQueued) ElevatedButton(onPressed: c.saveItemAction, child: Text('Save'))
-                ],
-              ),
-            ],
-          ),
-        )
+            ),
+          )
       ),
     ));
   }

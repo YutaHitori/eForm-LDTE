@@ -1,3 +1,4 @@
+import 'package:eform_ldte/misc/function.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:dropdown_flutter/custom_dropdown.dart';
@@ -14,194 +15,198 @@ class PertukaranJadwalPraktikum extends StatelessWidget {
     final c = Get.find<PertukaranJadwalPraktikumController>();
     return Scaffold(
       appBar: AppBar(
-        leading: canPop
-          ? null : IconButton(
-            icon: Icon(Icons.arrow_back_ios),
-            onPressed: () => Get.offNamed('/'),
-          ),
         title: Text('Pertukaran Jadwal Praktikum')
       ),
       body: LayoutBuilder(
         builder: (context, constrains) {
-          return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-              child: Obx(() => Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                spacing: 8,
-                children: [
-                  ExpansionTile(
-                    minTileHeight: 0,
-                    title: Text(
-                      "Cara Pengisisan Formulir Pergantian Jadwal Praktikum:",
-                      style: TextStyle(fontSize: 14.8),
+          return RefreshIndicator(
+            onRefresh: hardRefresh,
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+                child: Obx(() => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: 8,
+                  children: [
+                    ExpansionTile(
+                      minTileHeight: 0,
+                      title: Text(
+                        "Cara Pengisisan Formulir Pergantian Jadwal Praktikum:",
+                        style: TextStyle(fontSize: 14.8),
+                      ),
+                      expandedAlignment: Alignment.centerLeft,
+                      tilePadding: EdgeInsets.zero,
+                      childrenPadding: EdgeInsets.only(bottom: 8),
+                      children: [
+                        Text(c.cara,style: TextStyle(fontSize: 12.4)),
+                      ],
                     ),
-                    expandedAlignment: Alignment.centerLeft,
-                    tilePadding: EdgeInsets.zero,
-                    childrenPadding: EdgeInsets.only(bottom: 8),
-                    children: [
-                      Text(c.cara,style: TextStyle(fontSize: 12.4)),
-                    ],
-                  ),
-                  CustomTextField(
-                    controller: c.namaC,
-                    labelText: 'Nama Praktikan',
-                    errorText: c.namaE.value,
-                    decoration: InputDecoration(hintText: 'e.g. Safaraz Akma Fadhil'),
-                  ),
-                  CustomTextField(
-                    controller: c.nimC,
-                    labelText: 'Nim Praktikian',
-                    errorText: c.nimE.value,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [ FilteringTextInputFormatter.digitsOnly ],
-                    decoration: InputDecoration(hintText: 'e.g. 12345678'),
-                  ),
-                  Row(
-                    spacing: 8,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          spacing: 4,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('Praktikum', textScaleFactor: 1.02,),
-                                if (c.praktikumE.value != null) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
-                              ],
-                            ),
-                            DropdownFlutter<String>.search(
-                              controller: c.praktikum,
-                              noResultFoundBuilder: (context, text) => Padding(
-                                padding: EdgeInsetsGeometry.all(16),
-                                child: Text(text, textAlign: TextAlign.center,),
+                    CustomTextField(
+                      controller: c.namaC,
+                      focusNode: c.namaF,
+                      labelText: 'Nama Praktikan',
+                      errorText: c.namaE.value,
+                      decoration: InputDecoration(hintText: 'e.g. Safaraz Akma Fadhil'),
+                    ),
+                    CustomTextField(
+                      controller: c.nimC,
+                      focusNode: c.nimF,
+                      labelText: 'Nim Praktikian',
+                      errorText: c.nimE.value,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [ FilteringTextInputFormatter.digitsOnly ],
+                      decoration: InputDecoration(hintText: 'e.g. 12345678'),
+                    ),
+                    Row(
+                      spacing: 8,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            spacing: 4,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('Praktikum', textScaleFactor: 1.02,),
+                                  if (c.praktikumE.value != null) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
+                                ],
                               ),
-                              noResultFoundText: "Praktikum tidak ditemukan, silahkan hapus kolom pencarian dan pilih opsi 'Lainnya...'",
-                              listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
-                              decoration: CustomDropdownDecoration(
-                                searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.scaffoldBackgroundColor),
-                                closedFillColor: appTheme.inputDecorationTheme.fillColor,
-                                expandedFillColor: appTheme.inputDecorationTheme.fillColor,
-                                closedBorder: c.praktikumE.value != null ? Border.all(color: appTheme.colorScheme.error) : null
+                              DropdownFlutter<String>.search(
+                                controller: c.praktikum,
+                                noResultFoundBuilder: (context, text) => Padding(
+                                  padding: EdgeInsetsGeometry.all(16),
+                                  child: Text(text, textAlign: TextAlign.center,),
+                                ),
+                                noResultFoundText: "Praktikum tidak ditemukan, silahkan hapus kolom pencarian dan pilih opsi 'Lainnya...'",
+                                listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
+                                decoration: CustomDropdownDecoration(
+                                  searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.scaffoldBackgroundColor),
+                                  closedFillColor: appTheme.inputDecorationTheme.fillColor,
+                                  expandedFillColor: appTheme.inputDecorationTheme.fillColor,
+                                  closedBorder: c.praktikumE.value != null ? Border.all(color: appTheme.colorScheme.error) : null
+                                ),
+                                excludeSelected: false,
+                                items: ['Lainnya...'] + (NC.isSyncing.value ? [] : c.praktikumList),
+                                hintText: NC.isSyncing.value ? 'Syncing in progress, please wait...' : 'select',
+                                onChanged: (v) => c.isPraktikumLainnya.value = v == 'Lainnya...',
                               ),
-                              excludeSelected: false,
-                              items: ['Lainnya...'] + (NC.isSyncing.value ? [] : c.praktikumList),
-                              hintText: NC.isSyncing.value ? 'Syncing in progress, please wait...' : 'select',
-                              onChanged: (v) => c.isPraktikumLainnya.value = v == 'Lainnya...',
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        width: constrains.maxWidth * 0.15,
-                        constraints: BoxConstraints(maxWidth: 160),
-                        child: Column(
-                          spacing: 4,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('Modul', textScaleFactor: 1.02, overflow: TextOverflow.ellipsis),
-                                if (c.modulE.value != null) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
-                              ],
-                            ),
-                            DropdownFlutter<int>(
-                              controller: c.modul,
-                              listItemBuilder: (context, item, isSelected, onItemSelect) => Text('$item', style: TextStyle(color: isSelected ? Colors.black : null),),
-                              decoration: CustomDropdownDecoration(
-                                closedFillColor: appTheme.inputDecorationTheme.fillColor,
-                                expandedFillColor: appTheme.inputDecorationTheme.fillColor,
-                                closedSuffixIcon: SizedBox(),
-                                expandedSuffixIcon: SizedBox(),
-                                closedBorder: c.modulE.value != null ? Border.all(color: appTheme.colorScheme.error) : null
-                              ),
-                              excludeSelected: false,
-                              items: List.generate(20, (i) => i + 1),
-                              hintText: 'X',
-                              onChanged: (v) {},
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (c.isPraktikumLainnya.value) Row(
-                    spacing: 12,
-                    children: [
-                      Expanded(
-                        child: CustomTextField(
-                          controller: c.kodePraktikum,
-                          labelText: 'Kode',
-                          errorText: c.kodePraktikumE.value,
-                          decoration: InputDecoration(
-                            hintText: 'e.g. EL3017',
+                            ],
                           ),
                         ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: CustomTextField(
-                          controller: c.namaPraktikum,
-                          labelText: 'Nama',
-                          errorText: c.namaPraktikumE.value,
-                          decoration: InputDecoration(
-                            hintText: 'e.g. Sistem Tenaga Elektrik',
+                        Container(
+                          width: constrains.maxWidth * 0.15,
+                          constraints: BoxConstraints(maxWidth: 160),
+                          child: Column(
+                            spacing: 4,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('Modul', textScaleFactor: 1.02, overflow: TextOverflow.ellipsis),
+                                  if (c.modulE.value != null) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
+                                ],
+                              ),
+                              DropdownFlutter<int>(
+                                controller: c.modul,
+                                listItemBuilder: (context, item, isSelected, onItemSelect) => Text('$item', style: TextStyle(color: isSelected ? Colors.black : null),),
+                                decoration: CustomDropdownDecoration(
+                                  closedFillColor: appTheme.inputDecorationTheme.fillColor,
+                                  expandedFillColor: appTheme.inputDecorationTheme.fillColor,
+                                  closedSuffixIcon: SizedBox(),
+                                  expandedSuffixIcon: SizedBox(),
+                                  closedBorder: c.modulE.value != null ? Border.all(color: appTheme.colorScheme.error) : null
+                                ),
+                                excludeSelected: false,
+                                items: List.generate(20, (i) => i + 1),
+                                hintText: 'X',
+                                onChanged: (v) {},
+                              ),
+                            ],
                           ),
                         ),
+                      ],
+                    ),
+                    if (c.isPraktikumLainnya.value) Row(
+                      spacing: 12,
+                      children: [
+                        Expanded(
+                          child: CustomTextField(
+                            controller: c.kodePraktikum,
+                            focusNode: c.kodePraktikumF,
+                            labelText: 'Kode',
+                            errorText: c.kodePraktikumE.value,
+                            decoration: InputDecoration(
+                              hintText: 'e.g. EL3017',
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: CustomTextField(
+                            controller: c.namaPraktikum,
+                            focusNode: c.namaPraktikumF,
+                            labelText: 'Nama',
+                            errorText: c.namaPraktikumE.value,
+                            decoration: InputDecoration(
+                              hintText: 'e.g. Sistem Tenaga Elektrik',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    CustomTextField(
+                      controller: c.dateC,
+                      labelText: 'Tanggal Praktikum Sebelum Pertukaran ',
+                      errorText: c.dateE.value,
+                      keyboardType: TextInputType.datetime,
+                      decoration: InputDecoration(
+                        hintText: 'yyyy/mm/dd',
+                        suffixIcon: IconButton(onPressed: c.selectDate, icon: Icon(Icons.date_range))
                       ),
-                    ],
-                  ),
-                  CustomTextField(
-                    controller: c.dateC,
-                    labelText: 'Tanggal Praktikum Sebelum Pertukaran ',
-                    errorText: c.dateE.value,
-                    keyboardType: TextInputType.datetime,
-                    decoration: InputDecoration(
-                      hintText: 'yyyy/mm/dd',
-                      suffixIcon: IconButton(onPressed: c.selectDate, icon: Icon(Icons.date_range))
+                      onChanged: (v) {
+                        if (v.length > 10) c.dateC.text = v.substring(0, 10);
+                      },
                     ),
-                    onChanged: (v) {
-                      if (v.length > 10) c.dateC.text = v.substring(0, 10);
-                    },
-                  ),
-          
-                  Divider(),
-          
-                  CustomTextField(
-                    controller: c.namaPC,
-                    labelText: 'Nama Praktikan Pengganti',
-                    errorText: c.namaPE.value,
-                    decoration: InputDecoration(hintText: 'e.g. Safaraz Akma Fadhil'),
-                  ),
-                  CustomTextField(
-                    controller: c.nimPC,
-                    labelText: 'Nim Praktikan Pengganti',
-                    errorText: c.nimPE.value,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [ FilteringTextInputFormatter.digitsOnly ],
-                    decoration: InputDecoration(hintText: 'e.g. 12345678'),
-                  ),
-                  CustomTextField(
-                    controller: c.datePC,
-                    labelText: 'Tanggal Praktikum Pengganti',
-                    errorText: c.datePE.value,
-                    keyboardType: TextInputType.datetime,
-                    decoration: InputDecoration(
-                      hintText: 'yyyy/mm/dd',
-                      suffixIcon: IconButton(onPressed: c.selectDateP, icon: Icon(Icons.date_range))
+            
+                    Divider(),
+            
+                    CustomTextField(
+                      controller: c.namaPC,
+                      focusNode: c.namaPF,
+                      labelText: 'Nama Praktikan Pengganti',
+                      errorText: c.namaPE.value,
+                      decoration: InputDecoration(hintText: 'e.g. Safaraz Akma Fadhil'),
                     ),
-                    onChanged: (v) {
-                      if (v.length > 10) c.datePC.text = v.substring(0, 10);
-                    },
-                  ),
-                  SizedBox(height: 24),
-                  ElevatedButton(onPressed: c.isLoading.value ? null : c.submit, child: Text('Format')),
-                ],
-              )),
+                    CustomTextField(
+                      controller: c.nimPC,
+                      focusNode: c.nimPF,
+                      labelText: 'Nim Praktikan Pengganti',
+                      errorText: c.nimPE.value,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [ FilteringTextInputFormatter.digitsOnly ],
+                      decoration: InputDecoration(hintText: 'e.g. 12345678'),
+                    ),
+                    CustomTextField(
+                      controller: c.datePC,
+                      labelText: 'Tanggal Praktikum Pengganti',
+                      errorText: c.datePE.value,
+                      keyboardType: TextInputType.datetime,
+                      decoration: InputDecoration(
+                        hintText: 'yyyy/mm/dd',
+                        suffixIcon: IconButton(onPressed: c.selectDateP, icon: Icon(Icons.date_range))
+                      ),
+                      onChanged: (v) {
+                        if (v.length > 10) c.datePC.text = v.substring(0, 10);
+                      },
+                    ),
+                    SizedBox(height: 24),
+                    ElevatedButton(onPressed: c.isLoading.value ? null : c.submit, child: Text('Format')),
+                  ],
+                )),
+              ),
             ),
           );
         }

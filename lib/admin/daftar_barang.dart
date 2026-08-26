@@ -1,10 +1,7 @@
 import 'package:eform_ldte/core/controller.dart';
-import 'package:eform_ldte/misc/function.dart';
-import 'package:eform_ldte/misc/global.dart';
 import 'package:eform_ldte/misc/widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:go_router/go_router.dart';
 import 'package:number_paginator/number_paginator.dart';
 
 class DaftarBarang extends StatelessWidget {
@@ -58,7 +55,7 @@ class DaftarBarang extends StatelessWidget {
                     constraints: BoxConstraints(
                       minHeight: constrains.maxHeight,
                     ),
-                    child: c.qfsped.value.isEmpty
+                    child: c.qfsped.isEmpty
                     ? SingleChildScrollView(
                       physics: AlwaysScrollableScrollPhysics(),
                       child: SizedBox( 
@@ -167,9 +164,9 @@ class DaftarBarang extends StatelessWidget {
                                 physics: AlwaysScrollableScrollPhysics(),
                                 shrinkWrap: true,
                                 padding: EdgeInsets.only(bottom: 92),
-                                itemCount: c.qfsped.value.length,
+                                itemCount: c.qfsped.length,
                                 itemBuilder: (context, i) {
-                                  final entry = c.qfsped.value[i];
+                                  final entry = c.qfsped[i];
                                   final isLoading = c.loadingQueue.contains(entry.id);
                                   final isAdding = c.insertQueue.contains(entry.id);
                                   final isUpdating = c.updateQueue.contains(entry.id);
