@@ -62,7 +62,7 @@ class LastUpdatedModel {
 }
 
 class GlobalConfigModel {
-  String? nomorSurat, lineOALDTE, namaKepalaLDTE, nipKepalaLDTE, caraPinjam, caraKeterangan, caraPertukaran, caraIzin;
+  String? nomorSurat, lineOALDTE, namaKepalaLDTE, nipKepalaLDTE, caraPinjam, caraKeterangan, caraPertukaran, caraIzin, templatePertukaran, templateIzin;
 
   GlobalConfigModel({
     this.nomorSurat,
@@ -72,7 +72,9 @@ class GlobalConfigModel {
     this.caraPinjam,
     this.caraKeterangan,
     this.caraPertukaran,
-    this.caraIzin
+    this.caraIzin,
+    this.templatePertukaran,
+    this.templateIzin,
   });
 
   GlobalConfigModel.fromJson(Map<String, dynamic> json) {
@@ -84,6 +86,8 @@ class GlobalConfigModel {
     caraKeterangan = (json['cara_keterangan'] as String).trim();
     caraPertukaran = (json['cara_pertukaran'] as String).trim();
     caraIzin = (json['cara_izin'] as String).trim();
+    templatePertukaran = (json['template_pertukaran'] as String).trim();
+    templateIzin = (json['template_izin'] as String).trim();
   }
 
   GlobalConfigModel duplicate() => GlobalConfigModel(
@@ -95,6 +99,8 @@ class GlobalConfigModel {
     caraKeterangan: caraKeterangan,
     caraPertukaran: caraPertukaran,
     caraIzin: caraIzin,
+    templatePertukaran: templatePertukaran,
+    templateIzin: templateIzin,
   );
 }
 
@@ -198,20 +204,20 @@ class UserPreferenceModel {
   bool remindPeminjamanPeralatan;
   bool remindSuratKeteranganPraktikum;
   bool remindPertukaranJadwal;
-  bool remindSuratKeteranganIzin;
+  bool remindIzinTidakPraktikum;
   
   UserPreferenceModel({
     this.remindPeminjamanPeralatan = true,
     this.remindSuratKeteranganPraktikum = true,
     this.remindPertukaranJadwal = true,
-    this.remindSuratKeteranganIzin = true,
+    this.remindIzinTidakPraktikum = true,
   });
 
   UserPreferenceModel duplicate() => UserPreferenceModel(
     remindPeminjamanPeralatan: remindPeminjamanPeralatan,
     remindSuratKeteranganPraktikum: remindSuratKeteranganPraktikum,
     remindPertukaranJadwal: remindPertukaranJadwal,
-    remindSuratKeteranganIzin: remindSuratKeteranganIzin,
+    remindIzinTidakPraktikum: remindIzinTidakPraktikum,
   );
 }
 

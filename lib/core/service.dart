@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:dropdown_flutter/custom_dropdown.dart';
 import 'package:eform_ldte/hive/hive_registrar.g.dart';
@@ -24,7 +23,8 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
- 
+import 'package:http/http.dart' as http;
+
 class PDFService {
   Future<pw.MemoryImage> pdfImage(String route) async {
     final ByteData bytes = await rootBundle.load(route);
@@ -536,12 +536,12 @@ class ImagePickerService {
   }
 
   Future<XFile> setPrefix(XFile file, String prefix) async {
-  final bytes = await file.readAsBytes();
-  return XFile.fromData(
-    bytes,
-    name: "${prefix == 'default' ? '': '$prefix-'}${file.name.substring(7)}",
-    mimeType: file.mimeType,
-  );
+    final bytes = await file.readAsBytes();
+    return XFile.fromData(
+      bytes,
+      name: "${file.name.substring(7)}",
+      mimeType: file.mimeType,
+    );
   } 
 
   Future<XFile?> selectImageFrom(ImageSource s, {String key = 'default'}) async {
@@ -714,6 +714,43 @@ class SuratKeteranganPraktikumService {
       alertDialog('Unexpected error', '$error');
     }
     return false;
+  }
+}
+
+
+class IzinTidakPraktikumService {
+  final imagePicker = ImagePickerService();
+
+  Future<String?> uploadImage(XFile image) async {
+    final url = Uri.parse('https://proxy.corsfix.com/?' 'https://catbox.moe/user/api.php');
+  
+    try {
+      final request = http.MultipartRequest('POST', url);
+
+      request.fields['reqtype'] = 'fileupload';
+
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'fileToUpload',
+          await image.readAsBytes(),
+          filename: '${now.millisecondsSinceEpoch}-${image.name}',
+        )
+      );
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      print('Response: ${response.body}');
+      if (response.statusCode == 200) {
+        return response.body.trim();
+      } else {
+        throw('Upload failed with status: ${response.statusCode}\nResponse: ${response.body}');
+      }
+    } catch (error) {
+      print(error);
+      alertDialog('Unexpected error', '$error');
+    }
+    return null;
   }
 }
 

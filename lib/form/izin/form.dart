@@ -7,17 +7,28 @@ import 'package:eform_ldte/core/controller.dart';
 import 'package:eform_ldte/misc/global.dart';
 import 'package:eform_ldte/misc/widget.dart';
 
-class SuratKeteranganIzin extends StatelessWidget {
-  const SuratKeteranganIzin({super.key});
+class IzinTidakPraktikum extends StatelessWidget {
+  const IzinTidakPraktikum({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final c = Get.find<SuratKeteranganIzinController>();
+    final c = Get.find<IzinTidakPraktikumController>();
     return Scaffold(
       appBar: AppBar(
-        title: Text('Surat Keterangan Izin')
+        title: Text('Izin Tidak Mengikuti Praktikum')
       ),
-      body: LayoutBuilder(
+      body: Obx(() => c.isLoading.value
+        ? Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 24,
+            children: [
+              CircularProgressIndicator(),
+              Text(c.loadingMessage.value ?? 'Loading...')
+            ],
+          ),
+        ) 
+        : LayoutBuilder(
         builder: (context, constrains) {
           return RefreshIndicator(
             onRefresh: hardRefresh,
@@ -31,7 +42,7 @@ class SuratKeteranganIzin extends StatelessWidget {
                     ExpansionTile(
                       minTileHeight: 0,
                       title: Text(
-                        "Cara Pengisisan Formulir Surat Keterangan Izin:",
+                        "Cara Pengisisan Formulir Izin Tidak Mengikuti Praktikum:",
                         style: TextStyle(fontSize: 14.8),
                       ),
                       expandedAlignment: Alignment.centerLeft,
@@ -166,9 +177,6 @@ class SuratKeteranganIzin extends StatelessWidget {
                         hintText: 'yyyy/mm/dd',
                         suffixIcon: IconButton(onPressed: c.selectDate, icon: Icon(Icons.date_range))
                       ),
-                      onChanged: (v) {
-                        if (v.length > 10) c.dateC.text = v.substring(0, 10);
-                      },
                     ),
                     CustomTextField(
                       controller: c.alasanC,
@@ -176,6 +184,41 @@ class SuratKeteranganIzin extends StatelessWidget {
                       labelText: 'Alasan',
                       errorText: c.alasanE.value,
                       decoration: InputDecoration(hintText: 'e.g. Acara keluarga'),
+                    ),Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Bukti Surat Sakit/Izin', textScaleFactor: 1.02,),
+                        if (c.imageE.value != null) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
+                      ],
+                    ),
+                    Row(
+                      spacing: 8,
+                      children: [
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: c.selectImage,
+                              label: Text('Choose an image'),
+                              icon: Icon(Icons.image_search_rounded),
+                              style: ElevatedButton.styleFrom(backgroundColor: c.imageE.value != null ? appTheme.colorScheme.error : appTheme.colorScheme.secondary),
+                            ),
+                          ),
+                        ElevatedButton(onPressed: c.image.value == null ? null : c.previewImage, child: Text('Preview'), style: ElevatedButton.styleFrom(backgroundColor: appTheme.colorScheme.tertiary)),
+                      ],  
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Text("Selected: ${c.image.value?.name ?? '- none -'}"),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: c.image.value == null ? null : c.resetImage,
+                          icon: Icon(Icons.delete_rounded, color: c.image.value == null ? null : Colors.redAccent),
+                        ),
+                      ],
                     ),
                     SizedBox(height: 24),
                     ElevatedButton(onPressed: c.isLoading.value ? null : c.submit, child: Text('Format')),
@@ -186,6 +229,6 @@ class SuratKeteranganIzin extends StatelessWidget {
           );
         }
       ),
-    ); 
+    )); 
   }
 }

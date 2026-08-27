@@ -66,8 +66,8 @@ final GoRouter router = GoRouter(
           path: 'surat-izin',
           builder: (context, state) {
             return GetXRouteBinding(
-              controllerBuilder: () => Get.put(SuratKeteranganIzinController()),
-              child: SuratKeteranganIzin(),
+              controllerBuilder: () => Get.put(IzinTidakPraktikumController()),
+              child: IzinTidakPraktikum(),
             );
           },
         ),

@@ -22,7 +22,7 @@ class Homepage extends StatelessWidget {
               ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.pinjam), child: Text('Pinjam Peralatan')),
               ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.keterangan), child: Text('Surat Keterangan Praktikum')),
               ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.pertukaran), child: Text('Pertukaran Jadwal Praktikum')),
-              ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.izin), child: Text('Surat Keterangan Izin')),
+              ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.izin), child: Text('Izin Tidak Mengikuti Praktikum')),
             ],
           ),
         ],

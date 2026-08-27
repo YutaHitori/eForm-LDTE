@@ -67,7 +67,7 @@ class GlobalConfig extends StatelessWidget {
                             if (!c.lineOASaved.value)
                             IconButton(
                               onPressed: c.lineOAUndo,
-                              icon: Icon(Icons.undo_rounded),
+                              icon: Icon(Icons.undo_rounded, color: Colors.amber),
                             ),
                             IconButton(
                               onPressed: c.lineOASaved.value 
@@ -114,7 +114,7 @@ class GlobalConfig extends StatelessWidget {
                             if (!c.nomorSuratSaved.value)
                             IconButton(
                               onPressed: c.nomorSuratUndo,
-                              icon: Icon(Icons.undo_rounded),
+                              icon: Icon(Icons.undo_rounded, color: Colors.amber),
                             ),
                             IconButton(
                               onPressed: c.nomorSuratSaved.value 
@@ -161,7 +161,7 @@ class GlobalConfig extends StatelessWidget {
                             if (!c.namaKepalaLDTESaved.value)
                             IconButton(
                               onPressed: c.namaKepalaLDTEUndo,
-                              icon: Icon(Icons.undo_rounded),
+                              icon: Icon(Icons.undo_rounded, color: Colors.amber),
                             ),
                             IconButton(
                               onPressed: c.namaKepalaLDTESaved.value 
@@ -210,7 +210,7 @@ class GlobalConfig extends StatelessWidget {
                             if (!c.nipKepalaLDTESaved.value)
                             IconButton(
                               onPressed: c.nipKepalaLDTEUndo,
-                              icon: Icon(Icons.undo_rounded),
+                              icon: Icon(Icons.undo_rounded, color: Colors.amber),
                             ),
                             IconButton(
                               onPressed: c.nipKepalaLDTESaved.value 
@@ -243,7 +243,7 @@ class GlobalConfig extends StatelessWidget {
                     onChanged: (v) => c.isSavedCheck(),
                     labelText: 'Cara Pengisian Formulir Peminjaman Peralatan',
                     scrollbar: false,
-                    maxHeight: 256,
+                    maxHeight: 384,
                     decoration: InputDecoration(
                       fillColor: c.caraPinjamCanEdit.value ? null : Color(0xFF181818),
                       hoverColor: c.caraPinjamCanEdit.value ? null : Colors.transparent,
@@ -260,7 +260,7 @@ class GlobalConfig extends StatelessWidget {
                             if (!c.caraPinjamSaved.value)
                             IconButton(
                               onPressed: c.caraPinjamUndo,
-                              icon: Icon(Icons.undo_rounded),
+                              icon: Icon(Icons.undo_rounded, color: Colors.amber),
                             ),
                             IconButton(
                               onPressed: c.caraPinjamSaved.value 
@@ -295,7 +295,7 @@ class GlobalConfig extends StatelessWidget {
                     onChanged: (v) => c.isSavedCheck(),
                     labelText: 'Cara Pengisian Surat Keterangan Praktikum',
                     scrollbar: false,
-                    maxHeight: 256,
+                    maxHeight: 384,
                     decoration: InputDecoration(
                       fillColor: c.caraKeteranganCanEdit.value ? null : Color(0xFF181818),
                       hoverColor: c.caraKeteranganCanEdit.value ? null : Colors.transparent,
@@ -312,7 +312,7 @@ class GlobalConfig extends StatelessWidget {
                             if (!c.caraKeteranganSaved.value)
                             IconButton(
                               onPressed: c.caraKeteranganUndo,
-                              icon: Icon(Icons.undo_rounded),
+                              icon: Icon(Icons.undo_rounded, color: Colors.amber),
                             ),
                             IconButton(
                               onPressed: c.caraKeteranganSaved.value 
@@ -347,7 +347,7 @@ class GlobalConfig extends StatelessWidget {
                     onChanged: (v) => c.isSavedCheck(),
                     labelText: 'Cara Pengisian Formulir Pertukaran Jadwal Praktikum',
                     scrollbar: false,
-                    maxHeight: 256,
+                    maxHeight: 384,
                     decoration: InputDecoration(
                       fillColor: c.caraPertukaranCanEdit.value ? null : Color(0xFF181818),
                       hoverColor: c.caraPertukaranCanEdit.value ? null : Colors.transparent,
@@ -364,7 +364,7 @@ class GlobalConfig extends StatelessWidget {
                             if (!c.caraPertukaranSaved.value)
                             IconButton(
                               onPressed: c.caraPertukaranUndo,
-                              icon: Icon(Icons.undo_rounded),
+                              icon: Icon(Icons.undo_rounded, color: Colors.amber),
                             ),
                             IconButton(
                               onPressed: c.caraPertukaranSaved.value 
@@ -397,9 +397,9 @@ class GlobalConfig extends StatelessWidget {
                     controller: c.caraIzin,
                     focusNode: c.caraIzinFocus,
                     onChanged: (v) => c.isSavedCheck(),
-                    labelText: 'Cara Pengisian Formulir Surat Keterangan Izin',
+                    labelText: 'Cara Pengisian Formulir Izin Tidak Mengikuti Praktikum',
                     scrollbar: false,
-                    maxHeight: 256,
+                    maxHeight: 384,
                     decoration: InputDecoration(
                       fillColor: c.caraIzinCanEdit.value ? null : Color(0xFF181818),
                       hoverColor: c.caraIzinCanEdit.value ? null : Colors.transparent,
@@ -416,7 +416,7 @@ class GlobalConfig extends StatelessWidget {
                             if (!c.caraIzinSaved.value)
                             IconButton(
                               onPressed: c.caraIzinUndo,
-                              icon: Icon(Icons.undo_rounded),
+                              icon: Icon(Icons.undo_rounded, color: Colors.amber),
                             ),
                             IconButton(
                               onPressed: c.caraIzinSaved.value 
@@ -444,6 +444,118 @@ class GlobalConfig extends StatelessWidget {
                     maxLines: c.caraIzinCanEdit.value ? null : 3,
                     keyboardType: TextInputType.multiline,
                     readOnly: !c.caraIzinCanEdit.value,
+                  ),
+                  CustomTextField(
+                    controller: c.templatePertukaran,
+                    focusNode: c.templatePertukaranFocus,
+                    errorText: c.templatePertukaranE.value,
+                    onChanged: (v) {
+                      c.isSavedCheck();
+                      c.isTemplateValid('pertukaran');
+                    },
+                    labelText: 'Template Pesan Pertukaran Jadwal Praktikum',
+                    scrollbar: false,
+                    maxHeight: 384,
+                    decoration: InputDecoration(
+                      fillColor: c.templatePertukaranCanEdit.value ? null : Color(0xFF181818),
+                      hoverColor: c.templatePertukaranCanEdit.value ? null : Colors.transparent,
+                      focusedBorder: c.templatePertukaranCanEdit.value ? null : OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: BorderSide.none,
+                      ), 
+                      hintText: '\n\n',
+                      suffixIcon: Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (!c.templatePertukaranSaved.value)
+                            IconButton(
+                              onPressed: c.templatePertukaranUndo,
+                              icon: Icon(Icons.undo_rounded, color: Colors.amber),
+                            ),
+                            IconButton(
+                              onPressed: c.templatePertukaranSaved.value 
+                                ? () {
+                                  c.templatePertukaranCanEdit.value = !c.templatePertukaranCanEdit.value;
+                                  if (c.templatePertukaranCanEdit.value) {
+                                    c.templatePertukaranFocus.requestFocus();
+                                  } else {
+                                    c.templatePertukaranFocus.unfocus();
+                                  }
+                                }
+                                : c.templatePertukaranE.value != null ? null : c.savetemplatePertukaran,
+                              icon: Icon(
+                                c.templatePertukaranSaved.value 
+                                ? c.templatePertukaranCanEdit.value
+                                  ? Icons.edit_off_rounded
+                                  : Icons.edit_rounded
+                                : Icons.save_rounded
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    ),
+                    maxLines: c.templatePertukaranCanEdit.value ? null : 3,
+                    keyboardType: TextInputType.multiline,
+                    readOnly: !c.templatePertukaranCanEdit.value,
+                  ),
+                  CustomTextField(
+                    controller: c.templateIzin,
+                    focusNode: c.templateIzinFocus,
+                    errorText: c.templateIzinE.value,
+                    onChanged: (v) {
+                      c.isSavedCheck();
+                      c.isTemplateValid('izin');
+                    },
+                    labelText: 'Template Pesan Surat Izin Praktikum',
+                    scrollbar: false,
+                    maxHeight: 384,
+                    decoration: InputDecoration(
+                      fillColor: c.templateIzinCanEdit.value ? null : Color(0xFF181818),
+                      hoverColor: c.templateIzinCanEdit.value ? null : Colors.transparent,
+                      focusedBorder: c.templateIzinCanEdit.value ? null : OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: BorderSide.none,
+                      ), 
+                      hintText: '\n\n',
+                      suffixIcon: Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (!c.templateIzinSaved.value)
+                            IconButton(
+                              onPressed: c.templateIzinUndo,
+                              icon: Icon(Icons.undo_rounded, color: Colors.amber),
+                            ),
+                            IconButton(
+                              onPressed: c.templateIzinSaved.value 
+                                ? () {
+                                  c.templateIzinCanEdit.value = !c.templateIzinCanEdit.value;
+                                  if (c.templateIzinCanEdit.value) {
+                                    c.templateIzinFocus.requestFocus();
+                                  } else {
+                                    c.templateIzinFocus.unfocus();
+                                  }
+                                }
+                                : c.templateIzinE.value != null ? null : c.savetemplateIzin,
+                              icon: Icon(
+                                c.templateIzinSaved.value 
+                                ? c.templateIzinCanEdit.value
+                                  ? Icons.edit_off_rounded
+                                  : Icons.edit_rounded
+                                : Icons.save_rounded
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    ),
+                    maxLines: c.templateIzinCanEdit.value ? null : 3,
+                    keyboardType: TextInputType.multiline,
+                    readOnly: !c.templateIzinCanEdit.value,
                   ),
                   Row(
                     spacing: 8,

@@ -19,7 +19,11 @@ pw.TextStyle textStyle({double? fontSize, double? lineSpacing}) {
   );
 }
 
-final regexp = RegExp(r'\((.*?)\)');
+final parentheses = RegExp(r'\((.*?)\)');
+final curlyBrackets = RegExp(r'\{([^}]+)\}');
+
+const List<String> pertukaranVar = ["{NAMA_PRAKTIKAN}","{NIM_PRAKTIKAN}","{PRAKTIKUM}","{MODUL}","{TANGGAL}","{NAMA_PENGGANTI}","{NIM_PENGGANTI}"];
+const List<String> izinVar = ["{NAMA}","{NIM}","{PRAKTIKUM}","{MODUL}","{TANGGAL}","{ALASAN}","{IMAGE}"];
 
 DateTime get now => DateTime.now();
 DateTime get today => DateTime.parse(now.toString().substring(0, 10));

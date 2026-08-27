@@ -166,9 +166,6 @@ class PertukaranJadwalPraktikum extends StatelessWidget {
                         hintText: 'yyyy/mm/dd',
                         suffixIcon: IconButton(onPressed: c.selectDate, icon: Icon(Icons.date_range))
                       ),
-                      onChanged: (v) {
-                        if (v.length > 10) c.dateC.text = v.substring(0, 10);
-                      },
                     ),
             
                     Divider(),

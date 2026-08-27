@@ -191,7 +191,7 @@ class PeminjamanPeralatanController extends GetxController {
   String get cara => storage.cached.globalConfig.caraPinjam ?? "Didn't exist, please refresh browser or contact our Line OA";
   List<String> get fakultasList => storage.cached.formatedFakultas();
 
-  Rxn<XFile> idCard = Rxn<XFile>(null); 
+  var idCard = Rxn<XFile>(null); 
 
   final namaC = TextEditingController();
   final nimC = TextEditingController();
@@ -278,8 +278,8 @@ class PeminjamanPeralatanController extends GetxController {
 
   Map<String, dynamic> get form => {
     ...dbform,
-    if (fakultasC.hasValue) 'fakultas' : regexp.firstMatch(fakultasC.value ?? '')?.group(1),
-    if (prodiC.hasValue) 'prodi' : prodiC.value?.replaceAll(RegExp(r'\((.*?)\)'), '').trim(),
+    if (fakultasC.hasValue) 'fakultas' : parentheses.firstMatch(fakultasC.value ?? '')?.group(1),
+    if (prodiC.hasValue) 'prodi' : prodiC.value?.replaceAll(parentheses, '').trim(),
     if (!dosenC.text.isBlank()) 'dosen' : dosenC.text.trim().capitalCase(),
     if (!nipDosenC.text.isBlank()) 'nipDosen' : nipDosenC.text.trim(),
     if (!ketuaC.text.isBlank()) 'ketua' : ketuaC.text.trim().capitalCase(),
@@ -786,28 +786,14 @@ class PertukaranJadwalPraktikumController extends GetxController {
   final namaPraktikumF = FocusNode();
   final kodePraktikumF = FocusNode();
 
-  String get compiledMessage => '''Silahkan chat sesuai template dibawah ini.
-----------------------------------------
-Pertukaran Jadwal Praktikum
-PRAKTIKAN
-Nama : ${namaC.text.trim().capitalCase(false)}
-NIM : ${nimC.text.trim()}
-
-JADWAL SEBELUM PERTUKARAN
-Praktikum : ${praktikum.value == 'Lainnya...' ? '${kodePraktikum.text.trim().toUpperCase()} ${namaPraktikum.text.trim().capitalCase()}' : praktikum.value}
-Modul : ${modul.value}
-Hari/Tanggal : ${dateC.text.toDateTime()?.toDateFormatString()}
-
-MENGGANTIKAN PRAKΤΙΚΑΝ
-Nama: ${namaPC.text.trim().capitalCase(false)}
-NIM : ${nimPC.text.trim()}
-
-MENGIKUTI PRAKTIKUM
-Praktikum : ${praktikum.value == 'Lainnya...' ? '${kodePraktikum.text.trim().toUpperCase()} ${namaPraktikum.text.trim().capitalCase()}' : praktikum.value}
-Modul : ${modul.value}
-Hari/Tanggal : ${datePC.text.toDateTime()?.toDateFormatString()}
-----------------------------------------
-Pertukaran diperbolehkan setelah ada chat konfirmasi dari LDTE.''';
+  String compileMessage() => (storage.cached.globalConfig.templatePertukaran ?? '')
+    .replaceAll('{NAMA_PRAKTIKAN}', namaC.text.trim().capitalCase(false))
+    .replaceAll('{NIM_PRAKTIKAN}', nimC.text.trim())
+    .replaceAll('{PRAKTIKUM}', praktikum.value == 'Lainnya...' ? '${kodePraktikum.text.trim().toUpperCase()} ${namaPraktikum.text.trim().capitalCase()}' : praktikum.value ?? '')
+    .replaceAll('{MODUL}', modul.value?.toString() ?? '')
+    .replaceAll('{TANGGAL}', datePC.text.toDateTime()?.toDateFormatString() ?? '')
+    .replaceAll('{NAMA_PENGGANTI}', namaPC.text.trim().capitalCase(false))
+    .replaceAll('{NIM_PENGGANTI}', nimPC.text.trim());
 
    bool checkEmptyFields() {
     if (
@@ -843,7 +829,7 @@ Pertukaran diperbolehkan setelah ada chat konfirmasi dari LDTE.''';
   void submit() async {
     if (!checkEmptyFields()) return;
     isLoading.value = true;
-    final message = compiledMessage;
+    final message = compileMessage();
     final url = await storage.getLineOALDTEUrl(message);
     print(url);
     Clipboard.setData(ClipboardData(text: message));
@@ -938,8 +924,11 @@ Pertukaran diperbolehkan setelah ada chat konfirmasi dari LDTE.''';
   }
 } 
 
-class SuratKeteranganIzinController extends GetxController {
+class IzinTidakPraktikumController extends GetxController {
   var isLoading = false.obs;
+  var loadingMessage = RxnString(null);
+
+  final service = IzinTidakPraktikumService();
 
   String get cara => storage.cached.globalConfig.caraIzin ?? "Didn't exist, please refresh browser or contact our Line OA";
   List<String> get praktikumList => storage.cached.formatedPraktikum();
@@ -947,6 +936,7 @@ class SuratKeteranganIzinController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    service.imagePicker.retrieveLostData(image, key: 'izin');
     showReminderDialog();
     namaF.addListener(() {
       if (!namaF.hasFocus) namaC.text = namaC.text.trim().capitalCase(false);
@@ -989,6 +979,9 @@ class SuratKeteranganIzinController extends GetxController {
   final modul = SingleSelectController<int>(null);
   final dateC = TextEditingController();
   final alasanC = TextEditingController();
+  var image = Rxn<XFile>(null); 
+  int lastImageByteLength = -1;
+  String lastImageUrl = '';
 
   var namaE = Rxn<String>(null); 
   var nimE = Rxn<String>(null); 
@@ -996,8 +989,9 @@ class SuratKeteranganIzinController extends GetxController {
   var namaPraktikumE = Rxn<String>(null); 
   var kodePraktikumE = Rxn<String>(null); 
   var modulE = Rxn<String>(null); 
-  var alasanE = Rxn<String>(null); 
   var dateE = Rxn<String>(null); 
+  var alasanE = Rxn<String>(null); 
+  var imageE = Rxn<String>(null); 
 
   var prodiList = <String>[].obs;
 
@@ -1006,50 +1000,59 @@ class SuratKeteranganIzinController extends GetxController {
   final namaPraktikumF = FocusNode();
   final kodePraktikumF = FocusNode();
   final alasanF = FocusNode();
-
-  String get compiledMessage => '''Untuk izin, silahkan chat sesuai format berikut:
-----------------------------------------
-Nama : ${namaC.text.trim().capitalCase(false)}
-NIM : ${nimC.text.trim()}
-Praktikum : ${praktikum.value == 'Lainnya...' ? '${kodePraktikum.text.trim().toUpperCase()} ${namaPraktikum.text.trim().capitalCase()}' : praktikum.value}
-Modul : ${modul.value ?? ''}
-Hari/Tanggal : ${dateC.text.toDateTime()?.toDateFormatString()}
-Alasan : ${alasanC.text.trim()}
-----------------------------------------
-Silahkan memberikan surat keterangan sakit / izin ke TU LDTE untuk diberikan jadwal pengganti.
-Terimakasih.''';
-
-   bool checkEmptyFields() {
-    if (
-      namaC.text.isBlank() || 
-      nimC.text.isBlank() || 
-      !praktikum.hasValue || 
-        (praktikum.value == 'Lainnya...' && (namaPraktikum.text.isBlank() || kodePraktikum.text.isBlank())) || 
-      !modul.hasValue || 
-      (dateC.text.isBlank() || dateC.text.toDateTime() == null)
-      ||
-      alasanC.text.isBlank() 
-    ) {
-      namaE.value = namaC.text.isBlank() ? '*required' : null;
-      nimE.value = nimC.text.isBlank() ? '*required' : null;
-      praktikumE.value = !praktikum.hasValue ? '*required' : null;
-      namaPraktikumE.value = praktikum.value == 'Lainnya...' && namaPraktikum.text.isBlank () ? '': null;
-      kodePraktikumE.value = praktikum.value == 'Lainnya...' && kodePraktikum.text.isBlank () ? '': null;
-      modulE.value = !modul.hasValue ? '' : null ;
-      dateE.value = dateC.text.isBlank() ? '*required' : dateC.text.toDateTime() == null ? '*invalid' : null;
-      alasanE.value = alasanC.text.isBlank() ? '*required' : null;
-      return false;
-    }
-    namaE.value = nimE.value = praktikumE.value = namaPraktikumE.value = kodePraktikumE.value = modulE.value = dateE.value = alasanE.value = null;
-    return true;
+  
+  void selectImage() async {
+    service.imagePicker.selectImage(image, key: 'izin');
   }
 
+  void previewImage() {
+    service.imagePicker.previewImage(image.value!);
+  }
+
+  void resetImage() {
+    service.imagePicker.resetImage(image, key: 'izin');
+  }
+
+  String compileMessage(String image) => (storage.cached.globalConfig.templateIzin ?? '')
+    .replaceAll('{NAMA}', namaC.text.trim().capitalCase(false))
+    .replaceAll('{NIM}', nimC.text.trim())
+    .replaceAll('{PRAKTIKUM}', praktikum.value == 'Lainnya...' ? '${kodePraktikum.text.trim().toUpperCase()} ${namaPraktikum.text.trim().capitalCase()}' : praktikum.value ?? '')
+    .replaceAll('{MODUL}', modul.value?.toString() ?? '')
+    .replaceAll('{TANGGAL}', dateC.text.toDateTime()?.toDateFormatString() ?? '')
+    .replaceAll('{ALASAN}', alasanC.text.trim())
+    .replaceAll('{IMAGE}', image.trim());
+
+   bool checkEmptyFields() {
+    namaE.value = namaC.text.isBlank() ? '*required' : null;
+    nimE.value = nimC.text.isBlank() ? '*required' : null;
+    praktikumE.value = !praktikum.hasValue ? '*required' : null;
+    namaPraktikumE.value = praktikum.value == 'Lainnya...' && namaPraktikum.text.isBlank () ? '': null;
+    kodePraktikumE.value = praktikum.value == 'Lainnya...' && kodePraktikum.text.isBlank () ? '': null;
+    modulE.value = !modul.hasValue ? '' : null ;
+    dateE.value = dateC.text.isBlank() ? '*required' : dateC.text.toDateTime() == null ? '*invalid' : null;
+    alasanE.value = alasanC.text.isBlank() ? '*required' : null;
+    imageE.value = image.value == null ? '*required' : null;
+    
+    return namaE.value == null && nimE.value == null && praktikumE.value == null && namaPraktikumE.value == null && kodePraktikumE.value == null && modulE.value == null && dateE.value == null && alasanE.value == null;
+  }
+  
   void submit() async {
     if (!checkEmptyFields()) return;
     isLoading.value = true;
-    final message = compiledMessage;
+    final imageByteLength = (await image.value!.readAsBytes()).length;
+    if (lastImageByteLength != imageByteLength) {
+      loadingMessage.value = 'Uploading Image...';
+      final imageUrl = await service.uploadImage(image.value!);
+      if (imageUrl == null) {
+        isLoading.value = false;
+        return;
+      }
+      lastImageUrl = imageUrl;
+      lastImageByteLength = imageByteLength;
+    } 
+    loadingMessage.value = 'Formating message...';
+    final message = compileMessage(lastImageUrl);
     final url = await storage.getLineOALDTEUrl(message);
-    print(url);
     print(url);
     Clipboard.setData(ClipboardData(text: message));
     Get.showSnackbar(GetSnackBar(message: 'Message copied to clipboard!', duration: Duration(seconds: 2)));
@@ -1097,10 +1100,10 @@ Terimakasih.''';
   }
 
   void showReminderDialog() {
-    var remindMe = storage.cached.userPreference.remindSuratKeteranganIzin.obs;
+    var remindMe = storage.cached.userPreference.remindIzinTidakPraktikum.obs;
     if (remindMe.value) {
       alertDialog(
-        'Cara Pengisisan Formulir Surat Keterangan Izin:',
+        'Cara Pengisisan Formulir Izin Tidak Mengikuti Praktikum:',
         null,
         message: Obx(() => Column(
           children: [
@@ -1130,7 +1133,7 @@ Terimakasih.''';
                 Text('Remind me again'),
                 Switch(value: remindMe.value, onChanged: NC.isSyncing.value ? null : (v) {
                   remindMe.value = v;
-                  storage.cached.userPreference.remindSuratKeteranganIzin = v;
+                  storage.cached.userPreference.remindIzinTidakPraktikum = v;
                   storage.save();
                 })
               ],
@@ -1585,6 +1588,20 @@ class GlobalConfigController extends GetxController {
         isSavedCheck();
       }
     });
+    templatePertukaranFocus.addListener(() {
+      if (!templatePertukaranFocus.hasFocus) {
+        templatePertukaran.text = templatePertukaran.text.trim();
+        isSavedCheck();
+        isTemplateValid('pertukaran');
+      }
+    });
+    templateIzinFocus.addListener(() {
+      if (!templateIzinFocus.hasFocus) {
+        templateIzin.text = templateIzin.text.trim();
+        isSavedCheck();
+        isTemplateValid('izin');
+      }
+    });
   }
 
   @override
@@ -1598,6 +1615,8 @@ class GlobalConfigController extends GetxController {
     caraKeteranganFocus.dispose();
     caraPertukaranFocus.dispose();
     caraIzinFocus.dispose();
+    templatePertukaranFocus.dispose();
+    templateIzinFocus.dispose();
   }
 
   final service = GlobalConfigService();
@@ -1615,8 +1634,43 @@ class GlobalConfigController extends GetxController {
     caraKeteranganSaved.value = caraKeterangan.text.trim() == storage.cached.globalConfig.caraKeterangan;
     caraPertukaranSaved.value = caraPertukaran.text.trim() == storage.cached.globalConfig.caraPertukaran;
     caraIzinSaved.value = caraIzin.text.trim() == storage.cached.globalConfig.caraIzin;
-    isSaved.value = lineOASaved.value && nomorSuratSaved.value && namaKepalaLDTESaved.value && nipKepalaLDTESaved.value && caraPinjamSaved.value;
+    templatePertukaranSaved.value = templatePertukaran.text.trim() == storage.cached.globalConfig.templatePertukaran;
+    templateIzinSaved.value = templateIzin.text.trim() == storage.cached.globalConfig.templateIzin;
+    isSaved.value = lineOASaved.value && nomorSuratSaved.value && namaKepalaLDTESaved.value && nipKepalaLDTESaved.value && caraPinjamSaved.value && caraKeteranganSaved.value && caraPertukaranSaved.value && caraIzinSaved.value && templatePertukaranSaved.value && templateIzinSaved.value;
     return isSaved.value && !isAnyQueued && !itemQueue.isAnyQueued;
+  }
+
+  bool isTemplateValid([String? key]) {
+    final pertukaranMatch = curlyBrackets.allMatches(templatePertukaran.text).map((match) => match.group(0)!);
+    final izinMatch = curlyBrackets.allMatches(templateIzin.text).map((match) => match.group(0)!);
+    final pertukaranInvalid = pertukaranMatch.where((v) => !pertukaranVar.contains(v));
+    final pertukaranMissing = pertukaranVar.where((v) => !pertukaranMatch.contains(v));
+    final izinInvalid = izinMatch.where((v) => !izinVar.contains(v));
+    final izinMissing = izinVar.where((v) => !izinMatch.contains(v));
+    if ((key ?? 'pertukaran') == 'pertukaran') {
+      templatePertukaranE.value = 
+        templatePertukaranSaved.value
+          ? null
+          : pertukaranInvalid.isNotEmpty
+            ? "*invalid var: ${pertukaranInvalid.join(', ')}"
+            : pertukaranMissing.isNotEmpty
+              ? "*missing var: ${pertukaranMissing.join(', ')}"
+              : null;
+      if (key == 'pertukaran') return templatePertukaranE.value == null;
+    }
+    if ((key ?? 'izin') == 'izin') {
+      templateIzinE.value = 
+        templateIzinSaved.value 
+          ? null
+          : izinInvalid.isNotEmpty
+            ? "*invalid var: ${izinInvalid.join(', ')}"
+            : izinMissing.isNotEmpty
+              ? "*missing var: ${izinMissing.join(', ')}"
+              : null;
+      if (key == 'izin') return templateIzinE.value == null;
+    }
+      
+    return templatePertukaranE.value == null && templateIzinE.value == null;
   }
 
   void init() {
@@ -1631,6 +1685,8 @@ class GlobalConfigController extends GetxController {
     caraKeterangan.text = storage.cached.globalConfig.caraKeterangan ?? '';
     caraPertukaran.text = storage.cached.globalConfig.caraPertukaran ?? '';
     caraIzin.text = storage.cached.globalConfig.caraIzin ?? '';
+    templatePertukaran.text = storage.cached.globalConfig.templatePertukaran ?? '';
+    templateIzin.text = storage.cached.globalConfig.templateIzin ?? '';
   }
 
   final lineOA = TextEditingController();
@@ -1673,6 +1729,18 @@ class GlobalConfigController extends GetxController {
   var caraIzinCanEdit = false.obs;
   var caraIzinSaved = true.obs;
 
+  final templatePertukaran = TextEditingController();
+  final templatePertukaranFocus = FocusNode();
+  var templatePertukaranE = RxnString(null);
+  var templatePertukaranCanEdit = false.obs;
+  var templatePertukaranSaved = true.obs;
+
+  final templateIzin = TextEditingController();
+  final templateIzinFocus = FocusNode();
+  var templateIzinE = RxnString(null);
+  var templateIzinCanEdit = false.obs;
+  var templateIzinSaved = true.obs;
+
   Map<String, String> get form {
     lineOA.text = lineOA.text.trim().toLowerCase();
     if (lineOA.text[0] == '@') lineOA.text.substring(1);
@@ -1683,6 +1751,8 @@ class GlobalConfigController extends GetxController {
     caraKeterangan.text = caraKeterangan.text.trim();
     caraPertukaran.text = caraPertukaran.text.trim();
     caraIzin.text = caraIzin.text.trim();
+    templatePertukaran.text = templatePertukaran.text.trim();
+    templateIzin.text = templateIzin.text.trim();
     return {
       if (lineOA.text != storage.cached.globalConfig.lineOALDTE) 'lineoa_ldte' : lineOA.text,
       if (nomorSurat.text != storage.cached.globalConfig.nomorSurat) 'nomor_surat' : nomorSurat.text,
@@ -1692,6 +1762,8 @@ class GlobalConfigController extends GetxController {
       if (caraKeterangan.text != storage.cached.globalConfig.caraKeterangan) 'cara_keterangan' : caraKeterangan.text,
       if (caraPertukaran.text != storage.cached.globalConfig.caraPertukaran) 'cara_pertukaran' : caraPertukaran.text,
       if (caraIzin.text != storage.cached.globalConfig.caraIzin) 'cara_izin' : caraIzin.text,
+      if (templatePertukaran.text != storage.cached.globalConfig.templatePertukaran) 'template_pertukaran' : templatePertukaran.text,
+      if (templateIzin.text != storage.cached.globalConfig.templateIzin) 'template_izin' : templateIzin.text,
     };
   }
   
@@ -1742,6 +1814,20 @@ class GlobalConfigController extends GetxController {
     caraIzin.selection = TextSelection.collapsed(offset: caraIzin.text.length);
     isSavedCheck();
   }
+  
+  void templatePertukaranUndo() async {
+    templatePertukaran.text = storage.cached.globalConfig.templatePertukaran ?? '';
+    templatePertukaran.selection = TextSelection.collapsed(offset: templatePertukaran.text.length);
+    isSavedCheck();
+    isTemplateValid('pertukaran');
+  }
+  
+  void templateIzinUndo() async {
+    templateIzin.text = storage.cached.globalConfig.templateIzin ?? '';
+    templateIzin.selection = TextSelection.collapsed(offset: templateIzin.text.length);
+    isSavedCheck();
+    isTemplateValid('izin');
+  }
 
   void save(String? key, RxBool canEdit) async {
     if (form[key].isBlank()) return;
@@ -1755,7 +1841,9 @@ class GlobalConfigController extends GetxController {
     'cara_pinjam' ? 'cara pengisian formulir peminjaman peralatan' : key == 
     'cara_keterangan' ? 'cara pengisian surat keterangan praktikum' : key == 
     'cara_pertukaran' ? 'cara pengisian formulir pertukaran' : key == 
-    'cara_izin' ? 'cara pengisian surat keteragan izin' : 'unknown';
+    'cara_izin' ? 'cara pengisian surat keteragan izin' : key == 
+    'template_pertukaran' ? 'template pesan pertukaran jadwal' : key == 
+    'template_izin' ? 'template pesan izin praktikum' : 'unknown';
     
     loadingMessage.value = 'Saving $message, please wait...';
     isLoading.value = true;
@@ -1770,9 +1858,7 @@ class GlobalConfigController extends GetxController {
     isLoading.value = false;
   }
 
-  void saveLineOa() {
-    save('lineoa_ldte', lineOACanEdit);
-  }
+  void saveLineOa() => save('lineoa_ldte', lineOACanEdit);
 
   void saveNomorSurat() => save('nomor_surat', nomorSuratCanEdit);
 
@@ -1787,6 +1873,16 @@ class GlobalConfigController extends GetxController {
   void saveCaraPertukaran() => save('cara_pertukaran', caraPertukaranCanEdit);
 
   void saveCaraIzin() => save('cara_izin', caraIzinCanEdit);
+
+  void savetemplatePertukaran() {
+    if (!isTemplateValid('pertukaran')) return;
+    save('template_pertukaran', templatePertukaranCanEdit); 
+  }
+
+  void savetemplateIzin() {
+    if (!isTemplateValid('izin')) return;
+    save('template_izin', templateIzinCanEdit);
+  }
 
   Future<void> saveQueuedAction() async {
     isLoading.value = true;
@@ -1815,6 +1911,7 @@ class GlobalConfigController extends GetxController {
   }
 
   Future<void> saveAll() async {
+    if (!isTemplateValid()) return;
     isLoading.value = true;
     loadingMessage.value = 'Saving updated config, please wait...';
     if (!isSaved.value) {
@@ -2553,7 +2650,7 @@ class FakultasController extends GetxController {
     bool checkEmptyFields() {
       final model = createModel();
       final list = config.simulated.formatedFakultas(true);
-      nameE.value = nameC.text.isBlank() ? '*required' : !nameC.text.contains(RegExp(r'\((.*?)\)')) ? '*invalid format' : model.name.toLowerCase() != s?.name.toLowerCase() && list.contains(model.name.toLowerCase()) ? '*already exist' : null;
+      nameE.value = nameC.text.isBlank() ? '*required' : !nameC.text.contains(parentheses) ? '*invalid format' : model.name.toLowerCase() != s?.name.toLowerCase() && list.contains(model.name.toLowerCase()) ? '*already exist' : null;
 
       if (nameE.value != null) return false;
       
@@ -2564,8 +2661,8 @@ class FakultasController extends GetxController {
     nameF.addListener(() {
       if (!nameF.hasFocus) {
         final temp = nameC.text.trim().capitalCase();
-        final abv = RegExp(r'\((.*?)\)').firstMatch(temp)?.group(1);
-        if (abv != null) nameC.text = temp.replaceAll(RegExp(r'\((.*?)\)'), '(${abv.toUpperCase()})');
+        final abv = parentheses.firstMatch(temp)?.group(1);
+        if (abv != null) nameC.text = temp.replaceAll(parentheses, '(${abv.toUpperCase()})');
       }
     });
     
@@ -2831,7 +2928,7 @@ class ProgramStudiController extends GetxController {
     bool checkEmptyFields() {
       final model = createModel();
       final list = config.simulated.formatedProgramStudi(true);
-      nameE!.value = nameC!.text.isBlank() ? '*required' : !nameC.text.contains(RegExp(r'\((.*?)\)')) ? '*invalid format' : model.name.toLowerCase() != s?.name.toLowerCase() && list.contains(model.name.toLowerCase()) ? '*already exist' : null;
+      nameE!.value = nameC!.text.isBlank() ? '*required' : !nameC.text.contains(parentheses) ? '*invalid format' : model.name.toLowerCase() != s?.name.toLowerCase() && list.contains(model.name.toLowerCase()) ? '*already exist' : null;
       fakultasE.value = !fakultasC.hasValue ? '*required' : null;
 
       if (nameE.value != null || fakultasE.value != null) return false;
@@ -2842,8 +2939,8 @@ class ProgramStudiController extends GetxController {
     nameF?.addListener(() {
       if (!nameF.hasFocus) {
         final temp = nameC!.text.trim().capitalCase();
-        final abv = RegExp(r'\((.*?)\)').firstMatch(temp)?.group(1);
-        if (abv != null) nameC.text = temp.replaceAll(RegExp(r'\((.*?)\)'), '(${abv.toUpperCase()})');
+        final abv = parentheses.firstMatch(temp)?.group(1);
+        if (abv != null) nameC.text = temp.replaceAll(parentheses, '(${abv.toUpperCase()})');
       }
     });
     
@@ -3179,7 +3276,7 @@ class MatprakController extends GetxController {
     var programStudiE = Rxn<String>(null);
     var typeE = Rxn<String>(null);
 
-    final kode = multi ? null : TextEditingController(text: s?.kode ?? (regexp.firstMatch(programStudi!.name)?.group(1)));
+    final kode = multi ? null : TextEditingController(text: s?.kode ?? (parentheses.firstMatch(programStudi!.name)?.group(1)));
     final nama = multi ? null : TextEditingController(text: s?.nama);
     
     final kodeF = multi ? null : FocusNode();

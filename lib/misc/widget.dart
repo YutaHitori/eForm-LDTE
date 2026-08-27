@@ -207,28 +207,34 @@ class CustomTextField extends StatelessWidget {
         scrollPhysics: readOnly && maxLines != 1 ? NeverScrollableScrollPhysics() : null,
       ),
     );
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: 4,
-      children: [
-        if (labelText != null) Flex(
-          direction: labelFlexAxis,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(labelText!, textScaleFactor: 1.02, overflow: TextOverflow.ellipsis),
-            if (errorText != null) Text(
-              errorText!,
-              style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0),
-            ),
-          ]
-        ),
-        maxLines != 1 && !scrollbar ? ScrollConfiguration(
-          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-          child: child
-        ) : child,
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 4,
+        children: [
+          if (labelText != null) Flex(
+            direction: labelFlexAxis,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              if (labelFlexAxis == Axis.horizontal) Expanded(child: Text(labelText!, textScaleFactor: 1.02, overflow: TextOverflow.ellipsis))
+              else Text(labelText!, textScaleFactor: 1.02, overflow: TextOverflow.ellipsis),
+              if (errorText != null) ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: constraints.maxWidth - 24),
+                child: Text(
+                  errorText!.replaceAll('\n', ''),
+                  style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0),
+                ),
+              ),
+            ]
+          ),
+          maxLines != 1 && !scrollbar ? ScrollConfiguration(
+            behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+            child: child
+          ) : child,
+        ],
+      ),
     );
   }
 }
