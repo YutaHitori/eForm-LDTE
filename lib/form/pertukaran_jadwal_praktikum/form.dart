@@ -31,7 +31,7 @@ class PertukaranJadwalPraktikum extends StatelessWidget {
                     ExpansionTile(
                       minTileHeight: 0,
                       title: Text(
-                        "Cara Pengisisan Formulir Pergantian Jadwal Praktikum:",
+                        "Cara Pengisian Formulir Pergantian Jadwal Praktikum:",
                         style: TextStyle(fontSize: 14.8),
                       ),
                       expandedAlignment: Alignment.centerLeft,
@@ -51,7 +51,7 @@ class PertukaranJadwalPraktikum extends StatelessWidget {
                     CustomTextField(
                       controller: c.nimC,
                       focusNode: c.nimF,
-                      labelText: 'Nim Praktikian',
+                      labelText: 'NIM Praktikian',
                       errorText: c.nimE.value,
                       keyboardType: TextInputType.number,
                       inputFormatters: [ FilteringTextInputFormatter.digitsOnly ],
@@ -79,7 +79,7 @@ class PertukaranJadwalPraktikum extends StatelessWidget {
                                   child: Text(text, textAlign: TextAlign.center,),
                                 ),
                                 noResultFoundText: "Praktikum tidak ditemukan, silahkan hapus kolom pencarian dan pilih opsi 'Lainnya...'",
-                                listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
+                                listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item + (item == 'Lainnya...' && NC.isSyncing.value ? ' (Syncing in progress, please wait...)' : ''), style: TextStyle(color: isSelected ? Colors.black : null),),
                                 decoration: CustomDropdownDecoration(
                                   searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.scaffoldBackgroundColor),
                                   closedFillColor: appTheme.inputDecorationTheme.fillColor,
@@ -87,8 +87,8 @@ class PertukaranJadwalPraktikum extends StatelessWidget {
                                   closedBorder: c.praktikumE.value != null ? Border.all(color: appTheme.colorScheme.error) : null
                                 ),
                                 excludeSelected: false,
-                                items: ['Lainnya...'] + (NC.isSyncing.value ? [] : c.praktikumList),
-                                hintText: NC.isSyncing.value ? 'Syncing in progress, please wait...' : 'select',
+                                items: ['Lainnya...', if (NC.isSyncing.value) ...c.praktikumList],
+                                hintText: 'pilih praktikum',
                                 onChanged: (v) => c.isPraktikumLainnya.value = v == 'Lainnya...',
                               ),
                             ],
@@ -120,7 +120,7 @@ class PertukaranJadwalPraktikum extends StatelessWidget {
                                   closedBorder: c.modulE.value != null ? Border.all(color: appTheme.colorScheme.error) : null
                                 ),
                                 excludeSelected: false,
-                                items: List.generate(20, (i) => i + 1),
+                                items: List.generate(9, (i) => i + 1),
                                 hintText: 'X',
                                 onChanged: (v) {},
                               ),

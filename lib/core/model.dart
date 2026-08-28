@@ -62,7 +62,7 @@ class LastUpdatedModel {
 }
 
 class GlobalConfigModel {
-  String? nomorSurat, lineOALDTE, namaKepalaLDTE, nipKepalaLDTE, caraPinjam, caraKeterangan, caraPertukaran, caraIzin, templatePertukaran, templateIzin;
+  String? nomorSurat, lineOALDTE, namaKepalaLDTE, nipKepalaLDTE, caraPinjam, caraKeterangan, caraPertukaran, caraIzin, caraSusulan, templatePertukaran, templateIzin;
 
   GlobalConfigModel({
     this.nomorSurat,
@@ -73,6 +73,7 @@ class GlobalConfigModel {
     this.caraKeterangan,
     this.caraPertukaran,
     this.caraIzin,
+    this.caraSusulan,
     this.templatePertukaran,
     this.templateIzin,
   });
@@ -86,6 +87,7 @@ class GlobalConfigModel {
     caraKeterangan = (json['cara_keterangan'] as String).trim();
     caraPertukaran = (json['cara_pertukaran'] as String).trim();
     caraIzin = (json['cara_izin'] as String).trim();
+    caraSusulan = (json['cara_susulan'] as String).trim();
     templatePertukaran = (json['template_pertukaran'] as String).trim();
     templateIzin = (json['template_izin'] as String).trim();
   }
@@ -99,6 +101,7 @@ class GlobalConfigModel {
     caraKeterangan: caraKeterangan,
     caraPertukaran: caraPertukaran,
     caraIzin: caraIzin,
+    caraSusulan: caraSusulan,
     templatePertukaran: templatePertukaran,
     templateIzin: templateIzin,
   );
@@ -128,6 +131,8 @@ class FakultasModel {
   );
 
   List<String> formatedProgramStudi() => programStudi.map((v) => v.name).toList();
+  List<String> formatedMataKuliah() => programStudi.expand((v) => v.formatedMataKuliah()).toList();
+  List<String> formatedPraktikum() => programStudi.expand((v) => v.formatedPraktikum()).toList();
   bool isEqualTo(FakultasModel ref) => id == ref.id && name == ref.name;
 }
 
@@ -205,12 +210,14 @@ class UserPreferenceModel {
   bool remindSuratKeteranganPraktikum;
   bool remindPertukaranJadwal;
   bool remindIzinTidakPraktikum;
+  bool remindSusulanPraktikum;
   
   UserPreferenceModel({
     this.remindPeminjamanPeralatan = true,
     this.remindSuratKeteranganPraktikum = true,
     this.remindPertukaranJadwal = true,
     this.remindIzinTidakPraktikum = true,
+    this.remindSusulanPraktikum = true,
   });
 
   UserPreferenceModel duplicate() => UserPreferenceModel(
@@ -283,8 +290,8 @@ class StorageCacheModel {
 
   List<String> formatedItem([bool lowerCase = false]) => item.map((v) => lowerCase ? v.name.toLowerCase() : v.name).toList();
 
-  FakultasModel? getFakultas(String name) => fakultas.firstWhereOrNull((v) => v.name == name);
-  ProgramStudiModel? getProgramStudi(String name) => programStudi.firstWhereOrNull((v) => v.name == name);
+  FakultasModel? getFakultas(String name) => fakultas.firstWhereOrNull((v) => v.name.toLowerCase().contains(name.toLowerCase()));
+  ProgramStudiModel? getProgramStudi(String name) => programStudi.firstWhereOrNull((v) => v.name.toLowerCase().contains(name.toLowerCase()));
   ProgramStudiModel? getProgramStudiFromMatprak(MatprakModel model) => programStudi.firstWhereOrNull((v) => v.matprak.any((v) => v.id == model.id));
 
   void removeWhere<T>(bool Function(dynamic) test) {

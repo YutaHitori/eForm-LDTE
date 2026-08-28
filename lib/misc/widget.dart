@@ -148,6 +148,7 @@ class CustomTextField extends StatelessWidget {
     this.controller,
     this.focusNode,
     this.maxLines = 1,
+    this.maxLength,
     this.decoration,
     this.keyboardType,
     this.obscureText,
@@ -161,6 +162,7 @@ class CustomTextField extends StatelessWidget {
     this.inputFormatters,
     this.labelFlexAxis = Axis.horizontal,
     this.maxHeight = double.infinity,
+    this.indicator,
   });
 
   final String? labelText;
@@ -168,6 +170,7 @@ class CustomTextField extends StatelessWidget {
   final TextEditingController? controller;
   final FocusNode? focusNode;
   final int? maxLines;
+  final int? maxLength;
   final InputDecoration? decoration;
   final TextInputType? keyboardType;
   final bool? obscureText;
@@ -181,6 +184,7 @@ class CustomTextField extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final Axis labelFlexAxis;
   final double maxHeight;
+  final Widget? indicator;
 
   @override
   Widget build(BuildContext context) {
@@ -192,6 +196,7 @@ class CustomTextField extends StatelessWidget {
         controller: controller,
         focusNode: focusNode,
         maxLines: maxLines,
+        maxLength: maxLength,
         decoration: (decoration ?? InputDecoration()).copyWith(
           filled: true,
           helperText: canError ? '' : null,
@@ -210,7 +215,7 @@ class CustomTextField extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) => Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: 4,
         children: [
           if (labelText != null) Flex(
@@ -233,6 +238,7 @@ class CustomTextField extends StatelessWidget {
             behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
             child: child
           ) : child,
+          ?indicator
         ],
       ),
     );

@@ -61,7 +61,7 @@ class DetailSuratKeteranganPraktikum extends StatelessWidget {
                     ExpansionTile(
                       minTileHeight: 0,
                       title: Text(
-                        "Cara Pengisisan Formulir Surat Keterangan Praktikum:",
+                        "Cara Pengisian Formulir Surat Keterangan Praktikum:",
                         style: TextStyle(fontSize: 14.8),
                       ),
                       expandedAlignment: Alignment.centerLeft,
@@ -115,7 +115,7 @@ class DetailSuratKeteranganPraktikum extends StatelessWidget {
                       ),
                       noResultFoundText: "Mata kuliah tidak ditemukan, silahkan hapus kolom pencarian pilih opsi 'Lainnya...'",
                       controller: c.matkul,
-                      listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
+                      listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item + (item == 'Lainnya...' && NC.isSyncing.value ? ' (Syncing in progress, please wait...)' : ''), style: TextStyle(color: isSelected ? Colors.black : null),),
                       decoration: CustomDropdownDecoration(
                         searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.scaffoldBackgroundColor),
                         closedFillColor: appTheme.inputDecorationTheme.fillColor,
@@ -123,8 +123,8 @@ class DetailSuratKeteranganPraktikum extends StatelessWidget {
                         closedBorder: c.matkulE.value != null ? Border.all(color: appTheme.colorScheme.error) : null
                       ),
                       excludeSelected: false,
-                      items: ['Lainnya...'] + (NC.isSyncing.value ? [] : c.matkulList),
-                      hintText: NC.isSyncing.value ? 'Syncing in progress, please wait...' : 'pilih mata kuliah',
+                      items: ['Lainnya...', if (!NC.isSyncing.value) ...c.matkulList],
+                      hintText: 'pilih mata kuliah',
                       onChanged: (v) => c.isMatkulLainnya.value = v == 'Lainnya...',
                     ),
                     if (c.isMatkulLainnya.value) Row(
@@ -175,7 +175,7 @@ class DetailSuratKeteranganPraktikum extends StatelessWidget {
                                 ),
                                 controller: c.praktikum,
                                 noResultFoundText: "Praktikum tidak ditemukan, silahkan hapus kolom pencarian dan pilih opsi 'Lainnya...'",
-                                listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
+                                listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item + (item == 'Lainnya...' && NC.isSyncing.value ? ' (Syncing in progress, please wait...)' : ''), style: TextStyle(color: isSelected ? Colors.black : null),),
                                 decoration: CustomDropdownDecoration(
                                   searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.scaffoldBackgroundColor),
                                   closedFillColor: appTheme.inputDecorationTheme.fillColor,
@@ -183,8 +183,8 @@ class DetailSuratKeteranganPraktikum extends StatelessWidget {
                                   closedBorder: c.praktikumE.value != null ? Border.all(color: appTheme.colorScheme.error) : null
                                 ),
                                 excludeSelected: false,
-                                items: ['Lainnya...'] + (NC.isSyncing.value ? [] : c.praktikumList),
-                                hintText: NC.isSyncing.value ? 'Syncing in progress, please wait...' : 'pilih praktikum',
+                                items: ['Lainnya...', if (!NC.isSyncing.value) ...c.praktikumList],
+                                hintText: 'pilih praktikum',
                                 onChanged: (v) => c.isPraktikumLainnya.value = v == 'Lainnya...',
                               ),
                             ],

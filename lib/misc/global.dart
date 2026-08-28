@@ -35,7 +35,8 @@ class NamedRoute {
   static const pinjam = '/peminjaman-peralatan';
   static const keterangan = '/surat-keterangan';
   static const pertukaran = '/pertukaran-jadwal';
-  static const izin = '/surat-izin';
+  static const izin = '/izin-praktikum';
+  static const susulan = '/susulan-praktikum';
   static const login = '/login';
 
   static const admin = '/admin';

@@ -7,6 +7,7 @@ import 'package:eform_ldte/form/peminjaman_peralatan/detail.dart';
 import 'package:eform_ldte/form/surat_keterangan_praktikum/detail.dart';
 import 'package:eform_ldte/admin/config.dart';
 import 'package:eform_ldte/misc/widget.dart';
+import 'package:eform_ldte/susulan_praktikum/form.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
@@ -63,11 +64,20 @@ final GoRouter router = GoRouter(
           },
         ),
         GoRoute(
-          path: 'surat-izin',
+          path: 'izin-praktikum',
           builder: (context, state) {
             return GetXRouteBinding(
               controllerBuilder: () => Get.put(IzinTidakPraktikumController()),
               child: IzinTidakPraktikum(),
+            );
+          },
+        ),
+        GoRoute(
+          path: 'susulan-praktikum',
+          builder: (context, state) {
+            return GetXRouteBinding(
+              controllerBuilder: () => Get.put(SusulanPraktikumController()),
+              child: SusulanPraktikum(),
             );
           },
         ),

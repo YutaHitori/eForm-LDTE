@@ -60,7 +60,7 @@ class DetailPeminjamanPeralatan extends StatelessWidget {
                     ExpansionTile(
                       minTileHeight: 0,
                       title: Text(
-                        "Cara Pengisisan Formulir Peminjaman Peralatan:",
+                        "Cara Pengisian Formulir Peminjaman Peralatan:",
                         style: TextStyle(fontSize: 14.8),
                       ),
                       tilePadding: EdgeInsets.zero,
@@ -104,7 +104,7 @@ class DetailPeminjamanPeralatan extends StatelessWidget {
                                 controller: c.barangDC[i],
                                 expandedHeaderPadding: EdgeInsets.only(right: 12),
                                 closedHeaderPadding: EdgeInsets.only(right: 12),
-                                listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item == 'custom' ? NC.isSyncing.value ? 'Syncing in progress, please wait...' : item : item, style: TextStyle(color: isSelected ? Colors.black : null)),
+                                listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item + (item == 'custom' && NC.isSyncing.value ? ' (Syncing in progress, please wait...)' : ''), style: TextStyle(color: isSelected ? Colors.black : null)),
                                 decoration: CustomDropdownDecoration(
                                   searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.scaffoldBackgroundColor),
                                   closedFillColor: appTheme.inputDecorationTheme.fillColor,

@@ -40,7 +40,7 @@ class Pinjam extends StatelessWidget {
                 ExpansionTile(
                   minTileHeight: 0,
                   title: Text(
-                    "Cara Pengisisan Formulir Peminjaman Peralatan:",
+                    "Cara Pengisian Formulir Peminjaman Peralatan:",
                     style: TextStyle(fontSize: 14.8),
                   ),
                   tilePadding: EdgeInsets.zero,
@@ -80,13 +80,18 @@ class Pinjam extends StatelessWidget {
                         listItemStyle: TextStyle(color: Colors.black),
                       ),
                       excludeSelected: false,
-                      items: ['reset'] + (NC.isSyncing.value ? [] : c.fakultasList),
+                      items: ['reset', if (!NC.isSyncing.value) ...c.fakultasList],
                       hintText: NC.isSyncing.value ? 'Syncing in progress, please wait...' : 'pilih fakultas/sekolah',
                       controller: c.fakultasC,
                       onChanged: (value) { 
                         if (value == 'reset') c.fakultasC.value = null;
                         c.setProdi(); 
                       },
+                      disabledDecoration: CustomDropdownDisabledDecoration(
+                        fillColor: appTheme.hoverColor.withAlpha(6),
+                        suffixIcon: Icon(Icons.lock, size: 0),
+                      ),
+                      enabled: !NC.isSyncing.value,
                     ),
                   ],
                 ),
@@ -149,7 +154,7 @@ class Pinjam extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Barang yang Dipinjam ', textScaleFactor: 1.02),
+                    Text('Barang yang Dipinjam (nama x banyak)', textScaleFactor: 1.02),
                     if (c.barangE.any((v) => v != null) || c.banyakE.any((v) => v != null)) Text('*required', style: TextStyle(color: ColorScheme.dark().error, fontSize: 12.0)),
                   ],
                 ),
@@ -164,7 +169,7 @@ class Pinjam extends StatelessWidget {
                             controller: c.barangDC[i],
                             expandedHeaderPadding: EdgeInsets.only(right: 12),
                             closedHeaderPadding: EdgeInsets.only(right: 12),
-                            listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item == 'custom' ? NC.isSyncing.value ? 'Syncing in progress, please wait...' : item : item, style: TextStyle(color: isSelected ? Colors.black : null)),
+                            listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item + (item == 'custom' && NC.isSyncing.value ? ' (Syncing in progress, please wait...)' : ''), style: TextStyle(color: isSelected ? Colors.black : null)),
                             decoration: CustomDropdownDecoration(
                               searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.scaffoldBackgroundColor),
                               closedFillColor: appTheme.inputDecorationTheme.fillColor,
@@ -174,12 +179,12 @@ class Pinjam extends StatelessWidget {
                             headerBuilder: (context, selectedItem, enabled) => TextField(
                               controller: c.barangC[i],
                               focusNode: c.barangF[i],
-                              decoration: InputDecoration(hintText: 'Nama Barang'),
+                              decoration: InputDecoration(hintText: 'nama barang'),
                               onChanged: (value) => c.selectIfExist(i, value),
                             ),
                             excludeSelected: false,
                             items: ['custom', if (!NC.isSyncing.value) ...c.items],
-                            hintText: 'pilih nama barang',
+                            hintText: 'pilih barang',
                             onChanged: (v) => c.changeText(i, v),
                           ),
                         ),
@@ -202,7 +207,7 @@ class Pinjam extends StatelessWidget {
                               ),
                               excludeSelected: false,
                               items: List.generate(9, (i) => i + 1),
-                              hintText: 'q',
+                              hintText: 'Q',
                               onChanged: (v) {},
                             ),
                           ],

@@ -33,7 +33,7 @@ types:
         index: 10
   GlobalConfigModel:
     typeId: 2
-    nextIndex: 12
+    nextIndex: 13
     fields:
       nomorSurat:
         index: 0
@@ -55,9 +55,11 @@ types:
         index: 10
       templateIzin:
         index: 11
+      caraSusulan:
+        index: 12
   UserPreferenceModel:
     typeId: 3
-    nextIndex: 4
+    nextIndex: 5
     fields:
       remindPeminjamanPeralatan:
         index: 0
@@ -67,6 +69,8 @@ types:
         index: 2
       remindIzinTidakPraktikum:
         index: 3
+      remindSusulanPraktikum:
+        index: 4
   FakultasModel:
     typeId: 4
     nextIndex: 3

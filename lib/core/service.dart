@@ -684,6 +684,52 @@ class PeminjamanPeralatanService extends PDFService {
   }
 }
 
+class SusulanPraktikumService extends PDFService {
+  final IsolateManager<Uint8List, dynamic> _pdfWorker = IsolateManager.create(
+    susulanPraktikumCompilePdfWorker,
+    workerName: 'susulanPraktikumCompilePdfWorker',
+    concurrent: 1,
+  );
+
+  void initWorker() async {
+    if (!_pdfWorker.isStarted) {
+      await _pdfWorker.start();
+    }
+  }
+  void closeWorker() async {
+    if (_pdfWorker.isStarted) {
+      await _pdfWorker.stop();
+    }
+  }
+
+  Future<Uint8List?> compilePDF(Map<String, dynamic> form) async {
+    try {
+      final ttf = (await rootBundle.load("fonts/calibri.ttf")).buffer.asUint8List();
+      final ttfBold = (await rootBundle.load("fonts/calibri-bold.ttf")).buffer.asUint8List();
+      final ttfItalic = (await rootBundle.load("fonts/calibri-italic.ttf")).buffer.asUint8List();
+
+      final date = DateFormat('d MMMM yyyy', 'id_ID').format(today);
+
+      final params = {
+        'ttf': ttf,
+        'ttfBold': ttfBold,
+        'ttfItalic': ttfItalic,
+        'date': date,
+        ...form
+      };
+
+      final compiled = await _pdfWorker.compute(params);
+
+      return compiled;
+      }
+    catch (e) {
+      alertDialog('Errr', '$e');
+      print('(SusulanPraktikumService.compilePDF) $e');
+    }
+    return null;
+  }
+}
+
 class SuratKeteranganPraktikumService {
   final imagePicker = ImagePickerService();
 
@@ -865,11 +911,6 @@ class AdminSuratKeteranganPraktikumService extends PDFService {
       final today = DateFormat('d MMMM yyyy', 'id_ID').format(now);
       final timeStart = data.timeStart.toFormatedString();
       final timeEnd = data.timeEnd.toFormatedString();
-      final nama = data.nama;
-      final nim = data.nim;
-      final matkul = data.matkul;
-      final praktikum = data.praktikum;
-      final modul = data.modul;
       final date = DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(data.date);
 
       final buktiBytes = await auth.supabase

@@ -446,6 +446,58 @@ class GlobalConfig extends StatelessWidget {
                     readOnly: !c.caraIzinCanEdit.value,
                   ),
                   CustomTextField(
+                    controller: c.caraSusulan,
+                    focusNode: c.caraSusulanFocus,
+                    onChanged: (v) => c.isSavedCheck(),
+                    labelText: 'Cara Pengisian Template Permohonan Susulan',
+                    scrollbar: false,
+                    maxHeight: 384,
+                    decoration: InputDecoration(
+                      fillColor: c.caraSusulanCanEdit.value ? null : Color(0xFF181818),
+                      hoverColor: c.caraSusulanCanEdit.value ? null : Colors.transparent,
+                      focusedBorder: c.caraSusulanCanEdit.value ? null : OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: BorderSide.none,
+                      ), 
+                      hintText: '\n\n',
+                      suffixIcon: Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (!c.caraSusulanSaved.value)
+                            IconButton(
+                              onPressed: c.caraSusulanUndo,
+                              icon: Icon(Icons.undo_rounded, color: Colors.amber),
+                            ),
+                            IconButton(
+                              onPressed: c.caraSusulanSaved.value 
+                                ? () {
+                                  c.caraSusulanCanEdit.value = !c.caraSusulanCanEdit.value;
+                                  if (c.caraSusulanCanEdit.value) {
+                                    c.caraSusulanFocus.requestFocus();
+                                  } else {
+                                    c.caraSusulanFocus.unfocus();
+                                  }
+                                }
+                                : c.saveCaraSusulan,
+                              icon: Icon(
+                                c.caraSusulanSaved.value 
+                                ? c.caraSusulanCanEdit.value
+                                  ? Icons.edit_off_rounded
+                                  : Icons.edit_rounded
+                                : Icons.save_rounded
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    ),
+                    maxLines: c.caraSusulanCanEdit.value ? null : 3,
+                    keyboardType: TextInputType.multiline,
+                    readOnly: !c.caraSusulanCanEdit.value,
+                  ),
+                  CustomTextField(
                     controller: c.templatePertukaran,
                     focusNode: c.templatePertukaranFocus,
                     errorText: c.templatePertukaranE.value,

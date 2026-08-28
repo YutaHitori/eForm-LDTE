@@ -19,10 +19,11 @@ class Homepage extends StatelessWidget {
           Column(
             spacing: 12,
             children: [
-              ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.pinjam), child: Text('Pinjam Peralatan')),
-              ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.keterangan), child: Text('Surat Keterangan Praktikum')),
               ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.pertukaran), child: Text('Pertukaran Jadwal Praktikum')),
               ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.izin), child: Text('Izin Tidak Mengikuti Praktikum')),
+              ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.keterangan), child: Text('Surat Keterangan Praktikum')),
+              ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.susulan), child: Text('Template Permohonan Susulan')),
+              ElevatedButton(onPressed: () => currentContext?.push(NamedRoute.pinjam), child: Text('Pinjam Peralatan')),
             ],
           ),
         ],

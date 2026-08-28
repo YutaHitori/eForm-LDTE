@@ -1,7 +1,7 @@
 name: eform_ldte
 description: "Website pembuatan berbagai formulir Lab Dasar Teknik Elektro - Sekolah Teknik Elektro dan Informatika Institut Teknologi Bandung"
 publish_to: 'none'
-version: 0.5.5+48
+version: 0.5.6+50
 
 environment:
   sdk: ^3.10.7

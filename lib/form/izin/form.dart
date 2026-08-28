@@ -42,7 +42,7 @@ class IzinTidakPraktikum extends StatelessWidget {
                     ExpansionTile(
                       minTileHeight: 0,
                       title: Text(
-                        "Cara Pengisisan Formulir Izin Tidak Mengikuti Praktikum:",
+                        "Cara Pengisian Formulir Izin Tidak Mengikuti Praktikum:",
                         style: TextStyle(fontSize: 14.8),
                       ),
                       expandedAlignment: Alignment.centerLeft,
@@ -90,7 +90,7 @@ class IzinTidakPraktikum extends StatelessWidget {
                                   child: Text(text, textAlign: TextAlign.center,),
                                 ),
                                 noResultFoundText: "Praktikum tidak ditemukan, silahkan hapus kolom pencarian dan pilih opsi 'Lainnya...'",
-                                listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item, style: TextStyle(color: isSelected ? Colors.black : null),),
+                                listItemBuilder: (context, item, isSelected, onItemSelect) => Text(item + (item == 'Lainnya...' && NC.isSyncing.value ? ' (Syncing in progress, please wait...)' : ''), style: TextStyle(color: isSelected ? Colors.black : null),),
                                 decoration: CustomDropdownDecoration(
                                   searchFieldDecoration: SearchFieldDecoration(fillColor: appTheme.scaffoldBackgroundColor),
                                   closedFillColor: appTheme.inputDecorationTheme.fillColor,
@@ -98,8 +98,8 @@ class IzinTidakPraktikum extends StatelessWidget {
                                   closedBorder: c.praktikumE.value != null ? Border.all(color: appTheme.colorScheme.error) : null
                                 ),
                                 excludeSelected: false,
-                                items: ['Lainnya...'] + (NC.isSyncing.value ? [] : c.praktikumList),
-                                hintText: NC.isSyncing.value ? 'Syncing in progress, please wait...' : 'select',
+                                items: ['Lainnya...', if (NC.isSyncing.value) ...c.praktikumList],
+                                hintText: 'select',
                                 onChanged: (v) => c.isPraktikumLainnya.value = v == 'Lainnya...',
                               ),
                             ],
@@ -131,7 +131,7 @@ class IzinTidakPraktikum extends StatelessWidget {
                                   closedBorder: c.modulE.value != null ? Border.all(color: appTheme.colorScheme.error) : null
                                 ),
                                 excludeSelected: false,
-                                items: List.generate(20, (i) => i + 1),
+                                items: List.generate(9, (i) => i + 1),
                                 hintText: 'X',
                                 onChanged: (v) {},
                               ),

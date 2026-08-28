@@ -117,6 +117,7 @@ class GlobalConfigModelAdapter extends TypeAdapter<GlobalConfigModel> {
       caraKeterangan: fields[4] as String?,
       caraPertukaran: fields[5] as String?,
       caraIzin: fields[9] as String?,
+      caraSusulan: fields[12] as String?,
       templatePertukaran: fields[10] as String?,
       templateIzin: fields[11] as String?,
     );
@@ -125,7 +126,7 @@ class GlobalConfigModelAdapter extends TypeAdapter<GlobalConfigModel> {
   @override
   void write(BinaryWriter writer, GlobalConfigModel obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.nomorSurat)
       ..writeByte(1)
@@ -145,7 +146,9 @@ class GlobalConfigModelAdapter extends TypeAdapter<GlobalConfigModel> {
       ..writeByte(10)
       ..write(obj.templatePertukaran)
       ..writeByte(11)
-      ..write(obj.templateIzin);
+      ..write(obj.templateIzin)
+      ..writeByte(12)
+      ..write(obj.caraSusulan);
   }
 
   @override
@@ -176,13 +179,14 @@ class UserPreferenceModelAdapter extends TypeAdapter<UserPreferenceModel> {
           : fields[1] as bool,
       remindPertukaranJadwal: fields[2] == null ? true : fields[2] as bool,
       remindIzinTidakPraktikum: fields[3] == null ? true : fields[3] as bool,
+      remindSusulanPraktikum: fields[4] == null ? true : fields[4] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, UserPreferenceModel obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.remindPeminjamanPeralatan)
       ..writeByte(1)
@@ -190,7 +194,9 @@ class UserPreferenceModelAdapter extends TypeAdapter<UserPreferenceModel> {
       ..writeByte(2)
       ..write(obj.remindPertukaranJadwal)
       ..writeByte(3)
-      ..write(obj.remindIzinTidakPraktikum);
+      ..write(obj.remindIzinTidakPraktikum)
+      ..writeByte(4)
+      ..write(obj.remindSusulanPraktikum);
   }
 
   @override
