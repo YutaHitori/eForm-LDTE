@@ -481,11 +481,11 @@ class QFSPService {
 
 class QFSPController<T> {
   QFSPController({
-    this.filter = const [],
+    List<FilterController<T>>? filter,
     required this.onChanged,
     required this.pageC,
     this.dataPerPage = 25,
-  });
+  }) : filter = filter ?? [];
 
   final List<FilterController<T>> filter;
   final Function onChanged;
@@ -503,19 +503,24 @@ class QFSPController<T> {
 class FilterController<T> {
   String filterKey;
   List<String> filterList;
+  List<String>? initialSelected;
   String? Function(T) reference;
   bool multiSelect;
   
   FilterController({
     required this.filterKey,
     required this.filterList,
+    this.initialSelected,
     required this.reference,
     this.multiSelect = true
-  });
+  }) {
+    final unRegistered = initialSelected?.where((v) => !filterList.contains(v)) ?? [];
+    if (unRegistered.isNotEmpty) throw AssertionError('unregistered initial value with key: ${unRegistered.join(', ')}.');
+  }
 
   late RxMap<String, bool> filterEntry = {
-    'all': true,
-    for (var e in filterList) e: false
+    'all': initialSelected?.isEmpty ?? true,
+    for (var e in filterList) e: initialSelected?.contains(e) ?? false
   }.obs;
 }
 
@@ -721,7 +726,7 @@ class SusulanPraktikumService extends PDFService {
       final compiled = await _pdfWorker.compute(params);
 
       return compiled;
-      }
+    }
     catch (e) {
       alertDialog('Errr', '$e');
       print('(SusulanPraktikumService.compilePDF) $e');

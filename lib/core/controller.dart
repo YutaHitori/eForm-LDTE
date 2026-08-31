@@ -429,7 +429,7 @@ class SusulanPraktikumController extends GetxController {
       });
     }
     alasanF.addListener(() {
-      if (!alasanF.hasFocus) alasanC.text = alasanC.text.trim().replaceAll('\n', ' ');
+      if (!alasanF.hasFocus) alasanC.text = alasanC.text.trim().replaceAll(RegExp(r'\s+'), ' ');
     });
     init();
   }
@@ -450,6 +450,8 @@ class SusulanPraktikumController extends GetxController {
     nimF.dispose();
     dosenF.dispose();
     nipF.dispose();
+    namaPraktikumF.dispose();
+    kodePraktikumF.dispose();
     alasanF.dispose();
   }
 
@@ -528,7 +530,7 @@ class SusulanPraktikumController extends GetxController {
     'prodi' : prodiC.value?.replaceAll(parentheses, '').trim(),
     'praktikum' : praktikum.value == 'Lainnya...' ? '${kodePraktikum.text.trim().toUpperCase()} ${namaPraktikum.text.trim().capitalCase()}' : praktikum.value,
     'modul' : List.generate(itemN.value, (i) => '${modulC[i].value} - ${judulModulC[i].text.trim().capitalCase()}'),
-    'alasan' : alasanC.text.trim(),
+    'alasan' : alasanC.text.trim().replaceAll(RegExp(r'\s+'), ''),
   };
 
   var namaE = Rxn<String>(null); 
@@ -566,7 +568,7 @@ class SusulanPraktikumController extends GetxController {
     isLoading.value = true;
     final savedFile = await service.compilePDF(form);
     if (savedFile != null) {
-      final fileName = "Surat_Permohonan_Susulan_Praktikum-${DateTime.now().millisecondsSinceEpoch}.pdf";
+      final fileName = "Surat_Permohonan_Praktikum_Susulan-${DateTime.now().millisecondsSinceEpoch}.pdf";
       service.preview(savedFile, fileName);
     }
     isLoading.value = false;
@@ -1423,6 +1425,7 @@ class AdminPeminjamanPeralatanController extends GetxController {
       FilterController(
         filterKey: "status",
         filterList: ['unchecked', 'borrowed', 'returned', 'overdue', 'damaged', 'lost', 'spam'],
+        initialSelected: ['unchecked', 'borrowed', 'returned', 'overdue', 'damaged', 'lost'],
         reference: (m) => m.status
       ),
     ],
@@ -1596,6 +1599,7 @@ class AdminSuratKeteranganPraktikumController extends GetxController {
       FilterController(
         filterKey: "status",
         filterList: ['unchecked', 'pending', 'exported', 'spam'],
+        initialSelected: ['unchecked', 'pending', 'exported'],
         reference: (m) => m.status
       ),
     ],
@@ -2064,9 +2068,7 @@ class GlobalConfigController extends GetxController {
     isTemplateValid('izin');
   }
 
-  void save(String? key, RxBool canEdit) async {
-    if (form[key].isBlank()) return;
-    
+  void save(String key, RxBool canEdit) async {
     final message = key == 
     'lineoa_ldte' ? 'line official account' : key == 
     'lineoa_ldte' ? 'line official account' : key == 
@@ -2083,7 +2085,7 @@ class GlobalConfigController extends GetxController {
     
     loadingMessage.value = 'Saving $message, please wait...';
     isLoading.value = true;
-    final isSuccess = await service.updateGlobalConfig(key == null ? form : {key : form[key]});
+    final isSuccess = await service.updateGlobalConfig({key : form[key]});
     if (isSuccess) {
       snackbar('Success!', '$message updated');
       loadingMessage.value = 'Syncing new config, please wait...';
@@ -2256,42 +2258,44 @@ class GlobalConfigController extends GetxController {
       final isDeleting = queue.delete.contains(data.id);
 
       if (isDeleting && (isAdding || isUpdating)) {
-        updateDeletedQueueState<T>([data.id], true);
+        await updateDeletedQueueState<T>([data.id], true);
       } else if (isDeleting) {
         final isSuccess = await service.deleteData<T>([qdata]);
         if (isSuccess) {
-          updateDeletedQueueState<T>([data.id]);
+          await updateDeletedQueueState<T>([data.id]);
         } else {
           r = false;
         }
-      } else if (isUpdating) {
-        final res = await service.upsertData<T>([compileForm<T>(data)]);
-        if (res != null) {
-          updateUpdatedQueueState<T>([data.id]);
-        } else {
-          r = false;
-        }
-      } else if (isAdding) {
+      } else {
         if (qdata is MatprakModel) {
           final parrent = simulated.getProgramStudi(qdata.programStudi)!;
-          if (parrent.id.isNegative) {
+          if (prodiQueue.insert.contains(parrent.id) || prodiQueue.update.contains(parrent.id)) {
             final isSuccess = await pushAction(parrent, true);
             if (!isSuccess) r = false;
           }
         } else if (qdata is ProgramStudiModel) {
           final parrent = simulated.getFakultas(qdata.fakultas)!;
-          if (parrent.id.isNegative) {
+          if (fakultasQueue.insert.contains(parrent.id) || fakultasQueue.update.contains(parrent.id)) {
             final isSuccess = await pushAction(parrent, true);
             if (!isSuccess) r = false;
           }
         }
 
-        if (r) {
+        if (isUpdating) {
           final res = await service.upsertData<T>([compileForm<T>(data)]);
           if (res != null) {
-            updateInsertedQueueState<T>([data.id], res);
+            await updateUpdatedQueueState<T>([data.id]);
           } else {
             r = false;
+          }
+        } else if (isAdding) {
+          if (r) {
+            final res = await service.upsertData<T>([compileForm<T>(data)]);
+            if (res != null) {
+              await updateInsertedQueueState<T>([data.id], res);
+            } else {
+              r = false;
+            }
           }
         }
       }
@@ -2341,15 +2345,13 @@ class GlobalConfigController extends GetxController {
 
     final loadingQueue = q.loading;
 
-    updateDeletedQueueState(queue.delete.intersection({...queue.insert, ...queue.update}), true);
+    await updateDeletedQueueState(queue.delete.intersection({...queue.insert, ...queue.update}), true);
     qfsp?.onChanged();
 
     queue.insert.removeAll(queue.delete);
     queue.update.removeAll(queue.delete);
 
-    final insertData = dataSet.where((dynamic v) => queue.insert.contains(v.id));
-    final updateData = dataSet.where((dynamic v) => queue.update.contains(v.id));
-    final deleteData = dataSet.where((dynamic v) => queue.delete.contains(v.id));
+    final deleteData = List<T>.from(simFrom<T>().where((dynamic v) => queue.delete.contains(v.id)));
 
     final set = {...queue.update, ...queue.delete, ...queue.insert}.toSet();
 
@@ -2357,50 +2359,57 @@ class GlobalConfigController extends GetxController {
     qfsped?.refresh();
 
     if (queue.delete.isNotEmpty) {
-      final isSuccess = await service.deleteData<T>(deleteData.toList());
+      final isSuccess = await service.deleteData<T>(deleteData);
       if (isSuccess) {
-        updateDeletedQueueState<T>(queue.delete);
+        await updateDeletedQueueState<T>(queue.delete);
       } else {
         r = false;
       }
     } 
-
-    if (updateData.isNotEmpty) {
-      final data = updateData.map(compileForm).toList();
-      final res = await service.upsertData<T>(data);
-      if (res != null) {
-        updateUpdatedQueueState<T>(queue.update);
-      } else {
-        r = false;
-      }
-    }
     
-    if (insertData.isNotEmpty) {
-      bool r2 = true;
+    final insertData = List<T>.from(simFrom<T>()).where((dynamic v) => queue.insert.contains(v.id));
+    final updateData = List<T>.from(simFrom<T>()).where((dynamic v) => queue.update.contains(v.id));
+    bool r2 = true;
+
+    if (updateData.isNotEmpty || insertData.isNotEmpty) {
       if (T == MatprakModel) {
-        final parrents = dataSet.map((v) => simulated.getProgramStudi((v as MatprakModel).programStudi)!).where((v) => v.id.isNegative);
+        final parrents = updateData.followedBy(insertData).map((v) => (v as MatprakModel).programStudi).toSet().map((v) => simulated.getProgramStudi(v)!).where((v) => prodiQueue.insert.contains(v.id) || prodiQueue.update.contains(v.id));
         if (parrents.isNotEmpty) {
           final isSuccess = await pushQueuedAction(parrents, true);
           if (!isSuccess) r2 = false;
         }
       } else if (T == ProgramStudiModel) {
-        final parrents = dataSet.map((v) => simulated.getFakultas((v as ProgramStudiModel).fakultas)!).where((v) => v.id.isNegative);
+        final parrents = updateData.followedBy(insertData).map((v) => (v as ProgramStudiModel).fakultas).toSet().map((v) => simulated.getFakultas(v)!).where((v) => fakultasQueue.insert.contains(v.id) || fakultasQueue.update.contains(v.id));
         if (parrents.isNotEmpty) {
           final isSuccess = await pushQueuedAction(parrents, true);
           if (!isSuccess) r2 = false;
         }
       }
+      if (!r2) r = false;
+    }
 
+    if (updateData.isNotEmpty) {
+      if (r2) {
+        final data = updateData.map(compileForm).toList();
+        final res = await service.upsertData<T>(data);
+        if (res != null) {
+          await updateUpdatedQueueState<T>(queue.update);
+        } else {
+          r = false;
+        }
+      }
+    }
+    
+    
+    if (insertData.isNotEmpty) {
       if (r2) {
         final data = insertData.map(compileForm).toList();
         final res = await service.upsertData<T>(data);
         if (res != null) {
-          updateInsertedQueueState<T>(queue.insert, res);
+          await updateInsertedQueueState<T>(queue.insert, res);
         } else {
           r = false;
         }
-      } else {
-        r = false;
       }
     }
     
@@ -2430,7 +2439,7 @@ class GlobalConfigController extends GetxController {
     return r;
   }
 
-  void updateDeletedQueueState<T>(Iterable<int> ids, [bool isUpsert = false]) {
+  Future<void> updateDeletedQueueState<T>(Iterable<int> ids, [bool isUpsert = false]) async {
     final queue = queueFrom<T>();
     for (final id in ids.toSet()) {
       if (isUpsert) {
@@ -2440,11 +2449,18 @@ class GlobalConfigController extends GetxController {
       queue.loading.remove(id);
       queue.select.remove(id);
       queue.delete.remove(id);
-      simulated.removeWhere<T>((v) => v.id == id);
+      if (T == FakultasModel) {
+        final cids = simulated.fakultas.firstWhereOrNull((v) => v.id == id)?.programStudi.map((v) => v.id);
+        if (cids != null) updateDeletedQueueState<ProgramStudiModel>(cids, true);
+      } else if (T == ProgramStudiModel) {
+        final cids = simulated.programStudi.firstWhereOrNull((v) => v.id == id)?.matprak.map((v) => v.id);
+        if (cids != null) updateDeletedQueueState<MatprakModel>(cids, true);
+      }
+      simulated.removeWhere<T>((v) => v?.id == id);
     }
   }
 
-  void updateUpdatedQueueState<T>(Iterable<int> ids) {
+  Future<void> updateUpdatedQueueState<T>(Iterable<int> ids) async {
     final queue = queueFrom<T>();
     for (final id in ids.toSet()) {
       queue.loading.remove(id);
@@ -2452,7 +2468,7 @@ class GlobalConfigController extends GetxController {
     }
   }
 
-  void updateInsertedQueueState<T>(Iterable<int> ids, List<T> newData) {
+  Future<void> updateInsertedQueueState<T>(Iterable<int> ids, List<T> newData) async {
     final queue = queueFrom<T>();
     for (final id in ids.toSet()) {
       queue.loading.remove(id);

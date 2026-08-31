@@ -98,7 +98,7 @@ class IzinTidakPraktikum extends StatelessWidget {
                                   closedBorder: c.praktikumE.value != null ? Border.all(color: appTheme.colorScheme.error) : null
                                 ),
                                 excludeSelected: false,
-                                items: ['Lainnya...', if (NC.isSyncing.value) ...c.praktikumList],
+                                items: ['Lainnya...', if (!NC.isSyncing.value) ...c.praktikumList],
                                 hintText: 'select',
                                 onChanged: (v) => c.isPraktikumLainnya.value = v == 'Lainnya...',
                               ),

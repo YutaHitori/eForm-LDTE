@@ -10206,22 +10206,22 @@ r[6]=f+r[6]>>>0
 r[7]=e+r[7]>>>0}}
 B.o_.prototype={}
 B.oI.prototype={
-$1(a8){var s,r,q,p,o,n,m,l,k,j=this,i=null,h=B.aa("SURAT PERMOHONAN PRAKTIKUM SUSULAN",B.mT(i,i,i,i,i,i,i,i,i,A.eo,i,i,14,i,A.aI,i,!0,i,i,i,i),i),g=B.aa("\n",i,i),f=B.aa("Kepada",i,i),e=j.a,d=B.aa("Yth. Dosen Pengampu "+e,i,i),c=B.aa("Di",i,i),b=B.aa("Tempat",i,i),a=B.aa("\n",i,i),a0=B.aa("Dengan hormat, saya yang bertanda tangan di bawah ini :",i,i),a1=t.p,a2=t.g5,a3=B.ah([0,new B.dT(72),1,new B.dU()],a1,a2),a4=j.b,a5=t.iG,a6=j.c,a7=t.cI
-a3=B.ps(B.e([new B.b1(B.e([B.aa("Nama",i,i),B.aa(": "+a4,i,i)],a5),i),new B.b1(B.e([new B.ac(i,12,i)],a5),i),new B.b1(B.e([B.aa("NIM",i,i),B.aa(": "+a6,i,i)],a5),i),new B.b1(B.e([new B.ac(i,12,i)],a5),i),new B.b1(B.e([B.aa("Program Studi",i,i),B.aa(": "+j.d,i,i)],a5),i)],a7),a3)
-s=B.aa("Dengan ini mengajukan permohonan untuk bisa mengikuti praktikum susulan "+e+" sesuai dengan waktu yang telah disediakan oleh Lab Dasar Teknik Elektro selaku penyelenggara praktikum.",i,A.eJ)
-r=B.aa("Adapun alasan saya tidak bisa hadir pada jadwal yang telah ditentukan sebelumnya, dikarenakan "+j.e+".",i,A.eJ)
-q=B.aa("Praktikum yang hendak diikuti :",i,i)
-p=B.ah([0,A.nI,1,A.n4],a1,a2)
-o=B.e([],a7)
-for(n=j.f,m=0;m<n.length;m=k){l=B.e([],a7)
-if(m!==0)l.push(new B.b1(B.e([new B.ac(i,5,i)],a5),i))
-k=m+1
-l.push(new B.b1(B.e([B.aa(""+k+".",i,i),B.aa("Modul "+n[m],i,i)],a5),i))
-A.G.ao(o,l)}p=B.ps(o,p)
-o=B.aa("Demikian permohonan saya, atas pengertian dan kesempatan yang Bapak/Ibu berikan saya ucapkan terima kasih.",i,A.eJ)
-n=B.aa("\n",i,i)
-a2=B.ah([0,new B.dT(255.11811023622047),1,new B.dU()],a1,a2)
-return B.e([new B.hH(i,i,h),g,new B.ac(i,24,i),f,new B.ac(i,12,i),d,new B.ac(i,12,i),c,new B.ac(i,5,i),new B.eh(A.fa,new B.hK(A.bD,A.a9M,A.m0,A.f7,A.mE,new B.i0(),B.e([b,a,new B.ac(i,19,i),a0,new B.ac(i,12,i),new B.eh(A.fa,a3),new B.ac(i,12,i),s,new B.ac(i,12,i),r,new B.ac(i,12,i),q,new B.ac(i,10,i),new B.eh(A.nu,p),new B.ac(i,10,i),o,new B.ac(i,12,i),n,new B.ac(i,12,i),B.ps(B.e([new B.b1(B.e([B.aa("\n",i,i),B.aa("Bandung, "+j.r,i,i)],a5),i),new B.b1(B.e([B.aa("Menyetujui,\nDosen Pengampu "+e+"\n\n\n\n",i,i),B.aa("\nPemohon\n\n\n\n",i,i)],a5),A.ac4),new B.b1(B.e([new B.ac(i,5,i)],a5),i),new B.b1(B.e([B.aa(j.w+"\n"+j.x,i,i),B.aa(a4+"\n"+a6,i,i)],a5),i)],a7),a2)],a5)))],a5)},
+$1(a7){var s,r,q,p,o,n,m,l,k=this,j=null,i=B.aa("SURAT PERMOHONAN PRAKTIKUM SUSULAN",B.mT(j,j,j,j,j,j,j,j,j,A.eo,j,j,14,j,A.aI,j,!0,j,j,j,j),j),h=B.aa("\n",j,j),g=B.aa("Kepada",j,j),f=k.a,e=B.aa("Yth. Dosen Pengampu "+f,j,j),d=B.aa("Di",j,j),c=B.aa("Tempat",j,j),b=B.aa("\n",j,j),a=B.aa("Dengan hormat, saya yang bertanda tangan di bawah ini :",j,j),a0=t.p,a1=t.g5,a2=B.ah([0,new B.dT(72),1,new B.dU()],a0,a1),a3=k.b,a4=t.iG,a5=k.c,a6=t.cI
+a2=B.ps(B.e([new B.b1(B.e([B.aa("Nama",j,j),B.aa(": "+a3,j,j)],a4),j),new B.b1(B.e([new B.ac(j,12,j)],a4),j),new B.b1(B.e([B.aa("NIM",j,j),B.aa(": "+a5,j,j)],a4),j),new B.b1(B.e([new B.ac(j,12,j)],a4),j),new B.b1(B.e([B.aa("Program Studi",j,j),B.aa(": "+k.d,j,j)],a4),j)],a6),a2)
+f=B.aa("Dengan ini mengajukan permohonan untuk bisa mengikuti praktikum susulan "+f+" sesuai dengan waktu yang telah disediakan oleh Lab Dasar Teknik Elektro selaku penyelenggara praktikum.",j,A.eJ)
+s=B.aa("Adapun alasan saya tidak bisa hadir pada jadwal yang telah ditentukan sebelumnya, dikarenakan "+k.e+".",j,A.eJ)
+r=B.aa("Praktikum yang hendak diikuti :",j,j)
+q=B.ah([0,A.nI,1,A.n4],a0,a1)
+p=B.e([],a6)
+for(o=k.f,n=0;n<o.length;n=l){m=B.e([],a6)
+if(n!==0)m.push(new B.b1(B.e([new B.ac(j,5,j)],a4),j))
+l=n+1
+m.push(new B.b1(B.e([B.aa(""+l+".",j,j),B.aa("Modul "+o[n],j,j)],a4),j))
+A.G.ao(p,m)}q=B.ps(p,q)
+p=B.aa("Demikian permohonan saya, atas pengertian dan kesempatan yang Bapak/Ibu berikan saya ucapkan terima kasih.",j,A.eJ)
+o=B.aa("\n",j,j)
+a1=B.ah([0,new B.dT(255.11811023622047),1,new B.dU()],a0,a1)
+return B.e([new B.hH(j,j,i),h,new B.ac(j,24,j),g,new B.ac(j,12,j),e,new B.ac(j,12,j),d,new B.ac(j,5,j),new B.eh(A.fa,new B.hK(A.bD,A.a9M,A.m0,A.f7,A.mE,new B.i0(),B.e([c,b,new B.ac(j,19,j),a,new B.ac(j,12,j),new B.eh(A.fa,a2),new B.ac(j,12,j),f,new B.ac(j,12,j),s,new B.ac(j,12,j),r,new B.ac(j,10,j),new B.eh(A.nu,q),new B.ac(j,10,j),p,new B.ac(j,12,j),o,new B.ac(j,12,j),B.ps(B.e([new B.b1(B.e([B.aa("\n",j,j),B.aa("Bandung, "+k.r,j,j)],a4),j),new B.b1(B.e([B.aa("Menyetujui,\nDosen Pengampu\n\n\n\n",j,j),B.aa("\nPemohon\n\n\n\n",j,j)],a4),A.ac4),new B.b1(B.e([new B.ac(j,5,j)],a4),j),new B.b1(B.e([B.aa(k.w+"\n"+k.x,j,j),B.aa(a3+"\n"+a5,j,j)],a4),j)],a6),a1)],a4)))],a4)},
 $S:51}
 B.kM.prototype={
 M(){return"Channel."+this.b}}

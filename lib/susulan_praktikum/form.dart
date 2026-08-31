@@ -166,6 +166,7 @@ class SusulanPraktikum extends StatelessWidget {
                           child: CustomTextField(
                             controller: c.kodePraktikum,
                             errorText: c.kodePraktikumE.value,
+                            focusNode: c.kodePraktikumF,
                             labelText: 'Kode Praktikum',
                             decoration: InputDecoration(
                               hintText: 'e.g. EL3017',
@@ -177,6 +178,7 @@ class SusulanPraktikum extends StatelessWidget {
                           child: CustomTextField(
                             controller: c.namaPraktikum,
                             errorText: c.namaPraktikumE.value,
+                            focusNode: c.namaPraktikumF,
                             labelText: 'Nama Praktikum',
                             decoration: InputDecoration(
                               hintText: 'e.g. Sistem Tenaga Elektrik',
