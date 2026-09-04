@@ -140,8 +140,15 @@ ThemeData appTheme = ThemeData(
   dividerColor: const Color(0xFF2C2C2C),
 );
 
+class NoScrollbarBehavior extends ScrollBehavior {
+  const NoScrollbarBehavior();
+
+  @override
+  Widget buildScrollbar(BuildContext context, Widget child, ScrollableDetails details) => child;
+}
+
 class CustomTextField extends StatelessWidget {
-  const CustomTextField({
+  CustomTextField({
     super.key,
     this.labelText,
     this.errorText,
@@ -154,7 +161,7 @@ class CustomTextField extends StatelessWidget {
     this.obscureText,
     this.canError = true,
     this.onChanged,
-    this.enabled,
+    this.enabled = true,
     this.readOnly = false,
     this.scrollbar = true,
     this.onSubmitted,
@@ -163,7 +170,8 @@ class CustomTextField extends StatelessWidget {
     this.labelFlexAxis = Axis.horizontal,
     this.maxHeight = double.infinity,
     this.indicator,
-  });
+    ScrollController? scrollController,
+  }) : scrollController = maxLines == 1 ? null : scrollController ?? ScrollController(keepScrollOffset: false);
 
   final String? labelText;
   final String? errorText;
@@ -175,7 +183,7 @@ class CustomTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final bool? obscureText;
   final bool canError;
-  final bool? enabled;
+  final bool enabled;
   final bool readOnly;
   final bool scrollbar;
   final void Function(String)? onChanged;
@@ -185,32 +193,31 @@ class CustomTextField extends StatelessWidget {
   final Axis labelFlexAxis;
   final double maxHeight;
   final Widget? indicator;
+  final ScrollController? scrollController;
 
   @override
   Widget build(BuildContext context) {
-    final child = ConstrainedBox(
-      constraints: BoxConstraints(maxHeight: maxHeight),
-      child: TextField(
-        onTapOutside: (_) => FocusScope.of(context).unfocus(),
-        inputFormatters: inputFormatters,
-        controller: controller,
-        focusNode: focusNode,
-        maxLines: maxLines,
-        maxLength: maxLength,
-        decoration: (decoration ?? InputDecoration()).copyWith(
-          filled: true,
-          helperText: canError ? '' : null,
-          errorText: errorText == null ? null : ''
-        ),
-        keyboardType: keyboardType,
-        onChanged: onChanged,
-        obscureText: obscureText ?? false,
-        onSubmitted: onSubmitted,
-        autofillHints: autofillHints,
-        enabled: enabled,
-        readOnly: readOnly,
-        scrollPhysics: readOnly && maxLines != 1 ? NeverScrollableScrollPhysics() : null,
+    final child = TextField(
+      scrollController: scrollController,
+      onTapOutside: (_) => FocusScope.of(context).unfocus(),
+      inputFormatters: inputFormatters,
+      controller: controller,
+      focusNode: focusNode,
+      maxLines: maxLines,
+      maxLength: maxLength,
+      decoration: (decoration ?? InputDecoration()).copyWith(
+        filled: true,
+        helperText: canError ? '' : null,
+        errorText: errorText == null ? null : ''
       ),
+      keyboardType: keyboardType,
+      onChanged: onChanged,
+      obscureText: obscureText ?? false,
+      onSubmitted: onSubmitted,
+      autofillHints: autofillHints,
+      enabled: enabled,
+      readOnly: readOnly,
+      scrollPhysics: readOnly && maxLines != 1 ? NeverScrollableScrollPhysics() : null,
     );
     return LayoutBuilder(
       builder: (context, constraints) => Column(
@@ -234,11 +241,14 @@ class CustomTextField extends StatelessWidget {
               ),
             ]
           ),
-          maxLines != 1 && !scrollbar ? ScrollConfiguration(
-            behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-            child: child
-          ) : child,
-          ?indicator
+          ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: maxHeight),
+            child: maxLines != 1 && (!scrollbar || readOnly) ? ScrollConfiguration(
+              behavior: NoScrollbarBehavior(),
+              child: child
+            ) : child,
+          ),
+          ? indicator
         ],
       ),
     );

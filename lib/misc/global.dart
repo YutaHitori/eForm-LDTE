@@ -22,7 +22,7 @@ pw.TextStyle textStyle({double? fontSize, double? lineSpacing}) {
 final parentheses = RegExp(r'\((.*?)\)');
 final curlyBrackets = RegExp(r'\{([^}]+)\}');
 
-const List<String> pertukaranVar = ["{NAMA_PRAKTIKAN}","{NIM_PRAKTIKAN}","{PRAKTIKUM}","{MODUL}","{TANGGAL}","{NAMA_PENGGANTI}","{NIM_PENGGANTI}"];
+const List<String> pertukaranVar = ["{NAMA_PRAKTIKAN}","{NIM_PRAKTIKAN}","{PRAKTIKUM}","{MODUL}","{TANGGAL}","{NAMA_PENGGANTI}","{NIM_PENGGANTI}",'{TANGGAL_PENGGANTI}'];
 const List<String> izinVar = ["{NAMA}","{NIM}","{PRAKTIKUM}","{MODUL}","{TANGGAL}","{ALASAN}","{IMAGE}"];
 
 DateTime get now => DateTime.now();
@@ -45,9 +45,15 @@ class NamedRoute {
   static const barang = '/admin/config/barang';
   static const pinjamAdmin = '/admin/peminjaman-peralatan';
   static const keteranganAdmin = '/admin/surat-keterangan';
-}
 
-final webAlwaysScrollable = kIsWeb ? AlwaysScrollableScrollPhysics() : null;
+  static const Map<String, String> formList = {
+    'Pertukaran Jadwal Praktikum': '/pertukaran-jadwal',
+    'Izin Tidak Mengikuti Praktikum': '/izin-praktikum',
+    'Surat Keterangan Praktikum': '/surat-keterangan',
+    'Template Permohonan Susulan': '/susulan-praktikum',
+    'Peminjaman Peralatan': '/peminjaman-peralatan',
+  };
+}
 
 final connection = InternetConnection.createInstance(
   useDefaultOptions: kIsWeb, 

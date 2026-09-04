@@ -63,6 +63,7 @@ class LastUpdatedModel {
 
 class GlobalConfigModel {
   String? nomorSurat, lineOALDTE, namaKepalaLDTE, nipKepalaLDTE, caraPinjam, caraKeterangan, caraPertukaran, caraIzin, caraSusulan, templatePertukaran, templateIzin;
+  Set<String>? disabledForm;
 
   GlobalConfigModel({
     this.nomorSurat,
@@ -76,6 +77,7 @@ class GlobalConfigModel {
     this.caraSusulan,
     this.templatePertukaran,
     this.templateIzin,
+    this.disabledForm,
   });
 
   GlobalConfigModel.fromJson(Map<String, dynamic> json) {
@@ -90,6 +92,7 @@ class GlobalConfigModel {
     caraSusulan = (json['cara_susulan'] as String).trim();
     templatePertukaran = (json['template_pertukaran'] as String).trim();
     templateIzin = (json['template_izin'] as String).trim();
+    disabledForm = List<String>.from(json['disabled']).map((v) => v.trim().toLowerCase()).toSet();
   }
 
   GlobalConfigModel duplicate() => GlobalConfigModel(
@@ -104,6 +107,7 @@ class GlobalConfigModel {
     caraSusulan: caraSusulan,
     templatePertukaran: templatePertukaran,
     templateIzin: templateIzin,
+    disabledForm: disabledForm,
   );
 }
 

@@ -33,7 +33,7 @@ types:
         index: 10
   GlobalConfigModel:
     typeId: 2
-    nextIndex: 13
+    nextIndex: 14
     fields:
       nomorSurat:
         index: 0
@@ -57,6 +57,8 @@ types:
         index: 11
       caraSusulan:
         index: 12
+      disabledForm:
+        index: 13
   UserPreferenceModel:
     typeId: 3
     nextIndex: 5

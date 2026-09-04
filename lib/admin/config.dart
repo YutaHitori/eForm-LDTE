@@ -242,7 +242,6 @@ class GlobalConfig extends StatelessWidget {
                     focusNode: c.caraPinjamFocus,
                     onChanged: (v) => c.isSavedCheck(),
                     labelText: 'Cara Pengisian Formulir Peminjaman Peralatan',
-                    scrollbar: false,
                     maxHeight: 384,
                     decoration: InputDecoration(
                       fillColor: c.caraPinjamCanEdit.value ? null : Color(0xFF181818),
@@ -294,7 +293,6 @@ class GlobalConfig extends StatelessWidget {
                     focusNode: c.caraKeteranganFocus,
                     onChanged: (v) => c.isSavedCheck(),
                     labelText: 'Cara Pengisian Surat Keterangan Praktikum',
-                    scrollbar: false,
                     maxHeight: 384,
                     decoration: InputDecoration(
                       fillColor: c.caraKeteranganCanEdit.value ? null : Color(0xFF181818),
@@ -346,7 +344,6 @@ class GlobalConfig extends StatelessWidget {
                     focusNode: c.caraPertukaranFocus,
                     onChanged: (v) => c.isSavedCheck(),
                     labelText: 'Cara Pengisian Formulir Pertukaran Jadwal Praktikum',
-                    scrollbar: false,
                     maxHeight: 384,
                     decoration: InputDecoration(
                       fillColor: c.caraPertukaranCanEdit.value ? null : Color(0xFF181818),
@@ -398,7 +395,6 @@ class GlobalConfig extends StatelessWidget {
                     focusNode: c.caraIzinFocus,
                     onChanged: (v) => c.isSavedCheck(),
                     labelText: 'Cara Pengisian Formulir Izin Tidak Mengikuti Praktikum',
-                    scrollbar: false,
                     maxHeight: 384,
                     decoration: InputDecoration(
                       fillColor: c.caraIzinCanEdit.value ? null : Color(0xFF181818),
@@ -450,7 +446,6 @@ class GlobalConfig extends StatelessWidget {
                     focusNode: c.caraSusulanFocus,
                     onChanged: (v) => c.isSavedCheck(),
                     labelText: 'Cara Pengisian Template Permohonan Susulan',
-                    scrollbar: false,
                     maxHeight: 384,
                     decoration: InputDecoration(
                       fillColor: c.caraSusulanCanEdit.value ? null : Color(0xFF181818),
@@ -506,7 +501,6 @@ class GlobalConfig extends StatelessWidget {
                       c.isTemplateValid('pertukaran');
                     },
                     labelText: 'Template Pesan Pertukaran Jadwal Praktikum',
-                    scrollbar: false,
                     maxHeight: 384,
                     decoration: InputDecoration(
                       fillColor: c.templatePertukaranCanEdit.value ? null : Color(0xFF181818),
@@ -562,7 +556,6 @@ class GlobalConfig extends StatelessWidget {
                       c.isTemplateValid('izin');
                     },
                     labelText: 'Template Pesan Surat Izin Praktikum',
-                    scrollbar: false,
                     maxHeight: 384,
                     decoration: InputDecoration(
                       fillColor: c.templateIzinCanEdit.value ? null : Color(0xFF181818),
@@ -609,6 +602,58 @@ class GlobalConfig extends StatelessWidget {
                     keyboardType: TextInputType.multiline,
                     readOnly: !c.templateIzinCanEdit.value,
                   ),
+                  Column(
+                    spacing: 4,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(child: Text('Enabled Form Page', textScaleFactor: 1.02,)),
+                          IconButton(
+                            onPressed: c.disabledFormSaved.value 
+                              ? () => c.disabledFormCanEdit.value = !c.disabledFormCanEdit.value
+                              : c.saveDisabledForm,
+                            icon: Icon(
+                              c.disabledFormSaved.value 
+                              ? c.disabledFormCanEdit.value
+                                ? Icons.edit_off_rounded
+                                : Icons.edit_rounded
+                              : Icons.save_rounded
+                            ),
+                          ),
+                        ],
+                      ),
+                      for (final e in NamedRoute.formList.entries) Row(
+                        children: [
+                          Expanded(
+                            child: Row(
+                              spacing: 6,
+                              children: [
+                                Text(e.key),
+                                Icon(
+                                  c.disabledForm.contains(e.value) ? Icons.do_disturb_on : Icons.check_circle_rounded,
+                                  color: c.disabledForm.contains(e.value) ? null : Colors.green,
+                                  size: 12
+                                )
+                              ],
+                            ),
+                          ),
+                          Switch(
+                            activeTrackColor: Colors.green,
+                            activeThumbColor: Colors.white,
+                            value: !c.disabledForm.contains(e.value), 
+                            onChanged: !c.disabledFormCanEdit.value || NC.isSyncing.value ? null : (v) {
+                              if (c.disabledForm.contains(e.value)) {
+                                c.disabledForm.remove(e.value);
+                              } else {
+                                c.disabledForm.add(e.value);
+                              }
+                              c.isSavedCheck();
+                            }
+                          )
+                        ],
+                      ),
+                    ],
+                  ),
                   Row(
                     spacing: 8,
                     children: [
@@ -624,10 +669,10 @@ class GlobalConfig extends StatelessWidget {
                     ],
                   ),
                 ],
-                          ),
               ),
             ),
-          )
+          ),
+        )
       ),
     ));
   }

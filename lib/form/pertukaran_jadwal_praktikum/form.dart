@@ -1,4 +1,5 @@
 import 'package:eform_ldte/misc/function.dart';
+import 'package:eform_ldte/misc/router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:dropdown_flutter/custom_dropdown.dart';
@@ -17,7 +18,21 @@ class PertukaranJadwalPraktikum extends StatelessWidget {
       appBar: AppBar(
         title: Text('Pertukaran Jadwal Praktikum')
       ),
-      body: LayoutBuilder(
+      body: storage.cached.globalConfig.disabledForm?.contains(router.state.fullPath) ?? false
+        ? Center(
+          child: Padding(
+            padding: const EdgeInsets.all(42),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 32,
+              children: [
+                Icon(Icons.do_disturb_on, size: 92),
+                Text('Form disabled []~(￣▽￣)~*', textScaleFactor: 1.5),
+                Text('the current form has been disbled temporarily due to ongoing maintenance or other reason(s), plese try again later.', textAlign: TextAlign.center,textScaleFactor: 1.1,),
+              ],
+            ),
+          ),
+        ) : LayoutBuilder(
         builder: (context, constrains) {
           return RefreshIndicator(
             onRefresh: hardRefresh,
@@ -57,6 +72,48 @@ class PertukaranJadwalPraktikum extends StatelessWidget {
                       inputFormatters: [ FilteringTextInputFormatter.digitsOnly ],
                       decoration: InputDecoration(hintText: 'e.g. 12345678'),
                     ),
+                    CustomTextField(
+                      controller: c.dateC,
+                      labelText: 'Tanggal Praktikum Sebelum Pertukaran ',
+                      errorText: c.dateE.value,
+                      keyboardType: TextInputType.datetime,
+                      decoration: InputDecoration(
+                        hintText: 'yyyy/mm/dd',
+                        suffixIcon: IconButton(onPressed: c.selectDate, icon: Icon(Icons.date_range))
+                      ),
+                    ),
+            
+                    Divider(),
+            
+                    CustomTextField(
+                      controller: c.namaPC,
+                      focusNode: c.namaPF,
+                      labelText: 'Nama Praktikan Pengganti',
+                      errorText: c.namaPE.value,
+                      decoration: InputDecoration(hintText: 'e.g. Safaraz Akma Fadhil'),
+                    ),
+                    CustomTextField(
+                      controller: c.nimPC,
+                      focusNode: c.nimPF,
+                      labelText: 'Nim Praktikan Pengganti',
+                      errorText: c.nimPE.value,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [ FilteringTextInputFormatter.digitsOnly ],
+                      decoration: InputDecoration(hintText: 'e.g. 12345678'),
+                    ),
+                    CustomTextField(
+                      controller: c.datePC,
+                      labelText: 'Tanggal Praktikum Pengganti',
+                      errorText: c.datePE.value,
+                      keyboardType: TextInputType.datetime,
+                      decoration: InputDecoration(
+                        hintText: 'yyyy/mm/dd',
+                        suffixIcon: IconButton(onPressed: c.selectDateP, icon: Icon(Icons.date_range))
+                      ),
+                    ),
+
+                    Divider(), 
+                    
                     Row(
                       spacing: 8,
                       children: [
@@ -157,48 +214,7 @@ class PertukaranJadwalPraktikum extends StatelessWidget {
                         ),
                       ],
                     ),
-                    CustomTextField(
-                      controller: c.dateC,
-                      labelText: 'Tanggal Praktikum Sebelum Pertukaran ',
-                      errorText: c.dateE.value,
-                      keyboardType: TextInputType.datetime,
-                      decoration: InputDecoration(
-                        hintText: 'yyyy/mm/dd',
-                        suffixIcon: IconButton(onPressed: c.selectDate, icon: Icon(Icons.date_range))
-                      ),
-                    ),
-            
-                    Divider(),
-            
-                    CustomTextField(
-                      controller: c.namaPC,
-                      focusNode: c.namaPF,
-                      labelText: 'Nama Praktikan Pengganti',
-                      errorText: c.namaPE.value,
-                      decoration: InputDecoration(hintText: 'e.g. Safaraz Akma Fadhil'),
-                    ),
-                    CustomTextField(
-                      controller: c.nimPC,
-                      focusNode: c.nimPF,
-                      labelText: 'Nim Praktikan Pengganti',
-                      errorText: c.nimPE.value,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [ FilteringTextInputFormatter.digitsOnly ],
-                      decoration: InputDecoration(hintText: 'e.g. 12345678'),
-                    ),
-                    CustomTextField(
-                      controller: c.datePC,
-                      labelText: 'Tanggal Praktikum Pengganti',
-                      errorText: c.datePE.value,
-                      keyboardType: TextInputType.datetime,
-                      decoration: InputDecoration(
-                        hintText: 'yyyy/mm/dd',
-                        suffixIcon: IconButton(onPressed: c.selectDateP, icon: Icon(Icons.date_range))
-                      ),
-                      onChanged: (v) {
-                        if (v.length > 10) c.datePC.text = v.substring(0, 10);
-                      },
-                    ),
+
                     SizedBox(height: 24),
                     ElevatedButton(onPressed: c.isLoading.value ? null : c.submit, child: Text('Format')),
                   ],

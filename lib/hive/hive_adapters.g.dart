@@ -120,13 +120,14 @@ class GlobalConfigModelAdapter extends TypeAdapter<GlobalConfigModel> {
       caraSusulan: fields[12] as String?,
       templatePertukaran: fields[10] as String?,
       templateIzin: fields[11] as String?,
+      disabledForm: (fields[13] as Set?)?.cast<String>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, GlobalConfigModel obj) {
     writer
-      ..writeByte(11)
+      ..writeByte(12)
       ..writeByte(0)
       ..write(obj.nomorSurat)
       ..writeByte(1)
@@ -148,7 +149,9 @@ class GlobalConfigModelAdapter extends TypeAdapter<GlobalConfigModel> {
       ..writeByte(11)
       ..write(obj.templateIzin)
       ..writeByte(12)
-      ..write(obj.caraSusulan);
+      ..write(obj.caraSusulan)
+      ..writeByte(13)
+      ..write(obj.disabledForm);
   }
 
   @override

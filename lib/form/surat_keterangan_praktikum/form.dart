@@ -1,4 +1,5 @@
 import 'package:eform_ldte/misc/function.dart';
+import 'package:eform_ldte/misc/router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:dropdown_flutter/custom_dropdown.dart';
@@ -27,6 +28,21 @@ class SuratKeteranganPraktikum extends StatelessWidget {
               CircularProgressIndicator(),
               Text(c.message.value ?? 'Loading...')
             ],
+          ),
+        )  
+        : storage.cached.globalConfig.disabledForm?.contains(router.state.fullPath) ?? false
+        ? Center(
+          child: Padding(
+            padding: const EdgeInsets.all(42),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 32,
+              children: [
+                Icon(Icons.do_disturb_on, size: 92),
+                Text('Form disabled []~(￣▽￣)~*', textScaleFactor: 1.5),
+                Text('the current form has been disbled temporarily due to ongoing maintenance or other reason(s), plese try again later.', textAlign: TextAlign.center,textScaleFactor: 1.1,),
+              ],
+            ),
           ),
         ) 
         : LayoutBuilder(

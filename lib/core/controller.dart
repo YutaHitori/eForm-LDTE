@@ -354,8 +354,10 @@ class PeminjamanPeralatanController extends GetxController {
   }
 
   void showReminderDialog() {
+    if (storage.cached.globalConfig.disabledForm?.contains(router.state.fullPath) ?? false) return;
     var remindMe = storage.cached.userPreference.remindPeminjamanPeralatan.obs;
     if (remindMe.value) {
+      final scrollController = ScrollController();
       alertDialog(
         'Cara Pengisian Formulir Peminjaman Peralatan:',
         null,
@@ -371,12 +373,14 @@ class PeminjamanPeralatanController extends GetxController {
               ),
               padding: const EdgeInsets.all(8),
               child: Scrollbar(
+                controller: scrollController,
                 thumbVisibility: true,
                 radius: Radius.circular(4),
                 child: SingleChildScrollView(
+                  controller: scrollController,
                   child: Padding(
                     padding: EdgeInsets.only(right: 8.0),
-                    child: Text(NC.isSyncing.value ? 'Syncingin progress, please wait...' : cara, style: TextStyle(fontSize: 12.8)),
+                    child: Text(NC.isSyncing.value ? 'Syncing in progress, please wait...' : cara, style: TextStyle(fontSize: 12.8)),
                   )
                 )
               ),
@@ -575,8 +579,10 @@ class SusulanPraktikumController extends GetxController {
   }
 
   void showReminderDialog() {
+    if (storage.cached.globalConfig.disabledForm?.contains(router.state.fullPath) ?? false) return;
     var remindMe = storage.cached.userPreference.remindSusulanPraktikum.obs;
     if (remindMe.value) {
+      final scrollController = ScrollController();
       alertDialog(
         'Cara Pengisian Template Permohonan Susulan:',
         null,
@@ -592,12 +598,14 @@ class SusulanPraktikumController extends GetxController {
               ),
               padding: const EdgeInsets.all(8),
               child: Scrollbar(
+                controller: scrollController,
                 thumbVisibility: true,
                 radius: Radius.circular(4),
                 child: SingleChildScrollView(
+                  controller: scrollController,
                   child: Padding(
                     padding: EdgeInsets.only(right: 8.0),
-                    child: Text(NC.isSyncing.value ? 'Syncingin progress, please wait...' : cara, style: TextStyle(fontSize: 12.8)),
+                    child: Text(NC.isSyncing.value ? 'Syncing in progress, please wait...' : cara, style: TextStyle(fontSize: 12.8)),
                   )
                 )
               ),
@@ -870,8 +878,10 @@ class SuratKeteranganPraktikumController extends GetxController {
   }
 
   void showReminderDialog() {
+    if (storage.cached.globalConfig.disabledForm?.contains(router.state.fullPath) ?? false) return;
     var remindMe = storage.cached.userPreference.remindSuratKeteranganPraktikum.obs;
     if (remindMe.value) {
+      final scrollController = ScrollController();
       alertDialog(
         'Cara Pengisian Formulir Surat Keterangan Praktikum:',
         null,
@@ -887,12 +897,14 @@ class SuratKeteranganPraktikumController extends GetxController {
               ),
               padding: const EdgeInsets.all(8),
               child: Scrollbar(
+                controller: scrollController,
                 thumbVisibility: true,
                 radius: Radius.circular(4),
                 child: SingleChildScrollView(
+                  controller: scrollController,
                   child: Padding(
                     padding: EdgeInsets.only(right: 8.0),
-                    child: Text(NC.isSyncing.value ? 'Syncingin progress, please wait...' : cara, style: TextStyle(fontSize: 12.8)),
+                    child: Text(NC.isSyncing.value ? 'Syncing in progress, please wait...' : cara, style: TextStyle(fontSize: 12.8)),
                   )
                 )
               ),
@@ -1006,39 +1018,25 @@ class PertukaranJadwalPraktikumController extends GetxController {
     .replaceAll('{NIM_PRAKTIKAN}', nimC.text.trim())
     .replaceAll('{PRAKTIKUM}', praktikum.value == 'Lainnya...' ? '${kodePraktikum.text.trim().toUpperCase()} ${namaPraktikum.text.trim().capitalCase()}' : praktikum.value ?? '')
     .replaceAll('{MODUL}', modul.value?.toString() ?? '')
-    .replaceAll('{TANGGAL}', datePC.text.toDateTime()?.toDateFormatString() ?? '')
+    .replaceAll('{TANGGAL}', dateC.text.toDateTime()?.toDateFormatString() ?? '')
+    .replaceAll('{TANGGAL_PENGGANTI}', datePC.text.toDateTime()?.toDateFormatString() ?? '')
     .replaceAll('{NAMA_PENGGANTI}', namaPC.text.trim().capitalCase(false))
     .replaceAll('{NIM_PENGGANTI}', nimPC.text.trim());
 
    bool checkEmptyFields() {
-    if (
-      namaC.text.isBlank() || 
-      nimC.text.isBlank() || 
-      !praktikum.hasValue || 
-        (praktikum.value == 'Lainnya...' && (namaPraktikum.text.isBlank() || kodePraktikum.text.isBlank())) || 
-      !modul.hasValue || 
-      (dateC.text.isBlank() || dateC.text.toDateTime() == null)
-      ||
-      namaPC.text.isBlank() || 
-      nimPC.text.isBlank() || 
-      (datePC.text.isBlank() || datePC.text.toDateTime() == null)
-    ) {
-      namaE.value = namaC.text.isBlank() ? '*required' : null;
-      nimE.value = nimC.text.isBlank() ? '*required' : null;
-      praktikumE.value = !praktikum.hasValue ? '*required' : null;
-      namaPraktikumE.value = praktikum.value == 'Lainnya...' && namaPraktikum.text .isBlank() ? '': null;
-      kodePraktikumE.value = praktikum.value == 'Lainnya...' && kodePraktikum.text .isBlank() ? '': null;
-      modulE.value = !modul.hasValue ? '' : null ;
-      dateE.value = dateC.text.isBlank() ? '*required' : dateC.text.toDateTime() == null ? '*invalid' : null;
+    namaE.value = namaC.text.isBlank() ? '*required' : null;
+    nimE.value = nimC.text.isBlank() ? '*required' : null;
+    praktikumE.value = !praktikum.hasValue ? '*required' : null;
+    namaPraktikumE.value = praktikum.value == 'Lainnya...' && namaPraktikum.text .isBlank() ? '': null;
+    kodePraktikumE.value = praktikum.value == 'Lainnya...' && kodePraktikum.text .isBlank() ? '': null;
+    modulE.value = !modul.hasValue ? '' : null ;
+    dateE.value = dateC.text.isBlank() ? '*required' : dateC.text.toDateTime() == null ? '*invalid' : dateC.text == datePC.text ? '*tidak boleh sama dengan tanggal pengganti' : null;
+    
+    namaPE.value = namaPC.text.isBlank() ? '*required' : null;
+    nimPE.value = nimC.text.isBlank() ? '*required' : null;
+    datePE.value = datePC.text.isBlank() ? '*required' : datePC.text.toDateTime() == null ? '*invalid' : dateC.text == datePC.text ? '*tidak boleh sama dengan tanggal sebelum pertukaran' : null;
 
-      namaPE.value = namaPC.text.isBlank() ? '*required' : null;
-      nimPE.value = nimC.text.isBlank() ? '*required' : null;
-      datePE.value = datePC.text.isBlank() ? '*required' : datePC.text.toDateTime() == null ? '*invalid' : null;
-      return false;
-    }
-    namaE.value = nimE.value = praktikumE.value = namaPraktikumE.value = kodePraktikumE.value = modulE.value = dateE.value 
-      = namaPE.value = nimPE.value = datePE.value = null;
-    return true;
+    return namaE.value == null && nimE.value == null && praktikumE.value == null && (praktikum.value != 'Lainnya...' || (namaPraktikumE.value == null && kodePraktikumE.value == null)) && modulE.value == null && dateE.value == null && namaPE.value == null && nimPE.value == null && datePE.value == null;
   }
 
   void submit() async {
@@ -1093,8 +1091,10 @@ class PertukaranJadwalPraktikumController extends GetxController {
   }
 
   void showReminderDialog() {
+    if (storage.cached.globalConfig.disabledForm?.contains(router.state.fullPath) ?? false) return;
     var remindMe = storage.cached.userPreference.remindPertukaranJadwal.obs;
     if (remindMe.value) {
+      final scrollController = ScrollController();
       alertDialog(
         'Cara Pengisian Formulir Pergantian Jadwal Praktikum:',
         null,
@@ -1110,12 +1110,14 @@ class PertukaranJadwalPraktikumController extends GetxController {
               ),
               padding: const EdgeInsets.all(8),
               child: Scrollbar(
+                controller: scrollController,
                 thumbVisibility: true,
                 radius: Radius.circular(4),
                 child: SingleChildScrollView(
+                  controller: scrollController,
                   child: Padding(
                     padding: EdgeInsets.only(right: 8.0),
-                    child: Text(NC.isSyncing.value ? 'Syncingin progress, please wait...' : cara, style: TextStyle(fontSize: 12.8)),
+                    child: Text(NC.isSyncing.value ? 'Syncing in progress, please wait...' : cara, style: TextStyle(fontSize: 12.8)),
                   )
                 )
               ),
@@ -1315,8 +1317,10 @@ class IzinTidakPraktikumController extends GetxController {
   }
 
   void showReminderDialog() {
+    if (storage.cached.globalConfig.disabledForm?.contains(router.state.fullPath) ?? false) return;
     var remindMe = storage.cached.userPreference.remindIzinTidakPraktikum.obs;
     if (remindMe.value) {
+      final scrollController = ScrollController();
       alertDialog(
         'Cara Pengisian Formulir Izin Tidak Mengikuti Praktikum:',
         null,
@@ -1332,12 +1336,14 @@ class IzinTidakPraktikumController extends GetxController {
               ),
               padding: const EdgeInsets.all(8),
               child: Scrollbar(
+                controller: scrollController,
                 thumbVisibility: true,
                 radius: Radius.circular(4),
                 child: SingleChildScrollView(
+                  controller: scrollController,
                   child: Padding(
                     padding: EdgeInsets.only(right: 8.0),
-                    child: Text(NC.isSyncing.value ? 'Syncingin progress, please wait...' : cara, style: TextStyle(fontSize: 12.8)),
+                    child: Text(NC.isSyncing.value ? 'Syncing in progress, please wait...' : cara, style: TextStyle(fontSize: 12.8)),
                   )
                 )
               ),
@@ -1861,7 +1867,8 @@ class GlobalConfigController extends GetxController {
     caraSusulanSaved.value = caraSusulan.text.trim() == storage.cached.globalConfig.caraSusulan;
     templatePertukaranSaved.value = templatePertukaran.text.trim() == storage.cached.globalConfig.templatePertukaran;
     templateIzinSaved.value = templateIzin.text.trim() == storage.cached.globalConfig.templateIzin;
-    isSaved.value = lineOASaved.value && nomorSuratSaved.value && namaKepalaLDTESaved.value && nipKepalaLDTESaved.value && caraPinjamSaved.value && caraKeteranganSaved.value && caraPertukaranSaved.value && caraIzinSaved.value && templatePertukaranSaved.value && templateIzinSaved.value;
+    disabledFormSaved.value = setEquals(disabledForm, storage.cached.globalConfig.disabledForm);
+    isSaved.value = lineOASaved.value && nomorSuratSaved.value && namaKepalaLDTESaved.value && nipKepalaLDTESaved.value && caraPinjamSaved.value && caraKeteranganSaved.value && caraPertukaranSaved.value && caraIzinSaved.value && templatePertukaranSaved.value && templateIzinSaved.value && disabledFormSaved.value;
     return isSaved.value && !isAnyQueued && !itemQueue.isAnyQueued;
   }
 
@@ -1913,6 +1920,7 @@ class GlobalConfigController extends GetxController {
     caraSusulan.text = storage.cached.globalConfig.caraSusulan ?? '';
     templatePertukaran.text = storage.cached.globalConfig.templatePertukaran ?? '';
     templateIzin.text = storage.cached.globalConfig.templateIzin ?? '';
+    disabledForm.value = storage.cached.globalConfig.disabledForm?.toSet() ?? {};
   }
 
   final lineOA = TextEditingController();
@@ -1972,7 +1980,11 @@ class GlobalConfigController extends GetxController {
   var templateIzinCanEdit = false.obs;
   var templateIzinSaved = true.obs;
 
-  Map<String, String> get form {
+  RxSet<String> disabledForm = <String>{}.obs;
+  var disabledFormCanEdit = false.obs;
+  var disabledFormSaved = true.obs;
+
+  Map<String, dynamic> get form {
     lineOA.text = lineOA.text.trim().toLowerCase();
     if (lineOA.text[0] == '@') lineOA.text.substring(1);
     nomorSurat.text = nomorSurat.text.trim().toUpperCase();
@@ -1997,6 +2009,7 @@ class GlobalConfigController extends GetxController {
       if (caraSusulan.text != storage.cached.globalConfig.caraSusulan) 'cara_susulan' : caraSusulan.text,
       if (templatePertukaran.text != storage.cached.globalConfig.templatePertukaran) 'template_pertukaran' : templatePertukaran.text,
       if (templateIzin.text != storage.cached.globalConfig.templateIzin) 'template_izin' : templateIzin.text,
+      if (!setEquals(disabledForm, storage.cached.globalConfig.disabledForm)) 'disabled' : disabledForm.toList(),
     };
   }
   
@@ -2068,7 +2081,7 @@ class GlobalConfigController extends GetxController {
     isTemplateValid('izin');
   }
 
-  void save(String key, RxBool canEdit) async {
+  void save(String key, [RxBool? canEdit]) async {
     final message = key == 
     'lineoa_ldte' ? 'line official account' : key == 
     'lineoa_ldte' ? 'line official account' : key == 
@@ -2081,7 +2094,8 @@ class GlobalConfigController extends GetxController {
     'cara_izin' ? 'cara pengisian surat keteragan izin' : key == 
     'cara_susulan' ? 'cara pengisian template permohonan susulan' : key == 
     'template_pertukaran' ? 'template pesan pertukaran jadwal' : key == 
-    'template_izin' ? 'template pesan izin praktikum' : 'unknown';
+    'template_izin' ? 'template pesan izin praktikum' : key == 
+    'disabled' ? 'disabled form' : 'unknown';
     
     loadingMessage.value = 'Saving $message, please wait...';
     isLoading.value = true;
@@ -2090,7 +2104,7 @@ class GlobalConfigController extends GetxController {
       snackbar('Success!', '$message updated');
       loadingMessage.value = 'Syncing new config, please wait...';
       await storage.sync();
-      canEdit.value = false;
+      canEdit?.value = false;
       isSavedCheck();
     }
     isLoading.value = false;
@@ -2123,6 +2137,8 @@ class GlobalConfigController extends GetxController {
     if (!isTemplateValid('izin')) return;
     save('template_izin', templateIzinCanEdit);
   }
+
+  void saveDisabledForm() => save('disabled', disabledFormCanEdit);
 
   Future<void> saveQueuedAction() async {
     isLoading.value = true;
