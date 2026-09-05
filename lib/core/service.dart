@@ -191,7 +191,7 @@ class StorageService {
       if (lastUpdated != null) {
         final outdated = lastUpdated.where((v) => v.timestamp.isAfter(lastSync) || (v.field == null && !storage.cached.formatedProgramStudi().contains(v.reference))).toList();
         if (outdated.isNotEmpty) {
-          print('outdated field : ${outdated.map((v) => v.field ?? v.reference)}');
+          if (auth.isLoggedIn) print('outdated field : ${outdated.map((v) => v.field ?? v.reference)}');
           (global, latest, item) = await getLatestFieldData(outdated);
         }
         final list = outdated.any((v) => v.field == 'fakultas') ? latest?.map((v) => v.name).toList() : null;
@@ -230,12 +230,12 @@ class StorageService {
     for (final f in storage.cached.fakultas.toList()) {
       f.programStudi.removeWhere((ps) {
         final isNotRegistered = !list.any((v) => v.reference == ps.name);
-        if (isNotRegistered) print('removed program studi : ${ps.name}');
+        if (isNotRegistered) if (auth.isLoggedIn) print('removed program studi : ${ps.name}');
         return isNotRegistered;
       });
       final i = storage.cached.fakultas.indexWhere((v) => v.name == f.name);
       if (fakultas?.contains(f.name) == false) {
-        print("remove fakultas ${f.name}");
+        if (auth.isLoggedIn) print("remove fakultas ${f.name}");
         storage.cached.fakultas.removeAt(i);
       } else {
         storage.cached.fakultas[i] = f;
@@ -276,18 +276,18 @@ class StorageService {
       if (includeFakultas && fakultas.isNotEmpty) {
         final filter = fakultas.map((v) => 'name.neq."${v.replaceAll('"', '""')}"').join(',');
         query = query.or(filter, referencedTable: 'fakultas');
-        print('fakultas filter : $filter');
+        if (auth.isLoggedIn) print('fakultas filter : $filter');
       }
 
       if (outdatedProdi?.isNotEmpty ?? false) {
         final filter = outdatedProdi!.map((v) => 'name.eq."${v.reference?.replaceAll('"', '""')}"').join(',');
         query = query.or(filter, referencedTable: 'fakultas.program_studi');
-        print('query filter : $filter');
+        if (auth.isLoggedIn) print('query filter : $filter');
       }
       
       final data = await query.single();
 
-      print('fetched global config : $data');
+      if (auth.isLoggedIn) print('fetched global config : $data');
 
       try { if (includeGlobal) g = GlobalConfigModel.fromJson(data); } 
       catch (e) { alertDialog('Unexpected error', '(getLatestGlobalConfig: global) $e'); }
@@ -314,18 +314,18 @@ class StorageService {
           if (tempps != null) {
             final i = tempf.programStudi.indexWhere((v) => v.name == lps.name);
             tempf.programStudi[i] = lps;
-            print('update program studi : ${lps.name}');
+            if (auth.isLoggedIn) print('update program studi : ${lps.name}');
           } else {
             tempf.programStudi.add(lps);
-            print('added new program studi : ${lps.name}');
+            if (auth.isLoggedIn) print('added new program studi : ${lps.name}');
           }
         }
         final i = cached.fakultas.indexWhere((v) => v.name == lf.name);
         cached.fakultas[i] = tempf;
-        print('update fakultas : ${lf.name}');
+        if (auth.isLoggedIn) print('update fakultas : ${lf.name}');
       } else {
         cached.fakultas.add(lf);
-        print('added new fakultas : ${lf.name}');
+        if (auth.isLoggedIn) print('added new fakultas : ${lf.name}');
       }
     }
   }
@@ -553,9 +553,9 @@ class ImagePickerService {
   Future<XFile?> selectImageFrom(ImageSource s, {String key = 'default'}) async {
     XFile? pickedFile = await _picker.pickImage(
       source: s,
-      imageQuality: 65,
-      maxWidth: 1280,    
-      maxHeight: 1280, 
+      imageQuality: 50,
+      maxWidth: 1920,    
+      maxHeight: 1920, 
     );
     if (pickedFile != null) return setPrefix(pickedFile, key);
     return lastImages[key];
@@ -670,7 +670,7 @@ class PeminjamanPeralatanService extends PDFService {
       }
     catch (e) {
       alertDialog('Errr', '$e');
-      print('(PeminjamanPeralatanService.compilePDF) $e');
+      if (auth.isLoggedIn) print('(PeminjamanPeralatanService.compilePDF) $e');
     }
     return null;
   }
@@ -730,7 +730,7 @@ class SusulanPraktikumService extends PDFService {
     }
     catch (e) {
       alertDialog('Errr', '$e');
-      print('(SusulanPraktikumService.compilePDF) $e');
+      if (auth.isLoggedIn) print('(SusulanPraktikumService.compilePDF) $e');
     }
     return null;
   }
@@ -774,16 +774,16 @@ class IzinTidakPraktikumService {
   final imagePicker = ImagePickerService();
 
   Future<String?> uploadImage(XFile image) async {
-    final url = Uri.parse('https://proxy.corsfix.com/?' 'https://catbox.moe/user/api.php');
+    final url = Uri.parse('https://api.imgbb.com/1/upload');
   
     try {
       final request = http.MultipartRequest('POST', url);
 
-      request.fields['reqtype'] = 'fileupload';
+      request.fields['key'] = '9f619732dece6cb3f6bb7dea787b2bbd';
 
       request.files.add(
         http.MultipartFile.fromBytes(
-          'fileToUpload',
+          'image',
           await image.readAsBytes(),
           filename: '${now.millisecondsSinceEpoch}-${image.name}',
         )
@@ -792,14 +792,14 @@ class IzinTidakPraktikumService {
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
-      print('Response: ${response.body}');
+      if (auth.isLoggedIn) print('Response: ${response.body}');
       if (response.statusCode == 200) {
-        return response.body.trim();
+        return jsonDecode(response.body.trim())['data']['image']['url'];
       } else {
         throw('Upload failed with status: ${response.statusCode}\nResponse: ${response.body}');
       }
     } catch (error) {
-      print(error);
+      if (auth.isLoggedIn) print(error);
       alertDialog('Unexpected error', '$error');
     }
     return null;
@@ -883,15 +883,15 @@ class AdminSuratKeteranganPraktikumService extends PDFService {
 
   void initWorker() async {
     if (!_pdfWorker.isStarted) {
-      print('worker started');
+      if (auth.isLoggedIn) print('worker started');
       await _pdfWorker.start();
-    } else print('worker already started');
+    } else if (auth.isLoggedIn) print('worker already started');
   }
   void closeWorker() async {
     if (_pdfWorker.isStarted) {
-      print('worker stoped');
+      if (auth.isLoggedIn) print('worker stoped');
       await _pdfWorker.stop();
-    } else print('worker already stoped');
+    } else if (auth.isLoggedIn) print('worker already stoped');
   }
 
   Future<List<SuratKeteranganPraktikumModel>?> updateStatus(List<int> ids, String status) async {
@@ -951,7 +951,7 @@ class AdminSuratKeteranganPraktikumService extends PDFService {
     }
     catch (e) {
       alertDialog('Errr', '$e');
-      print('(SuratKeteranganPraktikum.compilePDF) $e');
+      if (auth.isLoggedIn) print('(SuratKeteranganPraktikum.compilePDF) $e');
     }
     return null;
   }
